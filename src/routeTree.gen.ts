@@ -11,7 +11,9 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StarsRouteImport } from './routes/stars'
 import { Route as RedirectRouteImport } from './routes/redirect'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeferredRouteImport } from './routes/deferred'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as UsersRouteRouteImport } from './routes/users.route'
@@ -29,12 +31,24 @@ import { ServerRoute as CustomScriptDotjsServerRouteImport } from './routes/cust
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
 import { ServerRoute as ApiUsersUserIdServerRouteImport } from './routes/api/users.$userId'
 import { ServerRoute as ApiUsersIdServerRouteImport } from './routes/api/users.$id'
+import { ServerRoute as ApiStarsStreamServerRouteImport } from './routes/api/stars.stream'
+import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth.$'
 
 const rootServerRouteImport = createServerRootRoute()
 
+const StarsRoute = StarsRouteImport.update({
+  id: '/stars',
+  path: '/stars',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RedirectRoute = RedirectRouteImport.update({
   id: '/redirect',
   path: '/redirect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeferredRoute = DeferredRouteImport.update({
@@ -123,13 +137,25 @@ const ApiUsersIdServerRoute = ApiUsersIdServerRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiUsersServerRoute,
 } as any)
+const ApiStarsStreamServerRoute = ApiStarsStreamServerRouteImport.update({
+  id: '/api/stars/stream',
+  path: '/api/stars/stream',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/posts': typeof PostsRouteRouteWithChildren
   '/users': typeof UsersRouteRouteWithChildren
   '/deferred': typeof DeferredRoute
+  '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/stars': typeof StarsRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/posts/': typeof PostsIndexRoute
@@ -141,7 +167,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/deferred': typeof DeferredRoute
+  '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/stars': typeof StarsRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/posts': typeof PostsIndexRoute
@@ -157,7 +185,9 @@ export interface FileRoutesById {
   '/users': typeof UsersRouteRouteWithChildren
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
   '/deferred': typeof DeferredRoute
+  '/login': typeof LoginRoute
   '/redirect': typeof RedirectRoute
+  '/stars': typeof StarsRoute
   '/_pathlessLayout/_nested-layout': typeof PathlessLayoutNestedLayoutRouteWithChildren
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
@@ -174,7 +204,9 @@ export interface FileRouteTypes {
     | '/posts'
     | '/users'
     | '/deferred'
+    | '/login'
     | '/redirect'
+    | '/stars'
     | '/posts/$postId'
     | '/users/$userId'
     | '/posts/'
@@ -186,7 +218,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/deferred'
+    | '/login'
     | '/redirect'
+    | '/stars'
     | '/posts/$postId'
     | '/users/$userId'
     | '/posts'
@@ -201,7 +235,9 @@ export interface FileRouteTypes {
     | '/users'
     | '/_pathlessLayout'
     | '/deferred'
+    | '/login'
     | '/redirect'
+    | '/stars'
     | '/_pathlessLayout/_nested-layout'
     | '/posts/$postId'
     | '/users/$userId'
@@ -218,18 +254,24 @@ export interface RootRouteChildren {
   UsersRouteRoute: typeof UsersRouteRouteWithChildren
   PathlessLayoutRoute: typeof PathlessLayoutRouteWithChildren
   DeferredRoute: typeof DeferredRoute
+  LoginRoute: typeof LoginRoute
   RedirectRoute: typeof RedirectRoute
+  StarsRoute: typeof StarsRoute
   PostsPostIdDeepRoute: typeof PostsPostIdDeepRoute
 }
 export interface FileServerRoutesByFullPath {
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/stars/stream': typeof ApiStarsStreamServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
 export interface FileServerRoutesByTo {
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/stars/stream': typeof ApiStarsStreamServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
@@ -237,6 +279,8 @@ export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/stars/stream': typeof ApiStarsStreamServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
   '/api/users/$userId': typeof ApiUsersUserIdServerRoute
 }
@@ -245,18 +289,24 @@ export interface FileServerRouteTypes {
   fullPaths:
     | '/customScript.js'
     | '/api/users'
+    | '/api/auth/$'
+    | '/api/stars/stream'
     | '/api/users/$id'
     | '/api/users/$userId'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/customScript.js'
     | '/api/users'
+    | '/api/auth/$'
+    | '/api/stars/stream'
     | '/api/users/$id'
     | '/api/users/$userId'
   id:
     | '__root__'
     | '/customScript.js'
     | '/api/users'
+    | '/api/auth/$'
+    | '/api/stars/stream'
     | '/api/users/$id'
     | '/api/users/$userId'
   fileServerRoutesById: FileServerRoutesById
@@ -264,15 +314,31 @@ export interface FileServerRouteTypes {
 export interface RootServerRouteChildren {
   CustomScriptDotjsServerRoute: typeof CustomScriptDotjsServerRoute
   ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
+  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiStarsStreamServerRoute: typeof ApiStarsStreamServerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stars': {
+      id: '/stars'
+      path: '/stars'
+      fullPath: '/stars'
+      preLoaderRoute: typeof StarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/redirect': {
       id: '/redirect'
       path: '/redirect'
       fullPath: '/redirect'
       preLoaderRoute: typeof RedirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deferred': {
@@ -398,6 +464,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersIdServerRouteImport
       parentRoute: typeof ApiUsersServerRoute
     }
+    '/api/stars/stream': {
+      id: '/api/stars/stream'
+      path: '/api/stars/stream'
+      fullPath: '/api/stars/stream'
+      preLoaderRoute: typeof ApiStarsStreamServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -479,7 +559,9 @@ const rootRouteChildren: RootRouteChildren = {
   UsersRouteRoute: UsersRouteRouteWithChildren,
   PathlessLayoutRoute: PathlessLayoutRouteWithChildren,
   DeferredRoute: DeferredRoute,
+  LoginRoute: LoginRoute,
   RedirectRoute: RedirectRoute,
+  StarsRoute: StarsRoute,
   PostsPostIdDeepRoute: PostsPostIdDeepRoute,
 }
 export const routeTree = rootRouteImport
@@ -488,6 +570,8 @@ export const routeTree = rootRouteImport
 const rootServerRouteChildren: RootServerRouteChildren = {
   CustomScriptDotjsServerRoute: CustomScriptDotjsServerRoute,
   ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
+  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiStarsStreamServerRoute: ApiStarsStreamServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)
