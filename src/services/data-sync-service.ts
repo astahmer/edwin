@@ -1,6 +1,6 @@
 import { Effect, Context, Layer } from "effect";
 import { DatabaseService } from "../db/kysely";
-import { GitHubClient, StarredGithubRepo } from "./GitHubClient";
+import { GitHubClient, StarredGithubRepo } from "./github-client";
 import type { NewRepo, NewUserStar } from "../db/schema";
 
 export interface SyncResult {

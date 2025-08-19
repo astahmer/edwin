@@ -1,5 +1,5 @@
 import { Effect, Context, Layer, Stream } from "effect";
-import { StarIngestor } from "./StarIngestor";
+import { StarIngestor } from "./star-ingestor";
 import type { Repo } from "../db/schema";
 
 export class StreamService extends Effect.Service<StreamService>()("StreamService", {

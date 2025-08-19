@@ -1,5 +1,5 @@
 import { Effect, Context, Layer, Stream, Option } from "effect";
-import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./GitHubClient";
+import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
 

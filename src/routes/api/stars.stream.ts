@@ -2,7 +2,7 @@ import { createServerFileRoute } from "@tanstack/react-start/server";
 import { auth } from "../../auth";
 import { getGitHubAccessToken } from "../../utils/session";
 import { Effect, pipe } from "effect";
-import { GitHubClient } from "../../services/GitHubClient";
+import { GitHubClient } from "../../services/github-client";
 
 export const ServerRoute = createServerFileRoute("/api/stars/stream")
   .methods({
