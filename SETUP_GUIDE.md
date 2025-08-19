@@ -30,8 +30,8 @@
    # GitHub OAuth
    GITHUB_CLIENT_ID=your_github_client_id_here
    GITHUB_CLIENT_SECRET=your_github_client_secret_here
-   
-   # App settings  
+
+   # App settings
    NODE_ENV=development
    BETTER_AUTH_SECRET=your_random_secret_key_here
    ```
@@ -40,13 +40,17 @@
    ```bash
    # On macOS/Linux
    openssl rand -base64 32
-   
+
    # Or use any random string generator
    ```
 
 ## 3. Database Setup
 
 The database is already set up and migrated. The SQLite file is located at `./edwin.db`.
+
+```bash
+pnpm dlx @better-auth/cli migrate
+```
 
 ## 4. Start Development
 

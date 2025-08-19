@@ -1,13 +1,23 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { createAuthClient } from "better-auth/client"
 
 export const Route = createFileRoute('/login')({
   component: LoginComponent,
 })
 
+const authClient =  createAuthClient()
+
+const signIn = async () => {
+    const data = await authClient.signIn.social({
+        provider: "github"
+    })
+    console.log(data)
+}
+
 function LoginComponent() {
   const handleGitHubLogin = async () => {
     // Redirect to GitHub OAuth via better-auth
-    window.location.href = '/api/auth/sign-in/github'
+    // window.location.href = '/api/auth/sign-in/github'
   }
 
   return (
@@ -23,7 +33,7 @@ function LoginComponent() {
         </div>
         <div>
           <button
-            onClick={handleGitHubLogin}
+            onClick={() => signIn()}
             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
             <svg
