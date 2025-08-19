@@ -2,16 +2,17 @@ import { Effect, Context, Layer, Stream } from "effect";
 import { StarIngestor } from "./StarIngestor";
 import type { Repo } from "../db/schema";
 
-export interface StreamService {
-  readonly streamStars: (userId: string, accessToken: string, lastEventId?: string) => Stream.Stream<Repo, Error, never>;
-}
-
-export const StreamService = Context.GenericTag<StreamService>("StreamService");
+export class StreamService extends Context.Tag("StreamService")<
+  StreamService,
+  {
+    readonly streamStars: (userId: string, accessToken: string, lastEventId?: string) => Stream.Stream<Repo, Error, never>;
+  }
+>() {}
 
 export const StreamServiceLive = Layer.effect(
   StreamService,
-  Effect.gen(function* (_) {
-    const starIngestor = yield* _(StarIngestor);
+  Effect.gen(function* () {
+    const starIngestor = yield* StarIngestor;
 
     const streamStars = (userId: string, accessToken: string, lastEventId?: string) => {
       const baseStream = starIngestor.ingestUserStars(userId, accessToken);

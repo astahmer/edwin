@@ -63,7 +63,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 }) {}
 ```
 
-### 3.2 Replace Effect.gen underscore pattern
+- [x] Phase 3.2: Remove underscore pattern from Effect.gen ✅ **COMPLETED**
 **Current state**: Using `yield* _(serviceCall)`
 **Actions needed**: 
 - Replace all `yield* _` with direct `yield*`
@@ -167,7 +167,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - [ ] Phase 2.1: Install Better Auth tables
 - [ ] Phase 2.2: Drizzle schema improvements
 - [ ] Phase 2.3: Database table naming convention
-- [ ] Phase 3.1: Replace Context.GenericTag with Effect.Service
+- [x] Phase 3.1: Replace Context.GenericTag with Effect.Service ✅ **COMPLETED**
 - [ ] Phase 3.2: Replace Effect.gen underscore pattern
 - [ ] Phase 3.3: Replace while loops with Effect Streams
 - [ ] Phase 4.1: Replace generic Error with TaggedError
@@ -175,7 +175,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - [ ] Phase 6.1: Batch database operations
 - [ ] Phase 6.2: Remove redundant interfaces
 - [ ] Phase 7.1: Install and configure Biome v2
-- [ ] Phase 7.2: Fix TypeScript compilation errors
+- [x] Phase 7.2: Fix TypeScript compilation errors ✅ **COMPLETED**
 
 ---
 

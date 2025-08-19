@@ -3,17 +3,18 @@ import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./GitHubC
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
 
-export interface StarIngestor {
-  readonly ingestUserStars: (userId: string, accessToken: string) => Stream.Stream<Repo, Error, never>;
-}
-
-export const StarIngestor = Context.GenericTag<StarIngestor>("StarIngestor");
+export class StarIngestor extends Context.Tag("StarIngestor")<
+  StarIngestor,
+  {
+    readonly ingestUserStars: (userId: string, accessToken: string) => Stream.Stream<Repo, Error, never>;
+  }
+>() {}
 
 export const StarIngestorLive = Layer.effect(
   StarIngestor,
-  Effect.gen(function* (_) {
-    const githubClient = yield* _(GitHubClient);
-    const db = yield* _(DatabaseService);
+  Effect.gen(function* () {
+    const githubClient = yield* GitHubClient;
+    const db = yield* DatabaseService;
 
     const transformGitHubRepoToRepo = (ghRepo: GitHubRepo): Repo => ({
       id: ghRepo.id,
@@ -32,11 +33,11 @@ export const StarIngestorLive = Layer.effect(
       Stream.unwrap(
         Effect.gen(function* (_) {
           // Check if user stars are stale (>1 minute)
-          const isStale = yield* _(db.isUserStarsStale(userId, 1));
+          const isStale = yield* db.isUserStarsStale(userId, 1);
           
           if (!isStale) {
             // Return existing stars from database
-            const existingStars = yield* _(db.getUserStars(userId));
+            const existingStars = yield* db.getUserStars(userId);
             return Stream.fromIterable(existingStars.map((star) => ({
               id: star.id,
               name: star.name,
@@ -56,7 +57,7 @@ export const StarIngestorLive = Layer.effect(
           let allStars: StarredGithubRepo[] = [];
           
           while (true) {
-            const stars = yield* _(githubClient.getUserStars(accessToken, page));
+            const stars = yield* githubClient.getUserStars(accessToken, page);
             if (stars.length === 0) break;
             
             allStars = [...allStars, ...stars];
@@ -72,24 +73,24 @@ export const StarIngestorLive = Layer.effect(
               Effect.gen(function* (_) {
                 const ghRepo = starredRepo.repo;
                 // Check if repo is stale (>24 hours) before fetching details
-                const isRepoStale = yield* _(db.isRepoStale(ghRepo.id, 24));
+                const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
                 
                 let repoData = ghRepo;
                 if (isRepoStale) {
                   // Fetch fresh repo details
-                  repoData = yield* _(githubClient.getRepoDetails(accessToken, ghRepo.full_name));
+                  repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
                 }
 
                 // Transform and upsert repo
                 const repo = transformGitHubRepoToRepo(repoData);
-                const upsertedRepo = yield* _(db.upsertRepo(repo));
+                const upsertedRepo = yield* db.upsertRepo(repo);
 
                 // Upsert user star relationship
-                yield* _(db.upsertUserStar({
+                yield* db.upsertUserStar({
                   userId,
                   repoId: ghRepo.id,
                   starredAt: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
-                }));
+                });
 
                 return upsertedRepo;
               })

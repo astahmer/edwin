@@ -10,13 +10,14 @@ export interface SyncResult {
   lastSyncAt: Date;
 }
 
-export interface DataSyncService {
-  readonly syncUserStars: (userId: string, accessToken: string) => Effect.Effect<SyncResult, Error>;
-  readonly getLastSyncTime: (userId: string) => Effect.Effect<Date | null, Error>;
-  readonly isRepoSynced: (userId: string, repoId: number) => Effect.Effect<boolean, Error>;
-}
-
-export const DataSyncService = Context.GenericTag<DataSyncService>("DataSyncService");
+export class DataSyncService extends Context.Tag("DataSyncService")<
+  DataSyncService,
+  {
+    readonly syncUserStars: (userId: string, accessToken: string) => Effect.Effect<SyncResult, Error>;
+    readonly getLastSyncTime: (userId: string) => Effect.Effect<Date | null, Error>;
+    readonly isRepoSynced: (userId: string, repoId: number) => Effect.Effect<boolean, Error>;
+  }
+>() {}
 
 const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string) => {
   const repo = starredRepo.repo;
@@ -44,21 +45,21 @@ const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string
 
 export const DataSyncServiceLive = Layer.effect(
   DataSyncService,
-  Effect.gen(function* (_) {
-    const db = yield* _(DatabaseService);
-    const githubClient = yield* _(GitHubClient);
+  Effect.gen(function* () {
+    const db = yield* DatabaseService;
+    const githubClient = yield* GitHubClient;
 
     return {
       syncUserStars: (userId: string, accessToken: string) =>
-        Effect.gen(function* (_) {
+        Effect.gen(function* () {
           console.log(`Starting sync for user ${userId}`);
           
           // Get all starred repos from GitHub
-          const starredRepos = yield* _(githubClient.getAllUserStars(accessToken));
+          const starredRepos = yield* githubClient.getAllUserStars(accessToken);
           console.log(`Fetched ${starredRepos.length} starred repos from GitHub`);
 
           // Get existing synced repos for this user
-          const existingStars = yield* _(db.getUserStars(userId));
+          const existingStars = yield* db.getUserStars(userId);
           const existingRepoIds = new Set(existingStars.map(star => star.repoId));
           
           let newRepos = 0;
@@ -67,15 +68,15 @@ export const DataSyncServiceLive = Layer.effect(
           for (const starredRepo of starredRepos) {
             const { repo, userStar } = transformStarredRepoToDb(starredRepo, userId);
             
-            if (existingRepoIds.has(repo.id)) {
+            if (repo.id && existingRepoIds.has(repo.id)) {
               // Update existing repo and user star
-              yield* _(db.upsertRepo(repo));
-              yield* _(db.upsertUserStar(userStar));
+              yield* db.upsertRepo(repo);
+              yield* db.upsertUserStar(userStar);
               updatedRepos++;
             } else {
               // Insert new repo and user star
-              yield* _(db.upsertRepo(repo));
-              yield* _(db.upsertUserStar(userStar));
+              yield* db.upsertRepo(repo);
+              yield* db.upsertUserStar(userStar);
               newRepos++;
             }
           }
@@ -91,8 +92,8 @@ export const DataSyncServiceLive = Layer.effect(
         }),
 
       getLastSyncTime: (userId: string) =>
-        Effect.gen(function* (_) {
-          const userStars = yield* _(db.getUserStars(userId));
+        Effect.gen(function* () {
+          const userStars = yield* db.getUserStars(userId);
           
           if (userStars.length === 0) {
             return null;
@@ -107,8 +108,8 @@ export const DataSyncServiceLive = Layer.effect(
         }),
 
       isRepoSynced: (userId: string, repoId: number) =>
-        Effect.gen(function* (_) {
-          const userStars = yield* _(db.getUserStars(userId));
+        Effect.gen(function* () {
+          const userStars = yield* db.getUserStars(userId);
           const isSync = userStars.some(star => star.repoId === repoId);
           return isSync;
         }),

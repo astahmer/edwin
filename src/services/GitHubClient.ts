@@ -119,14 +119,15 @@ export interface GitHubUser {
   login: string;
 }
 
-export interface GitHubClient {
-  readonly getUserStars: (accessToken: string, page?: number, perPage?: number) => Effect.Effect<StarredGithubRepo[], Error>;
-  readonly getAllUserStars: (accessToken: string) => Effect.Effect<StarredGithubRepo[], Error>;
-  readonly getRepoDetails: (accessToken: string, fullName: string) => Effect.Effect<GitHubRepo, Error>;
-  readonly getAuthenticatedUser: (accessToken: string) => Effect.Effect<GitHubUser, Error>;
-}
-
-export const GitHubClient = Context.GenericTag<GitHubClient>("GitHubClient");
+export class GitHubClient extends Context.Tag("GitHubClient")<
+  GitHubClient,
+  {
+    readonly getUserStars: (accessToken: string, page?: number, perPage?: number) => Effect.Effect<StarredGithubRepo[], Error>;
+    readonly getAllUserStars: (accessToken: string) => Effect.Effect<StarredGithubRepo[], Error>;
+    readonly getRepoDetails: (accessToken: string, fullName: string) => Effect.Effect<GitHubRepo, Error>;
+    readonly getAuthenticatedUser: (accessToken: string) => Effect.Effect<GitHubUser, Error>;
+  }
+>() {}
 
 const makeGitHubRequest = <T>(url: string, accessToken: string) =>
   Effect.tryPromise({
@@ -184,10 +185,10 @@ export const GitHubClientLive = Layer.succeed(GitHubClient, {
       let hasMore = true;
 
       while (hasMore) {
-        const repos = yield* _(makeGitHubRequest<StarredGithubRepo[]>(
+        const repos = yield* makeGitHubRequest<StarredGithubRepo[]>(
           `https://api.github.com/user/starred?page=${page}&per_page=100`,
           accessToken
-        ));
+        );
 
         allRepos.push(...repos);
         

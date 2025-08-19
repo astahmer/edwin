@@ -18,18 +18,19 @@ export const kysely = new Kysely<Database>({
   dialect,
 });
 
-export interface DatabaseService {
-  readonly db: Kysely<Database>;
-  readonly getUser: (id: string) => Effect.Effect<User | undefined, Error>;
-  readonly upsertUser: (user: NewUser) => Effect.Effect<User, Error>;
-  readonly upsertRepo: (repo: NewRepo) => Effect.Effect<Repo, Error>;
-  readonly upsertUserStar: (userStar: NewUserStar) => Effect.Effect<UserStar, Error>;
-  readonly getUserStars: (userId: string, limit?: number, offset?: number) => Effect.Effect<Array<Repo & UserStar>, Error>;
-  readonly isUserStarsStale: (userId: string, staleMins: number) => Effect.Effect<boolean, Error>;
-  readonly isRepoStale: (repoId: number, staleHours: number) => Effect.Effect<boolean, Error>;
-}
-
-export const DatabaseService = Context.GenericTag<DatabaseService>('DatabaseService');
+export class DatabaseService extends Context.Tag("DatabaseService")<
+  DatabaseService,
+  {
+    readonly db: Kysely<Database>;
+    readonly getUser: (id: string) => Effect.Effect<User | undefined, Error>;
+    readonly upsertUser: (user: NewUser) => Effect.Effect<User, Error>;
+    readonly upsertRepo: (repo: NewRepo) => Effect.Effect<Repo, Error>;
+    readonly upsertUserStar: (userStar: NewUserStar) => Effect.Effect<UserStar, Error>;
+    readonly getUserStars: (userId: string, limit?: number, offset?: number) => Effect.Effect<Array<Repo & UserStar>, Error>;
+    readonly isUserStarsStale: (userId: string, staleMins: number) => Effect.Effect<boolean, Error>;
+    readonly isRepoStale: (repoId: number, staleHours: number) => Effect.Effect<boolean, Error>;
+  }
+>() {}
 
 export const DatabaseLive = Layer.succeed(
   DatabaseService,
