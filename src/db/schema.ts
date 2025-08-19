@@ -1,5 +1,5 @@
-import * as sqlite from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import * as sqlite from "drizzle-orm/sqlite-core";
 
 // Main user table - compatible with Better Auth
 export const user = sqlite.sqliteTable("user", {
@@ -10,8 +10,14 @@ export const user = sqlite.sqliteTable("user", {
   image: sqlite.text(),
   login: sqlite.text().notNull(),
   accessToken: sqlite.text("access_token").notNull(),
-  createdAt: sqlite.integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-  updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  createdAt: sqlite
+    .integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: sqlite
+    .integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
   role: sqlite.text().notNull().default("user"),
   banned: sqlite.integer({ mode: "boolean" }).notNull().default(false),
   banReason: sqlite.text("ban_reason"),
@@ -27,7 +33,10 @@ export const userSession = sqlite.sqliteTable("user_session", {
   updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }).notNull(),
   ipAddress: sqlite.text("ip_address"),
   userAgent: sqlite.text("user_agent"),
-  userId: sqlite.text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: sqlite
+    .text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   impersonatedBy: sqlite.text("impersonated_by"),
 });
 
@@ -36,7 +45,10 @@ export const userAccount = sqlite.sqliteTable("user_account", {
   id: sqlite.text().primaryKey(),
   accountId: sqlite.text("account_id").notNull(),
   providerId: sqlite.text("provider_id").notNull(),
-  userId: sqlite.text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: sqlite
+    .text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   accessToken: sqlite.text("access_token"),
   refreshToken: sqlite.text("refresh_token"),
   idToken: sqlite.text("id_token"),
@@ -68,18 +80,37 @@ export const repo = sqlite.sqliteTable("repo", {
   stars: sqlite.integer().notNull().default(0),
   language: sqlite.text(),
   lastFetchedAt: sqlite.integer("last_fetched_at", { mode: "timestamp" }),
-  createdAt: sqlite.integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-  updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  createdAt: sqlite
+    .integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: sqlite
+    .integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
 });
 
-export const userStar = sqlite.sqliteTable("user_star", {
-  userId: sqlite.text("user_id").notNull().references(() => user.id),
-  repoId: sqlite.integer("repo_id").notNull().references(() => repo.id),
-  starredAt: sqlite.integer("starred_at", { mode: "timestamp" }).notNull(),
-  lastCheckedAt: sqlite.integer("last_checked_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-}, (t) => ({
-  pk: sqlite.primaryKey({ columns: [t.userId, t.repoId] }),
-}));
+export const userStar = sqlite.sqliteTable(
+  "user_star",
+  {
+    userId: sqlite
+      .text("user_id")
+      .notNull()
+      .references(() => user.id),
+    repoId: sqlite
+      .integer("repo_id")
+      .notNull()
+      .references(() => repo.id),
+    starredAt: sqlite.integer("starred_at", { mode: "timestamp" }).notNull(),
+    lastCheckedAt: sqlite
+      .integer("last_checked_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (t) => ({
+    pk: sqlite.primaryKey({ columns: [t.userId, t.repoId] }),
+  })
+);
 
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;

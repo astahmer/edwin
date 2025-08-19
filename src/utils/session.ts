@@ -1,7 +1,7 @@
-import { auth } from "../auth";
 import { redirect } from "@tanstack/react-router";
+import { auth } from "../auth";
 
- async function getSession(request: Request) {
+async function getSession(request: Request) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -9,7 +9,7 @@ import { redirect } from "@tanstack/react-router";
   return session;
 }
 
- async function requireAuth(request: Request) {
+async function requireAuth(request: Request) {
   const session = await getSession(request);
 
   if (!session) {
@@ -29,8 +29,8 @@ export async function getGitHubAccessToken(request: Request) {
       body: {
         providerId: "github",
         userId: session.user.id,
-      }
-    })
+      },
+    });
 
     // const account = stmt.get(session.user.id);
 

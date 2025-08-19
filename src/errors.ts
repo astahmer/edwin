@@ -54,6 +54,16 @@ export class DatabaseStaleCheckError extends Data.TaggedError("DatabaseStaleChec
 }> {}
 
 // Union types for easier error handling
-export type GitHubError = GitHubRateLimitError | GitHubAuthError | GitHubApiError | GitHubRequestError;
-export type DatabaseError = DatabaseGetUserError | DatabaseUpsertUserError | DatabaseUpsertRepoError | DatabaseUpsertUserStarError | DatabaseGetUserStarsError | DatabaseStaleCheckError;
+export type GitHubError =
+  | GitHubRateLimitError
+  | GitHubAuthError
+  | GitHubApiError
+  | GitHubRequestError;
+export type DatabaseError =
+  | DatabaseGetUserError
+  | DatabaseUpsertUserError
+  | DatabaseUpsertRepoError
+  | DatabaseUpsertUserStarError
+  | DatabaseGetUserStarsError
+  | DatabaseStaleCheckError;
 export type AppError = GitHubError | DatabaseError;

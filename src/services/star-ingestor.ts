@@ -1,7 +1,7 @@
-import { Effect, Context, Layer, Stream, Option } from "effect";
-import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
+import { Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
+import { GitHubClient, type GitHubRepo } from "./github-client";
 
 export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor", {
   effect: Effect.gen(function* () {
@@ -30,18 +30,20 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
           if (!isStale) {
             // Return existing stars from database
             const existingStars = yield* db.getUserStars(userId);
-            return Stream.fromIterable(existingStars.map((star) => ({
-              id: star.id,
-              name: star.name,
-              owner: star.owner,
-              fullName: star.fullName,
-              description: star.description,
-              stars: star.stars,
-              language: star.language,
-              lastFetchedAt: star.lastFetchedAt,
-              createdAt: star.createdAt,
-              updatedAt: star.updatedAt,
-            })));
+            return Stream.fromIterable(
+              existingStars.map((star) => ({
+                id: star.id,
+                name: star.name,
+                owner: star.owner,
+                fullName: star.fullName,
+                description: star.description,
+                stars: star.stars,
+                language: star.language,
+                lastFetchedAt: star.lastFetchedAt,
+                createdAt: star.createdAt,
+                updatedAt: star.updatedAt,
+              }))
+            );
           }
 
           // Fetch all pages of starred repos
@@ -49,17 +51,15 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
           const starsPaginated = Stream.paginateEffect(1, (page) =>
             Effect.gen(function* () {
               const stars = yield* githubClient.getUserStars(accessToken, page);
-              
+
               // If no more stars or we've reached the limit, stop pagination
               if (stars.length === 0 || page > 400) {
                 return [stars, Option.none()];
               }
-              
+
               return [stars, Option.some(page + 1)];
             })
-          ).pipe(
-            Stream.flatMap(Stream.fromIterable)
-          );
+          ).pipe(Stream.flatMap(Stream.fromIterable));
 
           // Create a stream that processes repos one by one
           return starsPaginated.pipe(
@@ -94,5 +94,5 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
       );
 
     return { ingestUserStars };
-  })
+  }),
 }) {}

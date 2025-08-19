@@ -1,7 +1,7 @@
-import { Effect, Context, Layer } from "effect";
+import { Effect } from "effect";
 import { DatabaseService } from "../db/kysely";
-import { GitHubClient, StarredGithubRepo } from "./github-client";
 import type { NewRepo, NewUserStar } from "../db/schema";
+import { GitHubClient, type StarredGithubRepo } from "./github-client";
 
 export interface SyncResult {
   totalFetched: number;
@@ -16,28 +16,28 @@ export class DataSyncService extends Effect.Service<DataSyncService>()("DataSync
     const githubClient = yield* GitHubClient;
 
     const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string) => {
-  const repo = starredRepo.repo;
-  return {
-    repo: {
-      id: repo.id, // Keep as number
-      name: repo.name,
-      owner: repo.owner.login,
-      fullName: repo.full_name,
-      description: repo.description || null,
-      stars: repo.stargazers_count,
-      language: repo.language || null,
-      lastFetchedAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as NewRepo,
-    userStar: {
-      userId,
-      repoId: repo.id, // Keep as number
-      starredAt: new Date(starredRepo.starred_at),
-      lastCheckedAt: new Date(),
-    } as NewUserStar
-  };
-};
+      const repo = starredRepo.repo;
+      return {
+        repo: {
+          id: repo.id, // Keep as number
+          name: repo.name,
+          owner: repo.owner.login,
+          fullName: repo.full_name,
+          description: repo.description || null,
+          stars: repo.stargazers_count,
+          language: repo.language || null,
+          lastFetchedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as NewRepo,
+        userStar: {
+          userId,
+          repoId: repo.id, // Keep as number
+          starredAt: new Date(starredRepo.starred_at),
+          lastCheckedAt: new Date(),
+        } as NewUserStar,
+      };
+    };
 
     return {
       syncUserStars: (userId: string, accessToken: string) =>
@@ -50,7 +50,7 @@ export class DataSyncService extends Effect.Service<DataSyncService>()("DataSync
 
           // Get existing synced repos for this user
           const existingStars = yield* db.getUserStars(userId);
-          const existingRepoIds = new Set(existingStars.map(star => star.repoId));
+          const existingRepoIds = new Set(existingStars.map((star) => star.repoId));
 
           let newRepos = 0;
           let updatedRepos = 0;
@@ -90,9 +90,10 @@ export class DataSyncService extends Effect.Service<DataSyncService>()("DataSync
           }
 
           // Find the most recent lastCheckedAt time
-          const mostRecent = userStars.reduce((latest, star) =>
-            star.lastCheckedAt > latest ? star.lastCheckedAt : latest
-          , userStars[0].lastCheckedAt);
+          const mostRecent = userStars.reduce(
+            (latest, star) => (star.lastCheckedAt > latest ? star.lastCheckedAt : latest),
+            userStars[0].lastCheckedAt
+          );
 
           return mostRecent;
         }),
@@ -100,9 +101,9 @@ export class DataSyncService extends Effect.Service<DataSyncService>()("DataSync
       isRepoSynced: (userId: string, repoId: number) =>
         Effect.gen(function* () {
           const userStars = yield* db.getUserStars(userId);
-          const isSync = userStars.some(star => star.repoId === repoId);
+          const isSync = userStars.some((star) => star.repoId === repoId);
           return isSync;
         }),
     };
-  })
+  }),
 }) {}

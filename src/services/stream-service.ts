@@ -1,6 +1,5 @@
-import { Effect, Context, Layer, Stream } from "effect";
+import { Effect, Stream } from "effect";
 import { StarIngestor } from "./star-ingestor";
-import type { Repo } from "../db/schema";
 
 export class StreamService extends Effect.Service<StreamService>()("StreamService", {
   effect: Effect.gen(function* () {
@@ -21,5 +20,5 @@ export class StreamService extends Effect.Service<StreamService>()("StreamServic
         );
       },
     };
-  })
+  }),
 }) {}
