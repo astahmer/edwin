@@ -1,58 +1,30 @@
 import { createServerFileRoute } from "@tanstack/react-start/server";
-
-// Mock GitHub starred repos for now
-const mockRepos = [
-  {
-    id: "1",
-    name: "react",
-    owner: "facebook",
-    fullName: "facebook/react",
-    description: "A declarative, efficient, and flexible JavaScript library for building user interfaces.",
-    stars: 227000,
-    language: "JavaScript",
-    lastFetchedAt: new Date().toISOString(),
-  },
-  {
-    id: "2", 
-    name: "tanstack-router",
-    owner: "TanStack",
-    fullName: "TanStack/router",
-    description: "🤖 Fully typesafe Router for React (and friends) w/ built-in caching, 1st class search-params APIs, client-side cache integration and isomorphic rendering.",
-    stars: 8900,
-    language: "TypeScript",
-    lastFetchedAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    name: "effect",
-    owner: "Effect-TS", 
-    fullName: "Effect-TS/effect",
-    description: "A fully-fledged functional effect system for TypeScript with a rich standard library",
-    stars: 7800,
-    language: "TypeScript",
-    lastFetchedAt: new Date().toISOString(),
-  },
-];
+import { auth } from "../../auth";
+import { getGitHubAccessToken } from "../../utils/session";
+import { Effect, pipe } from "effect";
+import { GitHubClient, GitHubClientLive } from "../../services/GitHubClient";
 
 export const ServerRoute = createServerFileRoute("/api/stars/stream")
   .methods({
     GET: async ({ request }) => {
       try {
-        // Get session from better-auth (skip for now to test streaming)
-        // const session = await auth.api.getSession({
-        //   headers: request.headers,
-        // });
+        // Get session from better-auth
+        const session = await auth.api.getSession({
+          headers: request.headers,
+        });
         
-        // if (!session?.user) {
-        //   return new Response("Unauthorized", { status: 401 });
-        // }
+        if (!session?.user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
 
-        const userId = "mock-user-id"; // session?.user?.id || "mock-user-id";
+        const userId = session.user.id;
         const lastEventId = request.headers.get("Last-Event-ID");
+        
+        // Get GitHub access token
+        const accessToken = await getGitHubAccessToken(request);
 
         // Create SSE stream
         const encoder = new TextEncoder();
-        let repoIndex = 0;
         
         const readable = new ReadableStream({
           start(controller) {
@@ -64,38 +36,67 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream")
             })}\n\n`;
             controller.enqueue(encoder.encode(initMessage));
 
-            // Stream repos with delay to simulate real fetching
-            const streamRepos = () => {
-              if (repoIndex < mockRepos.length) {
-                const repo = mockRepos[repoIndex];
+            // Fetch and stream repos from GitHub API using Effect
+            const streamRepos = async () => {
+              try {
+                const program = pipe(
+                  GitHubClient,
+                  Effect.flatMap(client => client.getUserStars(accessToken, 1)),
+                  Effect.provide(GitHubClientLive)
+                );
+
+                const repos = await Effect.runPromise(program);
                 
-                // Skip repos until we reach lastEventId (for resumability)
-                if (lastEventId && repo.id !== lastEventId) {
-                  repoIndex++;
-                  setTimeout(streamRepos, 100);
-                  return;
-                }
-                
-                // If we found the lastEventId, skip it and start from next
-                if (lastEventId && repo.id === lastEventId) {
-                  repoIndex++;
-                  setTimeout(streamRepos, 100);
-                  return;
+                for (let i = 0; i < repos.length; i++) {
+                  const repo = repos[i];
+                  
+                  // Transform GitHub repo to our format
+                  const formattedRepo = {
+                    id: repo.id,
+                    name: repo.name,
+                    owner: repo.owner.login,
+                    fullName: repo.full_name,
+                    description: repo.description || undefined,
+                    stars: repo.stargazers_count,
+                    language: repo.language || undefined,
+                    lastFetchedAt: new Date().toISOString(),
+                  };
+
+                  // Skip repos until we reach lastEventId (for resumability)
+                  if (lastEventId && repo.id !== lastEventId && i === 0) {
+                    const lastIndex = repos.findIndex(r => r.id === lastEventId);
+                    if (lastIndex !== -1) {
+                      i = lastIndex; // Start from the repo after lastEventId
+                      continue;
+                    }
+                  }
+
+                  const message = `id: ${repo.id}\nevent: repo\ndata: ${JSON.stringify(formattedRepo)}\n\n`;
+                  controller.enqueue(encoder.encode(message));
+                  
+                  // Add delay between repos to simulate real-time streaming
+                  if (i < repos.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                  }
                 }
 
-                const message = `id: ${repo.id}\nevent: repo\ndata: ${JSON.stringify(repo)}\n\n`;
-                controller.enqueue(encoder.encode(message));
-                
-                repoIndex++;
-                setTimeout(streamRepos, 1000); // 1 second delay between repos
-              } else {
                 // Send completion message
                 const completeMessage = `id: complete\nevent: complete\ndata: ${JSON.stringify({ 
                   message: "All starred repositories streamed", 
-                  total: mockRepos.length,
+                  total: repos.length,
                   timestamp: Date.now()
                 })}\n\n`;
                 controller.enqueue(encoder.encode(completeMessage));
+                controller.close();
+
+              } catch (error) {
+                console.error("Failed to fetch repos from GitHub:", error);
+                const errorMessage = `id: error\nevent: error\ndata: ${JSON.stringify({ 
+                  message: "Failed to fetch repositories from GitHub",
+                  error: error instanceof Error ? error.message : "Unknown error",
+                  timestamp: Date.now()
+                })}\n\n`;
+                controller.enqueue(encoder.encode(errorMessage));
                 controller.close();
               }
             };

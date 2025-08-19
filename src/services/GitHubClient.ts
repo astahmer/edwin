@@ -37,9 +37,24 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
         },
       });
 
+      // Check for rate limiting
+      const remaining = response.headers.get('X-RateLimit-Remaining');
+      const resetTime = response.headers.get('X-RateLimit-Reset');
+      
+      if (response.status === 403 && remaining === '0') {
+        const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : new Date(Date.now() + 60000);
+        const waitTime = Math.max(0, resetDate.getTime() - Date.now());
+        throw new Error(`Rate limit exceeded. Retry after ${Math.ceil(waitTime / 1000)} seconds`);
+      }
+
       if (!response.ok) {
         const error = await response.text();
         throw new Error(`GitHub API error (${response.status}): ${error}`);
+      }
+
+      // Log rate limit info for debugging
+      if (remaining) {
+        console.log(`GitHub API calls remaining: ${remaining}`);
       }
 
       return await response.json();

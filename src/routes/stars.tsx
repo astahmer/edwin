@@ -1,14 +1,26 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/stars')({
   component: StarsComponent,
   beforeLoad: async ({ location }) => {
-    // Check if user is authenticated
-    // For now, we'll skip this check and implement it later
-    // if (!session) {
-    //   throw redirect({ to: '/login', search: { redirect: location.href } })
-    // }
+    // Check authentication by making a request to our session endpoint
+    try {
+      const response = await fetch('/api/auth/session');
+      if (!response.ok) {
+        throw new Error('Not authenticated');
+      }
+      const session = await response.json();
+      if (!session?.user) {
+        throw new Error('No user session');
+      }
+    } catch (error) {
+      // Redirect to login if not authenticated
+      throw redirect({ 
+        to: '/login', 
+        search: { redirect: location.href } 
+      });
+    }
   },
 })
 
