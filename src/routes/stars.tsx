@@ -1,24 +1,25 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { authClient } from '~/auth.client';
 
 export const Route = createFileRoute('/stars')({
   component: StarsComponent,
   beforeLoad: async ({ location }) => {
     // Check authentication by making a request to our session endpoint
     try {
-      const response = await fetch('/api/auth/session');
-      if (!response.ok) {
+      const response = await authClient.getSession();
+      if (!response.data) {
         throw new Error('Not authenticated');
       }
-      const session = await response.json();
+      const session = response.data;
       if (!session?.user) {
         throw new Error('No user session');
       }
     } catch (error) {
       // Redirect to login if not authenticated
-      throw redirect({ 
-        to: '/login', 
-        search: { redirect: location.href } 
+      throw redirect({
+        to: '/login',
+        search: { redirect: location.href }
       });
     }
   },
@@ -76,9 +77,26 @@ function StarsComponent() {
           eventSource?.close()
         })
 
+        eventSource.addEventListener('error', (event: MessageEvent) => {
+          try {
+            const errorData = JSON.parse(event.data)
+            console.error('API error:', errorData)
+            setError(`GitHub API Error: ${errorData.message}`)
+            if (errorData.message.includes('Rate limit')) {
+              setError('GitHub API rate limit exceeded. Please try again later.')
+            }
+          } catch (e) {
+            console.error('Stream error:', event)
+            setError('Failed to fetch repositories from GitHub')
+          }
+          setConnectionStatus('error')
+          setLoading(false)
+          eventSource?.close()
+        })
+
         eventSource.onerror = (event) => {
-          console.error('SSE error:', event)
-          setError('Connection to stream failed')
+          console.error('SSE connection error:', event)
+          setError('Connection to stream failed. Please check your network connection.')
           setConnectionStatus('error')
           setLoading(false)
           eventSource?.close()
