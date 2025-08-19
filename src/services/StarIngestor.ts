@@ -1,5 +1,5 @@
 import { Effect, Context, Layer, Stream } from "effect";
-import { GitHubClient, type GitHubRepo } from "./GitHubClient";
+import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./GitHubClient";
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
 
@@ -53,7 +53,7 @@ export const StarIngestorLive = Layer.effect(
 
           // Fetch all pages of starred repos
           let page = 1;
-          let allStars: GitHubRepo[] = [];
+          let allStars: StarredGithubRepo[] = [];
           
           while (true) {
             const stars = yield* _(githubClient.getUserStars(accessToken, page));
@@ -68,8 +68,9 @@ export const StarIngestorLive = Layer.effect(
 
           // Create a stream that processes repos one by one
           return Stream.fromIterable(allStars).pipe(
-            Stream.mapEffect((ghRepo) =>
+            Stream.mapEffect((starredRepo) =>
               Effect.gen(function* (_) {
+                const ghRepo = starredRepo.repo;
                 // Check if repo is stale (>24 hours) before fetching details
                 const isRepoStale = yield* _(db.isRepoStale(ghRepo.id, 24));
                 
@@ -87,7 +88,7 @@ export const StarIngestorLive = Layer.effect(
                 yield* _(db.upsertUserStar({
                   userId,
                   repoId: ghRepo.id,
-                  starredAt: ghRepo.starred_at ? new Date(ghRepo.starred_at) : new Date(),
+                  starredAt: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
                 }));
 
                 return upsertedRepo;

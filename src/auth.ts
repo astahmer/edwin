@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth";
 import Database from "better-sqlite3";
+import { EnvConfig } from "./env.config.js";
 
 export const auth = betterAuth({
-  database: new Database("./edwin.db"),
+  database: new Database(EnvConfig.DATABASE_URL),
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,

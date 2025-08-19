@@ -2,15 +2,16 @@ import { Kysely, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
 import { Effect, Layer, Context } from 'effect';
 import type { User, Repo, UserStar, NewUser, NewRepo, NewUserStar } from './schema';
+import { EnvConfig } from '../env.config.js';
 
 export interface Database {
-  users: User;
-  repos: Repo;
-  user_stars: UserStar;
+  user: User;
+  repo: Repo;
+  user_star: UserStar;
 }
 
 const dialect = new SqliteDialect({
-  database: new Database('./edwin.db'),
+  database: new Database(EnvConfig.DATABASE_URL),
 });
 
 export const kysely = new Kysely<Database>({
@@ -25,7 +26,7 @@ export interface DatabaseService {
   readonly upsertUserStar: (userStar: NewUserStar) => Effect.Effect<UserStar, Error>;
   readonly getUserStars: (userId: string, limit?: number, offset?: number) => Effect.Effect<Array<Repo & UserStar>, Error>;
   readonly isUserStarsStale: (userId: string, staleMins: number) => Effect.Effect<boolean, Error>;
-  readonly isRepoStale: (repoId: string, staleHours: number) => Effect.Effect<boolean, Error>;
+  readonly isRepoStale: (repoId: number, staleHours: number) => Effect.Effect<boolean, Error>;
 }
 
 export const DatabaseService = Context.GenericTag<DatabaseService>('DatabaseService');
@@ -36,7 +37,7 @@ export const DatabaseLive = Layer.succeed(
     db: kysely,
     getUser: (id: string) =>
       Effect.tryPromise({
-        try: () => kysely.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst(),
+        try: () => kysely.selectFrom('user').selectAll().where('id', '=', id).executeTakeFirst(),
         catch: (error) => new Error(`Failed to get user: ${error}`),
       }),
     upsertUser: (user: NewUser) =>
@@ -44,12 +45,15 @@ export const DatabaseLive = Layer.succeed(
         try: async () => {
           const userValues = {
             ...user,
+            emailVerified: user.emailVerified ?? false,
+            role: user.role ?? "user",
+            banned: user.banned ?? false,
             createdAt: user.createdAt || new Date(),
             updatedAt: user.updatedAt || new Date(),
           };
           
           await kysely
-            .insertInto('users')
+            .insertInto('user')
             .values(userValues)
             .onConflict((oc) => 
               oc.column('id').doUpdateSet({
@@ -59,7 +63,7 @@ export const DatabaseLive = Layer.succeed(
               })
             )
             .execute();
-          return await kysely.selectFrom('users').selectAll().where('id', '=', user.id).executeTakeFirstOrThrow();
+          return await kysely.selectFrom('user').selectAll().where('id', '=', user.id).executeTakeFirstOrThrow();
         },
         catch: (error) => new Error(`Failed to upsert user: ${error}`),
       }),
@@ -68,6 +72,7 @@ export const DatabaseLive = Layer.succeed(
         try: async () => {
           const repoValues = {
             ...repo,
+            id: repo.id!, // Ensure id is present
             createdAt: repo.createdAt || new Date(),
             updatedAt: repo.updatedAt || new Date(),
             lastFetchedAt: repo.lastFetchedAt || new Date(),
@@ -75,7 +80,7 @@ export const DatabaseLive = Layer.succeed(
           };
           
           await kysely
-            .insertInto('repos')
+            .insertInto('repo')
             .values(repoValues)
             .onConflict((oc) =>
               oc.column('id').doUpdateSet({
@@ -90,7 +95,7 @@ export const DatabaseLive = Layer.succeed(
               })
             )
             .execute();
-          return await kysely.selectFrom('repos').selectAll().where('id', '=', repo.id).executeTakeFirstOrThrow();
+          return await kysely.selectFrom('repo').selectAll().where('id', '=', repoValues.id).executeTakeFirstOrThrow();
         },
         catch: (error) => new Error(`Failed to upsert repo: ${error}`),
       }),
@@ -103,7 +108,7 @@ export const DatabaseLive = Layer.succeed(
           };
           
           await kysely
-            .insertInto('user_stars')
+            .insertInto('user_star')
             .values(userStarValues)
             .onConflict((oc) =>
               oc.columns(['userId', 'repoId']).doUpdateSet({
@@ -112,7 +117,7 @@ export const DatabaseLive = Layer.succeed(
             )
             .execute();
           return await kysely
-            .selectFrom('user_stars')
+            .selectFrom('user_star')
             .selectAll()
             .where('userId', '=', userStar.userId)
             .where('repoId', '=', userStar.repoId)
@@ -124,11 +129,11 @@ export const DatabaseLive = Layer.succeed(
       Effect.tryPromise({
         try: () => 
           kysely
-            .selectFrom('user_stars')
-            .innerJoin('repos', 'repos.id', 'user_stars.repoId')
+            .selectFrom('user_star')
+            .innerJoin('repo', 'repo.id', 'user_star.repoId')
             .selectAll()
-            .where('user_stars.userId', '=', userId)
-            .orderBy('user_stars.starredAt', 'desc')
+            .where('user_star.userId', '=', userId)
+            .orderBy('user_star.starredAt', 'desc')
             .limit(limit)
             .offset(offset)
             .execute(),
@@ -138,7 +143,7 @@ export const DatabaseLive = Layer.succeed(
       Effect.tryPromise({
         try: async () => {
           const result = await kysely
-            .selectFrom('user_stars')
+            .selectFrom('user_star')
             .select('lastCheckedAt')
             .where('userId', '=', userId)
             .orderBy('lastCheckedAt', 'desc')
@@ -151,11 +156,11 @@ export const DatabaseLive = Layer.succeed(
         },
         catch: (error) => new Error(`Failed to check if user stars are stale: ${error}`),
       }),
-    isRepoStale: (repoId: string, staleHours: number) =>
+    isRepoStale: (repoId: number, staleHours: number) =>
       Effect.tryPromise({
         try: async () => {
           const result = await kysely
-            .selectFrom('repos')
+            .selectFrom('repo')
             .select('lastFetchedAt')
             .where('id', '=', repoId)
             .executeTakeFirst();

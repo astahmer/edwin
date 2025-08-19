@@ -13,7 +13,7 @@ export interface SyncResult {
 export interface DataSyncService {
   readonly syncUserStars: (userId: string, accessToken: string) => Effect.Effect<SyncResult, Error>;
   readonly getLastSyncTime: (userId: string) => Effect.Effect<Date | null, Error>;
-  readonly isRepoSynced: (userId: string, repoId: string) => Effect.Effect<boolean, Error>;
+  readonly isRepoSynced: (userId: string, repoId: number) => Effect.Effect<boolean, Error>;
 }
 
 export const DataSyncService = Context.GenericTag<DataSyncService>("DataSyncService");
@@ -22,7 +22,7 @@ const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string
   const repo = starredRepo.repo;
   return {
     repo: {
-      id: repo.id.toString(),
+      id: repo.id, // Keep as number
       name: repo.name,
       owner: repo.owner.login,
       fullName: repo.full_name,
@@ -35,7 +35,7 @@ const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string
     } as NewRepo,
     userStar: {
       userId,
-      repoId: repo.id.toString(),
+      repoId: repo.id, // Keep as number
       starredAt: new Date(starredRepo.starred_at),
       lastCheckedAt: new Date(),
     } as NewUserStar
@@ -106,7 +106,7 @@ export const DataSyncServiceLive = Layer.effect(
           return mostRecent;
         }),
 
-      isRepoSynced: (userId: string, repoId: string) =>
+      isRepoSynced: (userId: string, repoId: number) =>
         Effect.gen(function* (_) {
           const userStars = yield* _(db.getUserStars(userId));
           const isSync = userStars.some(star => star.repoId === repoId);

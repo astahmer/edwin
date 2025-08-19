@@ -22,7 +22,7 @@ export const StreamServiceLive = Layer.effect(
       
       // If lastEventId is provided, skip repos until we reach that point
       return baseStream.pipe(
-        Stream.dropWhile((repo) => repo.id !== lastEventId),
+        Stream.dropWhile((repo) => repo.id !== Number(lastEventId)),
         Stream.drop(1) // Skip the lastEventId repo itself
       );
     };
