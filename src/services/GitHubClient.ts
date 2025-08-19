@@ -1,4 +1,5 @@
-import { Effect, Context, Layer } from "effect";
+import { Effect, Context, Layer, Stream, Option } from "effect";
+import { GitHubRateLimitError, GitHubAuthError, GitHubApiError, GitHubRequestError } from "../errors";
 
 export interface StarredGithubRepo {
   starred_at: string
@@ -128,26 +129,25 @@ export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient",
       ),
 
     getAllUserStars: (accessToken: string) =>
-      Effect.gen(function* () {
-        const allRepos: StarredGithubRepo[] = [];
-        let page = 1;
-        let hasMore = true;
-
-        while (hasMore) {
+      Stream.paginateEffect(1, (page) =>
+        Effect.gen(function* () {
           const repos = yield* makeGitHubRequest<StarredGithubRepo[]>(
             `https://api.github.com/user/starred?page=${page}&per_page=100`,
             accessToken
           );
 
-          allRepos.push(...repos);
-
           // If we got fewer than 100 repos, we've reached the end
-          hasMore = repos.length === 100;
-          page++;
-        }
+          if (repos.length < 100) {
+            return [repos, Option.none()];
+          }
 
-        return allRepos;
-      }),
+          return [repos, Option.some(page + 1)];
+        })
+      ).pipe(
+        Stream.flatMap(Stream.fromIterable),
+        Stream.runCollect,
+        Effect.map((chunk) => Array.from(chunk))
+      ),
 
     getRepoDetails: (accessToken: string, fullName: string) =>
       makeGitHubRequest<GitHubRepo>(
@@ -181,7 +181,10 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
       if (response.status === 403 && remaining === '0') {
         const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : new Date(Date.now() + 60000);
         const waitTime = Math.max(0, resetDate.getTime() - Date.now());
-        throw new Error(`Rate limit exceeded. Retry after ${Math.ceil(waitTime / 1000)} seconds`);
+        throw new GitHubRateLimitError({
+          retryAfter: Math.ceil(waitTime / 1000),
+          message: `Rate limit exceeded. Retry after ${Math.ceil(waitTime / 1000)} seconds`
+        });
       }
 
       if (!response.ok) {
@@ -189,10 +192,15 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
 
         // Handle token expiration/invalidity
         if (response.status === 401) {
-          throw new Error(`GitHub token expired or invalid. Please re-authenticate.`);
+          throw new GitHubAuthError({
+            message: "GitHub token expired or invalid. Please re-authenticate."
+          });
         }
 
-        throw new Error(`GitHub API error (${response.status}): ${error}`);
+        throw new GitHubApiError({
+          status: response.status,
+          message: `GitHub API error (${response.status}): ${error}`
+        });
       }
 
       // Log rate limit info for debugging
@@ -202,5 +210,8 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
 
       return await response.json();
     },
-    catch: (error) => new Error(`GitHub API request failed: ${String(error)}`),
+    catch: (error) => new GitHubRequestError({
+      cause: error,
+      message: `GitHub API request failed: ${String(error)}`
+    }),
   });

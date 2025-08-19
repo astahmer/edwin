@@ -169,8 +169,8 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - [ ] Phase 2.3: Database table naming convention
 - [x] Phase 3.1: Replace Context.GenericTag with Effect.Service ✅ **COMPLETED**
 - [x] Phase 3.2: Replace Effect.gen underscore pattern ✅ **COMPLETED**
-- [ ] Phase 3.3: Replace while loops with Effect Streams
-- [ ] Phase 4.1: Replace generic Error with TaggedError
+- [x] Phase 3.3: Replace while loops with Effect Streams ✅ **COMPLETED**
+- [x] Phase 4.1: Replace generic Error with TaggedError ✅ **COMPLETED**
 - [ ] Phase 5.1: Rename PascalCase files to kebab-case
 - [ ] Phase 6.1: Batch database operations
 - [ ] Phase 6.2: Remove redundant interfaces

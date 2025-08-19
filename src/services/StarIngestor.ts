@@ -1,4 +1,4 @@
-import { Effect, Context, Layer, Stream } from "effect";
+import { Effect, Context, Layer, Stream, Option } from "effect";
 import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./GitHubClient";
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
@@ -23,7 +23,7 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
 
     const ingestUserStars = (userId: string, accessToken: string) =>
       Stream.unwrap(
-        Effect.gen(function* (_) {
+        Effect.gen(function* () {
           // Check if user stars are stale (>1 minute)
           const isStale = yield* db.isUserStarsStale(userId, 1);
 
@@ -45,24 +45,26 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
           }
 
           // Fetch all pages of starred repos
-          let page = 1;
-          let allStars: StarredGithubRepo[] = [];
-
-          while (true) {
-            const stars = yield* githubClient.getUserStars(accessToken, page);
-            if (stars.length === 0) break;
-
-            allStars = [...allStars, ...stars];
-            page++;
-
-            // Prevent infinite loops - GitHub API typically returns max 400 pages
-            if (page > 400) break;
-          }
+          // Use Stream pagination instead of while loop
+          const starsPaginated = Stream.paginateEffect(1, (page) =>
+            Effect.gen(function* () {
+              const stars = yield* githubClient.getUserStars(accessToken, page);
+              
+              // If no more stars or we've reached the limit, stop pagination
+              if (stars.length === 0 || page > 400) {
+                return [stars, Option.none()];
+              }
+              
+              return [stars, Option.some(page + 1)];
+            })
+          ).pipe(
+            Stream.flatMap(Stream.fromIterable)
+          );
 
           // Create a stream that processes repos one by one
-          return Stream.fromIterable(allStars).pipe(
+          return starsPaginated.pipe(
             Stream.mapEffect((starredRepo) =>
-              Effect.gen(function* (_) {
+              Effect.gen(function* () {
                 const ghRepo = starredRepo.repo;
                 // Check if repo is stale (>24 hours) before fetching details
                 const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);

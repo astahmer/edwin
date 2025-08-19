@@ -3,6 +3,14 @@ import Database from 'better-sqlite3';
 import { Effect, Layer, Context } from 'effect';
 import type { User, Repo, UserStar, NewUser, NewRepo, NewUserStar } from './schema';
 import { EnvConfig } from '../env.config.js';
+import { 
+  DatabaseGetUserError, 
+  DatabaseUpsertUserError, 
+  DatabaseUpsertRepoError, 
+  DatabaseUpsertUserStarError, 
+  DatabaseGetUserStarsError, 
+  DatabaseStaleCheckError 
+} from '../errors';
 
 export interface Database {
   user: User;
@@ -25,7 +33,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
     getUser: (id: string) =>
       Effect.tryPromise({
         try: () => kysely.selectFrom('user').selectAll().where('id', '=', id).executeTakeFirst(),
-        catch: (error) => new Error(`Failed to get user: ${error}`),
+        catch: (error) => new DatabaseGetUserError({ userId: id, cause: error }),
       }),
     upsertUser: (user: NewUser) =>
       Effect.tryPromise({
@@ -52,7 +60,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             .execute();
           return await kysely.selectFrom('user').selectAll().where('id', '=', user.id).executeTakeFirstOrThrow();
         },
-        catch: (error) => new Error(`Failed to upsert user: ${error}`),
+        catch: (error) => new DatabaseUpsertUserError({ userId: user.id, cause: error }),
       }),
     upsertRepo: (repo: NewRepo) =>
       Effect.tryPromise({
@@ -84,7 +92,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             .execute();
           return await kysely.selectFrom('repo').selectAll().where('id', '=', repoValues.id).executeTakeFirstOrThrow();
         },
-        catch: (error) => new Error(`Failed to upsert repo: ${error}`),
+        catch: (error) => new DatabaseUpsertRepoError({ repoId: repo.id || 0, cause: error }),
       }),
     upsertUserStar: (userStar: NewUserStar) =>
       Effect.tryPromise({
@@ -110,7 +118,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             .where('repoId', '=', userStar.repoId)
             .executeTakeFirstOrThrow();
         },
-        catch: (error) => new Error(`Failed to upsert user star: ${error}`),
+        catch: (error) => new DatabaseUpsertUserStarError({ 
+          userId: userStar.userId, 
+          repoId: userStar.repoId, 
+          cause: error 
+        }),
       }),
     getUserStars: (userId: string, limit = 100, offset = 0) =>
       Effect.tryPromise({
@@ -124,7 +136,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             .limit(limit)
             .offset(offset)
             .execute(),
-        catch: (error) => new Error(`Failed to get user stars: ${error}`),
+        catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
       }),
     isUserStarsStale: (userId: string, staleMins: number) =>
       Effect.tryPromise({
@@ -141,7 +153,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           const staleTime = new Date(Date.now() - (staleMins * 60 * 1000));
           return result.lastCheckedAt < staleTime;
         },
-        catch: (error) => new Error(`Failed to check if user stars are stale: ${error}`),
+        catch: (error) => new DatabaseStaleCheckError({ 
+          type: "user", 
+          id: userId, 
+          cause: error 
+        }),
       }),
     isRepoStale: (repoId: number, staleHours: number) =>
       Effect.tryPromise({
@@ -157,7 +173,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           const staleTime = new Date(Date.now() - (staleHours * 60 * 60 * 1000));
           return result.lastFetchedAt < staleTime;
         },
-        catch: (error) => new Error(`Failed to check if repo is stale: ${error}`),
+        catch: (error) => new DatabaseStaleCheckError({ 
+          type: "repo", 
+          id: repoId, 
+          cause: error 
+        }),
       }),
   }
   }),
