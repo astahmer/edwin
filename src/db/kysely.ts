@@ -332,6 +332,21 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .execute(),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
+
+      getMostRecentStarredAt: (userId: string) =>
+        Effect.tryPromise({
+          try: () =>
+            kysely
+              .selectFrom("user_star")
+              .select("starredAt")
+              .where("userId", "=", userId)
+              .orderBy("starredAt", "desc")
+              .limit(1)
+              .executeTakeFirst()
+              .then((result) => result?.starredAt || null),
+          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
+        }),
+
       isUserStarsStale: (userId: string, staleMins: number) =>
         Effect.tryPromise({
           try: async () => {

@@ -126,6 +126,44 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - Fix missing properties in type definitions
 - Ensure all types align with schema definitions
 
+## Phase 9: Streaming & State Management Refactoring (Priority: Critical)
+
+### 9.1 SSE Stream Refactoring
+**Current issue**: `api/stars.stream.ts` uses `getAllUserStars` instead of StreamService
+**Actions needed**:
+- Refactor to use StreamService for pagination streams
+- Propagate real-time pagination to client browser via SSE
+- Maintain streaming architecture end-to-end
+
+### 9.2 Incremental Data Fetching
+**Current issue**: `ingestUserStars` fetches ALL stars when stale instead of only new ones
+**Actions needed**:
+- Implement incremental fetching based on database state
+- Only fetch stars not present in database
+- Optimize for users with large star counts
+
+### 9.3 Native Effect SSE Integration
+**Current issue**: Manual SSE implementation instead of Effect-native approach
+**Actions needed**:
+- Research Effect's native SSE capabilities
+- Replace manual implementation with Effect streams if available
+- Maintain error handling and rate limiting
+
+### 9.4 React SSE State Management
+**Current issue**: Manual EventSource handling with useState
+**Actions needed**:
+- Move SSE logic to custom hook for reusability
+- Explore Effect-React integrations for SSE
+- Clean up component state management
+
+### 9.5 URL State Management
+**Current issue**: Many useState calls instead of URL-based state
+**Actions needed**:
+- Move search, filter, sort state to TanStack Router search params
+- Enable shareable URLs with current filter state
+- Reduce component-level state management
+- Improve browser back/forward navigation
+
 ## Phase 8: Advanced User Features (Priority: Medium)
 
 ### 8.1 Search & Filter functionality ✅ **COMPLETED**
@@ -193,6 +231,11 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - [x] Phase 7.1: Install and configure Biome v2 ✅ **COMPLETED**
 - [x] Phase 7.2: Fix TypeScript compilation errors ✅ **COMPLETED**
 - [x] Phase 8.1: Search & Filter functionality ✅ **COMPLETED**
+- [ ] Phase 9.1: SSE Stream Refactoring
+- [ ] Phase 9.2: Incremental Data Fetching
+- [ ] Phase 9.3: Native Effect SSE Integration
+- [ ] Phase 9.4: React SSE State Management
+- [ ] Phase 9.5: URL State Management
 
 ---
 

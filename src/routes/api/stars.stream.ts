@@ -1,6 +1,8 @@
 import { createServerFileRoute } from "@tanstack/react-start/server";
-import { Effect, pipe } from "effect";
+import { Effect, Stream } from "effect";
 import { auth } from "../../auth";
+import { StarSyncService } from "../../services/star-sync-service";
+import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
 import { getGitHubAccessToken } from "../../utils/session";
 
@@ -35,63 +37,52 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
           })}\n\n`;
           controller.enqueue(encoder.encode(initMessage));
 
-          // Fetch and stream repos from GitHub API using Effect
+          // Stream repos using StarSyncService with cursor-based pagination
           const streamRepos = async () => {
             try {
-              const program = pipe(
-                GitHubClient,
-                Effect.flatMap((client) => client.getAllUserStars(accessToken)),
+              const program = Effect.gen(function* () {
+                const service = yield* StarSyncService;
+                const repoStream = service.streamUserStars(userId, accessToken, lastEventId || undefined);
+
+                yield* Stream.runForEach(repoStream, (repo) =>
+                  Effect.sync(() => {
+                    // Transform repo to our streaming format
+                    const formattedRepo = {
+                      id: repo.id,
+                      name: repo.name,
+                      owner: repo.owner,
+                      fullName: repo.fullName,
+                      description: repo.description || undefined,
+                      stars: repo.stars,
+                      language: repo.language || undefined,
+                      lastFetchedAt: repo.lastFetchedAt?.toISOString(),
+                      createdAt: repo.createdAt?.toISOString(),
+                      updatedAt: repo.updatedAt?.toISOString(),
+                    };
+
+                    const message = `id: ${repo.id}\nevent: repo\ndata: ${JSON.stringify(formattedRepo)}\n\n`;
+                    controller.enqueue(encoder.encode(message));
+                  })
+                );
+              }).pipe(
+                Effect.provide(StarSyncService.Default),
+                Effect.provide(DatabaseService.Default),
                 Effect.provide(GitHubClient.Default)
               );
 
-              const repos = await Effect.runPromise(program);
-
-              for (let i = 0; i < repos.length; i++) {
-                const { repo, starred_at } = repos[i];
-
-                // Transform GitHub repo to our format
-                const formattedRepo = {
-                  starred_at,
-                  id: repo.id,
-                  name: repo.name,
-                  owner: repo.owner.login,
-                  fullName: repo.full_name,
-                  description: repo.description || undefined,
-                  stars: repo.stargazers_count,
-                  language: repo.language || undefined,
-                  lastFetchedAt: new Date().toISOString(),
-                };
-
-                // Skip repos until we reach lastEventId (for resumability)
-                if (lastEventId && String(repo.id) !== lastEventId && i === 0) {
-                  const lastIndex = repos.findIndex((r) => String(r.repo.id) === lastEventId);
-                  if (lastIndex !== -1) {
-                    i = lastIndex; // Start from the repo after lastEventId
-                    continue;
-                  }
-                }
-
-                const message = `id: ${repo.id}\nevent: repo\ndata: ${JSON.stringify(formattedRepo)}\n\n`;
-                controller.enqueue(encoder.encode(message));
-
-                // Add delay between repos to simulate real-time streaming
-                // if (i < repos.length - 1) {
-                //   await new Promise(resolve => setTimeout(resolve, 500));
-                // }
-              }
+              await Effect.runPromise(program);
 
               // Send completion message
               const completeMessage = `id: complete\nevent: complete\ndata: ${JSON.stringify({
                 message: "All starred repositories streamed",
-                total: repos.length,
                 timestamp: Date.now(),
               })}\n\n`;
               controller.enqueue(encoder.encode(completeMessage));
               controller.close();
             } catch (error) {
-              console.error("Failed to fetch repos from GitHub:", error);
+              console.error("Failed to stream repos:", error);
               const errorMessage = `id: error\nevent: error\ndata: ${JSON.stringify({
-                message: "Failed to fetch repositories from GitHub",
+                message: "Failed to fetch repositories",
                 error: error instanceof Error ? error.message : "Unknown error",
                 timestamp: Date.now(),
               })}\n\n`;
