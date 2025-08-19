@@ -41,6 +41,11 @@ function StarsComponent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'completed' | 'error'>('connecting')
+  const [syncProgress, setSyncProgress] = useState<{
+    current: number;
+    total: number;
+    phase: 'fetching' | 'syncing' | 'complete';
+  } | null>(null)
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -64,6 +69,16 @@ function StarsComponent() {
           setLoading(false)
         })
 
+        eventSource.addEventListener('progress', (event) => {
+          try {
+            const progressData = JSON.parse(event.data)
+            setSyncProgress(progressData)
+            console.log('Sync progress:', progressData)
+          } catch (e) {
+            console.error('Failed to parse progress data:', e)
+          }
+        })
+
         eventSource.addEventListener('repo', (event) => {
           const repo = JSON.parse(event.data) as Repo
           console.log('Received repo:', repo.name)
@@ -81,9 +96,17 @@ function StarsComponent() {
           try {
             const errorData = JSON.parse(event.data)
             console.error('API error:', errorData)
-            setError(`GitHub API Error: ${errorData.message}`)
-            if (errorData.message.includes('Rate limit')) {
+            
+            if (errorData.message.includes('token expired') || errorData.message.includes('invalid')) {
+              setError('Your GitHub authentication has expired. Please log in again.')
+              // Redirect to login after a delay
+              setTimeout(() => {
+                window.location.href = '/login'
+              }, 3000)
+            } else if (errorData.message.includes('Rate limit')) {
               setError('GitHub API rate limit exceeded. Please try again later.')
+            } else {
+              setError(`GitHub API Error: ${errorData.message}`)
             }
           } catch (e) {
             console.error('Stream error:', event)
@@ -127,6 +150,23 @@ function StarsComponent() {
             {connectionStatus === 'connecting' && 'Connecting to stream...'}
             {connectionStatus === 'connected' && 'Loading your starred repositories...'}
           </p>
+          {syncProgress && (
+            <div className="mt-4 w-full max-w-md mx-auto">
+              <div className="mb-2 text-sm text-gray-600">
+                {syncProgress.phase === 'fetching' && `Fetching repositories... ${syncProgress.current}/${syncProgress.total || '?'}`}
+                {syncProgress.phase === 'syncing' && `Syncing repositories... ${syncProgress.current}/${syncProgress.total}`}
+                {syncProgress.phase === 'complete' && `Sync complete! ${syncProgress.total} repositories processed`}
+              </div>
+              {syncProgress.total > 0 && (
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     )

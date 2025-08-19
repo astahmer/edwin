@@ -41,7 +41,7 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream")
               try {
                 const program = pipe(
                   GitHubClient,
-                  Effect.flatMap(client => client.getUserStars(accessToken, 1)),
+                  Effect.flatMap(client => client.getAllUserStars(accessToken)),
                   Effect.provide(GitHubClientLive)
                 );
 
