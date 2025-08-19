@@ -3,16 +3,8 @@ import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./GitHubC
 import { DatabaseService } from "../db/kysely";
 import type { Repo } from "../db/schema";
 
-export class StarIngestor extends Context.Tag("StarIngestor")<
-  StarIngestor,
-  {
-    readonly ingestUserStars: (userId: string, accessToken: string) => Stream.Stream<Repo, Error, never>;
-  }
->() {}
-
-export const StarIngestorLive = Layer.effect(
-  StarIngestor,
-  Effect.gen(function* () {
+export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor", {
+  effect: Effect.gen(function* () {
     const githubClient = yield* GitHubClient;
     const db = yield* DatabaseService;
 
@@ -34,7 +26,7 @@ export const StarIngestorLive = Layer.effect(
         Effect.gen(function* (_) {
           // Check if user stars are stale (>1 minute)
           const isStale = yield* db.isUserStarsStale(userId, 1);
-          
+
           if (!isStale) {
             // Return existing stars from database
             const existingStars = yield* db.getUserStars(userId);
@@ -55,14 +47,14 @@ export const StarIngestorLive = Layer.effect(
           // Fetch all pages of starred repos
           let page = 1;
           let allStars: StarredGithubRepo[] = [];
-          
+
           while (true) {
             const stars = yield* githubClient.getUserStars(accessToken, page);
             if (stars.length === 0) break;
-            
+
             allStars = [...allStars, ...stars];
             page++;
-            
+
             // Prevent infinite loops - GitHub API typically returns max 400 pages
             if (page > 400) break;
           }
@@ -74,7 +66,7 @@ export const StarIngestorLive = Layer.effect(
                 const ghRepo = starredRepo.repo;
                 // Check if repo is stale (>24 hours) before fetching details
                 const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
-                
+
                 let repoData = ghRepo;
                 if (isRepoStale) {
                   // Fetch fresh repo details
@@ -101,4 +93,4 @@ export const StarIngestorLive = Layer.effect(
 
     return { ingestUserStars };
   })
-);
+}) {}

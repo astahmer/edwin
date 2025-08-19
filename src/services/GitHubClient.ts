@@ -119,15 +119,49 @@ export interface GitHubUser {
   login: string;
 }
 
-export class GitHubClient extends Context.Tag("GitHubClient")<
-  GitHubClient,
-  {
-    readonly getUserStars: (accessToken: string, page?: number, perPage?: number) => Effect.Effect<StarredGithubRepo[], Error>;
-    readonly getAllUserStars: (accessToken: string) => Effect.Effect<StarredGithubRepo[], Error>;
-    readonly getRepoDetails: (accessToken: string, fullName: string) => Effect.Effect<GitHubRepo, Error>;
-    readonly getAuthenticatedUser: (accessToken: string) => Effect.Effect<GitHubUser, Error>;
-  }
->() {}
+export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient", {
+  effect: Effect.succeed({
+    getUserStars: (accessToken: string, page = 1, perPage = 100) =>
+      makeGitHubRequest<StarredGithubRepo[]>(
+        `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
+        accessToken
+      ),
+
+    getAllUserStars: (accessToken: string) =>
+      Effect.gen(function* () {
+        const allRepos: StarredGithubRepo[] = [];
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+          const repos = yield* makeGitHubRequest<StarredGithubRepo[]>(
+            `https://api.github.com/user/starred?page=${page}&per_page=100`,
+            accessToken
+          );
+
+          allRepos.push(...repos);
+
+          // If we got fewer than 100 repos, we've reached the end
+          hasMore = repos.length === 100;
+          page++;
+        }
+
+        return allRepos;
+      }),
+
+    getRepoDetails: (accessToken: string, fullName: string) =>
+      makeGitHubRequest<GitHubRepo>(
+        `https://api.github.com/repos/${fullName}`,
+        accessToken
+      ),
+
+    getAuthenticatedUser: (accessToken: string) =>
+      makeGitHubRequest<GitHubUser>(
+        "https://api.github.com/user",
+        accessToken
+      ),
+  })
+}) {}
 
 const makeGitHubRequest = <T>(url: string, accessToken: string) =>
   Effect.tryPromise({
@@ -152,12 +186,12 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
 
       if (!response.ok) {
         const error = await response.text();
-        
+
         // Handle token expiration/invalidity
         if (response.status === 401) {
           throw new Error(`GitHub token expired or invalid. Please re-authenticate.`);
         }
-        
+
         throw new Error(`GitHub API error (${response.status}): ${error}`);
       }
 
@@ -170,45 +204,3 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
     },
     catch: (error) => new Error(`GitHub API request failed: ${String(error)}`),
   });
-
-export const GitHubClientLive = Layer.succeed(GitHubClient, {
-  getUserStars: (accessToken: string, page = 1, perPage = 100) =>
-    makeGitHubRequest<StarredGithubRepo[]>(
-      `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
-      accessToken
-    ),
-
-  getAllUserStars: (accessToken: string) =>
-    Effect.gen(function* (_) {
-      const allRepos: StarredGithubRepo[] = [];
-      let page = 1;
-      let hasMore = true;
-
-      while (hasMore) {
-        const repos = yield* makeGitHubRequest<StarredGithubRepo[]>(
-          `https://api.github.com/user/starred?page=${page}&per_page=100`,
-          accessToken
-        );
-
-        allRepos.push(...repos);
-        
-        // If we got fewer than 100 repos, we've reached the end
-        hasMore = repos.length === 100;
-        page++;
-      }
-
-      return allRepos;
-    }),
-
-  getRepoDetails: (accessToken: string, fullName: string) =>
-    makeGitHubRequest<GitHubRepo>(
-      `https://api.github.com/repos/${fullName}`,
-      accessToken
-    ),
-
-  getAuthenticatedUser: (accessToken: string) =>
-    makeGitHubRequest<GitHubUser>(
-      "https://api.github.com/user",
-      accessToken
-    ),
-});

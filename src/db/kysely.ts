@@ -18,23 +18,9 @@ export const kysely = new Kysely<Database>({
   dialect,
 });
 
-export class DatabaseService extends Context.Tag("DatabaseService")<
-  DatabaseService,
-  {
-    readonly db: Kysely<Database>;
-    readonly getUser: (id: string) => Effect.Effect<User | undefined, Error>;
-    readonly upsertUser: (user: NewUser) => Effect.Effect<User, Error>;
-    readonly upsertRepo: (repo: NewRepo) => Effect.Effect<Repo, Error>;
-    readonly upsertUserStar: (userStar: NewUserStar) => Effect.Effect<UserStar, Error>;
-    readonly getUserStars: (userId: string, limit?: number, offset?: number) => Effect.Effect<Array<Repo & UserStar>, Error>;
-    readonly isUserStarsStale: (userId: string, staleMins: number) => Effect.Effect<boolean, Error>;
-    readonly isRepoStale: (repoId: number, staleHours: number) => Effect.Effect<boolean, Error>;
-  }
->() {}
-
-export const DatabaseLive = Layer.succeed(
-  DatabaseService,
-  {
+export class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService", {
+  effect: Effect.gen(function* () {
+    return {
     db: kysely,
     getUser: (id: string) =>
       Effect.tryPromise({
@@ -52,11 +38,11 @@ export const DatabaseLive = Layer.succeed(
             createdAt: user.createdAt || new Date(),
             updatedAt: user.updatedAt || new Date(),
           };
-          
+
           await kysely
             .insertInto('user')
             .values(userValues)
-            .onConflict((oc) => 
+            .onConflict((oc) =>
               oc.column('id').doUpdateSet({
                 login: userValues.login,
                 accessToken: userValues.accessToken,
@@ -79,7 +65,7 @@ export const DatabaseLive = Layer.succeed(
             lastFetchedAt: repo.lastFetchedAt || new Date(),
             stars: repo.stars ?? 0,
           };
-          
+
           await kysely
             .insertInto('repo')
             .values(repoValues)
@@ -107,7 +93,7 @@ export const DatabaseLive = Layer.succeed(
             ...userStar,
             lastCheckedAt: userStar.lastCheckedAt || new Date(),
           };
-          
+
           await kysely
             .insertInto('user_star')
             .values(userStarValues)
@@ -128,7 +114,7 @@ export const DatabaseLive = Layer.succeed(
       }),
     getUserStars: (userId: string, limit = 100, offset = 0) =>
       Effect.tryPromise({
-        try: () => 
+        try: () =>
           kysely
             .selectFrom('user_star')
             .innerJoin('repo', 'repo.id', 'user_star.repoId')
@@ -149,9 +135,9 @@ export const DatabaseLive = Layer.succeed(
             .where('userId', '=', userId)
             .orderBy('lastCheckedAt', 'desc')
             .executeTakeFirst();
-          
+
           if (!result) return true;
-          
+
           const staleTime = new Date(Date.now() - (staleMins * 60 * 1000));
           return result.lastCheckedAt < staleTime;
         },
@@ -165,13 +151,14 @@ export const DatabaseLive = Layer.succeed(
             .select('lastFetchedAt')
             .where('id', '=', repoId)
             .executeTakeFirst();
-          
+
           if (!result || !result.lastFetchedAt) return true;
-          
+
           const staleTime = new Date(Date.now() - (staleHours * 60 * 60 * 1000));
           return result.lastFetchedAt < staleTime;
         },
         catch: (error) => new Error(`Failed to check if repo is stale: ${error}`),
       }),
   }
-);
+  }),
+}) {}

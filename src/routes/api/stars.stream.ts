@@ -2,7 +2,7 @@ import { createServerFileRoute } from "@tanstack/react-start/server";
 import { auth } from "../../auth";
 import { getGitHubAccessToken } from "../../utils/session";
 import { Effect, pipe } from "effect";
-import { GitHubClient, GitHubClientLive } from "../../services/GitHubClient";
+import { GitHubClient } from "../../services/GitHubClient";
 
 export const ServerRoute = createServerFileRoute("/api/stars/stream")
   .methods({
@@ -42,7 +42,7 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream")
                 const program = pipe(
                   GitHubClient,
                   Effect.flatMap(client => client.getAllUserStars(accessToken)),
-                  Effect.provide(GitHubClientLive)
+                  Effect.provide(GitHubClient.Default)
                 );
 
                 const repos = await Effect.runPromise(program);

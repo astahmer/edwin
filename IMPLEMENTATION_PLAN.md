@@ -65,7 +65,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 
 - [x] Phase 3.2: Remove underscore pattern from Effect.gen ✅ **COMPLETED**
 **Current state**: Using `yield* _(serviceCall)`
-**Actions needed**: 
+**Actions needed**:
 - Replace all `yield* _` with direct `yield*`
 - Update all Effect.gen functions throughout codebase
 
@@ -129,7 +129,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 ## Implementation Order
 
 1. **Phase 1**: Environment setup (quick wins)
-2. **Phase 2**: Database schema (foundation for everything else)  
+2. **Phase 2**: Database schema (foundation for everything else)
 3. **Phase 3**: Effect.js modernization (major refactor)
 4. **Phase 4**: Error handling (quality improvement)
 5. **Phase 7.2**: Fix TypeScript errors (blocking issues)
@@ -139,7 +139,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 
 ## Risk Assessment
 
-**High Risk**: 
+**High Risk**:
 - Database schema changes (potential data loss)
 - Service pattern changes (major API changes)
 
@@ -168,7 +168,7 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 - [ ] Phase 2.2: Drizzle schema improvements
 - [ ] Phase 2.3: Database table naming convention
 - [x] Phase 3.1: Replace Context.GenericTag with Effect.Service ✅ **COMPLETED**
-- [ ] Phase 3.2: Replace Effect.gen underscore pattern
+- [x] Phase 3.2: Replace Effect.gen underscore pattern ✅ **COMPLETED**
 - [ ] Phase 3.3: Replace while loops with Effect Streams
 - [ ] Phase 4.1: Replace generic Error with TaggedError
 - [ ] Phase 5.1: Rename PascalCase files to kebab-case
