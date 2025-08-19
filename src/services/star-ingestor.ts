@@ -61,34 +61,49 @@ export class StarIngestor extends Effect.Service<StarIngestor>()("StarIngestor",
             })
           ).pipe(Stream.flatMap(Stream.fromIterable));
 
-          // Create a stream that processes repos one by one
+          // Create a stream that processes repos in batches for efficiency
           return starsPaginated.pipe(
-            Stream.mapEffect((starredRepo) =>
+            // Group into chunks for batch processing
+            Stream.groupedWithin(50, "1 second"),
+            Stream.mapEffect((starredReposBatch) =>
               Effect.gen(function* () {
-                const ghRepo = starredRepo.repo;
-                // Check if repo is stale (>24 hours) before fetching details
-                const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
+                const reposToUpsert = [];
+                const userStarsToUpsert = [];
 
-                let repoData = ghRepo;
-                if (isRepoStale) {
-                  // Fetch fresh repo details
-                  repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
+                // Process each repo in the batch
+                for (const starredRepo of starredReposBatch) {
+                  const ghRepo = starredRepo.repo;
+                  
+                  // Check if repo is stale (>24 hours) before fetching details
+                  const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
+
+                  let repoData = ghRepo;
+                  if (isRepoStale) {
+                    // Fetch fresh repo details
+                    repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
+                  }
+
+                  // Transform repo data
+                  const repo = transformGitHubRepoToRepo(repoData);
+                  reposToUpsert.push(repo);
+
+                  // Prepare user star data
+                  userStarsToUpsert.push({
+                    userId,
+                    repoId: ghRepo.id,
+                    starredAt: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
+                  });
                 }
 
-                // Transform and upsert repo
-                const repo = transformGitHubRepoToRepo(repoData);
-                const upsertedRepo = yield* db.upsertRepo(repo);
+                // Perform batch operations
+                const upsertedRepos = yield* db.batchUpsertRepos(reposToUpsert);
+                yield* db.batchUpsertUserStars(userStarsToUpsert);
 
-                // Upsert user star relationship
-                yield* db.upsertUserStar({
-                  userId,
-                  repoId: ghRepo.id,
-                  starredAt: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
-                });
-
-                return upsertedRepo;
+                return upsertedRepos;
               })
-            )
+            ),
+            // Flatten the batched results back to individual repos
+            Stream.flatMap((repos) => Stream.fromIterable(repos))
           );
         })
       );

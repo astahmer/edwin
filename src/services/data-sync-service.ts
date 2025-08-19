@@ -52,24 +52,28 @@ export class DataSyncService extends Effect.Service<DataSyncService>()("DataSync
           const existingStars = yield* db.getUserStars(userId);
           const existingRepoIds = new Set(existingStars.map((star) => star.repoId));
 
+          // Prepare batch data
+          const reposToUpsert: NewRepo[] = [];
+          const userStarsToUpsert: NewUserStar[] = [];
           let newRepos = 0;
           let updatedRepos = 0;
 
           for (const starredRepo of starredRepos) {
             const { repo, userStar } = transformStarredRepoToDb(starredRepo, userId);
 
+            reposToUpsert.push(repo);
+            userStarsToUpsert.push(userStar);
+
             if (repo.id && existingRepoIds.has(repo.id)) {
-              // Update existing repo and user star
-              yield* db.upsertRepo(repo);
-              yield* db.upsertUserStar(userStar);
               updatedRepos++;
             } else {
-              // Insert new repo and user star
-              yield* db.upsertRepo(repo);
-              yield* db.upsertUserStar(userStar);
               newRepos++;
             }
           }
+
+          // Perform batch operations
+          yield* db.batchUpsertRepos(reposToUpsert);
+          yield* db.batchUpsertUserStars(userStarsToUpsert);
 
           console.log(`Sync complete: ${newRepos} new, ${updatedRepos} updated`);
 

@@ -133,6 +133,191 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               cause: error,
             }),
         }),
+      batchUpsertRepos: (repos: NewRepo[]) =>
+        Effect.tryPromise({
+          try: async () => {
+            if (repos.length === 0) return [];
+
+            const repoValues = repos.map((repo) => ({
+              ...repo,
+              id: repo.id ?? Date.now(), // Ensure id is present as number
+              createdAt: repo.createdAt || new Date(),
+              updatedAt: repo.updatedAt || new Date(),
+              lastFetchedAt: repo.lastFetchedAt || new Date(),
+              stars: repo.stars ?? 0,
+            }));
+
+            // Use transaction for batch operation
+            return await kysely.transaction().execute(async (trx) => {
+              const results = [];
+              for (const repoValue of repoValues) {
+                await trx
+                  .insertInto("repo")
+                  .values(repoValue)
+                  .onConflict((oc) =>
+                    oc.column("id").doUpdateSet({
+                      name: repoValue.name,
+                      owner: repoValue.owner,
+                      fullName: repoValue.fullName,
+                      description: repoValue.description,
+                      stars: repoValue.stars,
+                      language: repoValue.language,
+                      lastFetchedAt: new Date(),
+                      updatedAt: new Date(),
+                    })
+                  )
+                  .execute();
+
+                const result = await trx
+                  .selectFrom("repo")
+                  .selectAll()
+                  .where("id", "=", repoValue.id)
+                  .executeTakeFirstOrThrow();
+                results.push(result);
+              }
+              return results;
+            });
+          },
+          catch: (error) => new DatabaseUpsertRepoError({ repoId: 0, cause: error }),
+        }),
+      batchUpsertUserStars: (userStars: NewUserStar[]) =>
+        Effect.tryPromise({
+          try: async () => {
+            if (userStars.length === 0) return [];
+
+            const userStarValues = userStars.map((userStar) => ({
+              ...userStar,
+              lastCheckedAt: userStar.lastCheckedAt || new Date(),
+            }));
+
+            // Use transaction for batch operation
+            return await kysely.transaction().execute(async (trx) => {
+              const results = [];
+              for (const userStarValue of userStarValues) {
+                await trx
+                  .insertInto("user_star")
+                  .values(userStarValue)
+                  .onConflict((oc) =>
+                    oc.columns(["userId", "repoId"]).doUpdateSet({
+                      lastCheckedAt: new Date(),
+                    })
+                  )
+                  .execute();
+
+                const result = await trx
+                  .selectFrom("user_star")
+                  .selectAll()
+                  .where("userId", "=", userStarValue.userId)
+                  .where("repoId", "=", userStarValue.repoId)
+                  .executeTakeFirstOrThrow();
+                results.push(result);
+              }
+              return results;
+            });
+          },
+          catch: (error) =>
+            new DatabaseUpsertUserStarError({
+              userId: "batch",
+              repoId: 0,
+              cause: error,
+            }),
+        }),
+        searchUserStars: (
+        userId: string,
+        searchQuery?: string,
+        language?: string,
+        sortBy: "stars" | "name" | "date" = "date",
+        sortOrder: "asc" | "desc" = "desc",
+        limit = 100,
+        offset = 0
+      ) =>
+        Effect.tryPromise({
+          try: () => {
+            let query = kysely
+              .selectFrom("user_star")
+              .innerJoin("repo", "repo.id", "user_star.repoId")
+              .selectAll()
+              .where("user_star.userId", "=", userId);
+
+            // Apply search filter
+            if (searchQuery?.trim()) {
+              const search = `%${searchQuery.trim()}%`;
+              query = query.where((eb) =>
+                eb.or([
+                  eb("repo.name", "like", search),
+                  eb("repo.fullName", "like", search),
+                  eb("repo.description", "like", search),
+                  eb("repo.owner", "like", search),
+                ])
+              );
+            }            // Apply language filter
+            if (language && language !== "all") {
+              query = query.where("repo.language", "=", language);
+            }
+
+            // Apply sorting
+            switch (sortBy) {
+              case "stars":
+                query = query.orderBy("repo.stars", sortOrder);
+                break;
+              case "name":
+                query = query.orderBy("repo.name", sortOrder);
+                break;
+              case "date":
+              default:
+                query = query.orderBy("user_star.starredAt", sortOrder);
+                break;
+            }
+
+            return query.limit(limit).offset(offset).execute();
+          },
+          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
+        }),
+      getUserStarsLanguages: (userId: string) =>
+        Effect.tryPromise({
+          try: () =>
+            kysely
+              .selectFrom("user_star")
+              .innerJoin("repo", "repo.id", "user_star.repoId")
+              .select("repo.language")
+              .where("user_star.userId", "=", userId)
+              .where("repo.language", "is not", null)
+              .groupBy("repo.language")
+              .orderBy("repo.language", "asc")
+              .execute(),
+          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
+        }),
+      getUserStarsCount: (userId: string, searchQuery?: string, language?: string) =>
+        Effect.tryPromise({
+          try: () => {
+            let query = kysely
+              .selectFrom("user_star")
+              .innerJoin("repo", "repo.id", "user_star.repoId")
+              .select((eb) => eb.fn.count("user_star.userId").as("count"))
+              .where("user_star.userId", "=", userId);
+
+            // Apply search filter
+            if (searchQuery?.trim()) {
+              const search = `%${searchQuery.trim()}%`;
+              query = query.where((eb) =>
+                eb.or([
+                  eb("repo.name", "like", search),
+                  eb("repo.fullName", "like", search),
+                  eb("repo.description", "like", search),
+                  eb("repo.owner", "like", search),
+                ])
+              );
+            }
+
+            // Apply language filter
+            if (language && language !== "all") {
+              query = query.where("repo.language", "=", language);
+            }
+
+            return query.executeTakeFirstOrThrow();
+          },
+          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
+        }),
       getUserStars: (userId: string, limit = 100, offset = 0) =>
         Effect.tryPromise({
           try: () =>

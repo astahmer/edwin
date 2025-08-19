@@ -49,6 +49,64 @@ function StarsComponent() {
     phase: "fetching" | "syncing" | "complete";
   } | null>(null);
 
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("all");
+  const [sortBy, setSortBy] = useState<"stars" | "name" | "date">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
+  const [filteredRepos, setFilteredRepos] = useState<Repo[]>([]);
+
+  // Filter repos based on search and filter criteria
+  useEffect(() => {
+    let filtered = repos;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (repo) =>
+          repo.name.toLowerCase().includes(query) ||
+          repo.fullName.toLowerCase().includes(query) ||
+          repo.owner.toLowerCase().includes(query) ||
+          repo.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply language filter
+    if (selectedLanguage !== "all") {
+      filtered = filtered.filter((repo) => repo.language === selectedLanguage);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case "stars":
+          comparison = a.stars - b.stars;
+          break;
+        case "name":
+          comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+          break;
+        case "date":
+        default:
+          comparison = new Date(a.lastFetchedAt).getTime() - new Date(b.lastFetchedAt).getTime();
+          break;
+      }
+      return sortOrder === "desc" ? -comparison : comparison;
+    });
+
+    setFilteredRepos(filtered);
+  }, [repos, searchQuery, selectedLanguage, sortBy, sortOrder]);
+
+  // Update available languages when repos change
+  useEffect(() => {
+    const languages = Array.from(
+      new Set(repos.map((repo) => repo.language).filter((lang): lang is string => Boolean(lang)))
+    ).sort();
+    setAvailableLanguages(languages);
+  }, [repos]);
+
   useEffect(() => {
     let eventSource: EventSource | null = null;
 
@@ -195,33 +253,144 @@ function StarsComponent() {
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Starred Repositories</h1>
 
-          {repos.length === 0 ? (
-            <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+          {/* Search and Filter Controls */}
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Search Input */}
+              <div className="md:col-span-2">
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                  Search repositories
+                </label>
+                <input
+                  type="text"
+                  id="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name, owner, or description..."
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                No starred repositories yet
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Start by starring some repositories on GitHub!
-              </p>
+              </div>
+
+              {/* Language Filter */}
+              <div>
+                <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+                  Language
+                </label>
+                <select
+                  id="language"
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="all">All Languages</option>
+                  {availableLanguages.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {lang}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Options */}
+              <div>
+                <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+                  Sort by
+                </label>
+                <div className="flex space-x-2">
+                  <select
+                    id="sort"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as "stars" | "name" | "date")}
+                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="date">Date</option>
+                    <option value="stars">Stars</option>
+                    <option value="name">Name</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    className="px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {sortOrder === "asc" ? "↑" : "↓"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Results Summary */}
+            <div className="mt-4 text-sm text-gray-600">
+              Showing {filteredRepos.length} of {repos.length} repositories
+              {searchQuery && ` matching "${searchQuery}"`}
+              {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
+            </div>
+          </div>
+
+          {filteredRepos.length === 0 ? (
+            <div className="text-center py-12">
+              {repos.length === 0 ? (
+                // No repos at all
+                <>
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                    />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No starred repositories yet
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Start by starring some repositories on GitHub!
+                  </p>
+                </>
+              ) : (
+                // No repos matching filters
+                <>
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No results found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Try adjusting your search or filter criteria
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedLanguage("all");
+                    }}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Clear filters
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {repos.map((repo) => (
+              {filteredRepos.map((repo) => (
                 <div key={repo.id} className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flex items-center justify-between">
