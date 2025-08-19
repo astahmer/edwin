@@ -3,10 +3,10 @@ import { auth } from "../../auth";
 
 export const ServerRoute = createServerFileRoute("/api/auth/$")
   .methods({
-    GET: async ({ params, request }) => {
+    GET: async ({ request }) => {
       return auth.handler(request);
     },
-    POST: async ({ params, request }) => {
+    POST: async ({ request }) => {
       return auth.handler(request);
     },
   });
