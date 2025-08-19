@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/stars')({
@@ -27,11 +27,65 @@ function StarsComponent() {
   const [repos, setRepos] = useState<Repo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'completed' | 'error'>('connecting')
 
   useEffect(() => {
-    // For now, just show a placeholder
-    // Later we'll implement SSE connection to /api/stars/stream
-    setLoading(false)
+    let eventSource: EventSource | null = null;
+
+    const connectToStream = () => {
+      try {
+        setLoading(true)
+        setError(null)
+        setConnectionStatus('connecting')
+
+        // Connect to SSE stream
+        eventSource = new EventSource('/api/stars/stream')
+
+        eventSource.onopen = () => {
+          console.log('SSE connection opened')
+          setConnectionStatus('connected')
+        }
+
+        eventSource.addEventListener('connected', (event) => {
+          console.log('Connected to stream:', event.data)
+          setLoading(false)
+        })
+
+        eventSource.addEventListener('repo', (event) => {
+          const repo = JSON.parse(event.data) as Repo
+          console.log('Received repo:', repo.name)
+          setRepos(prev => [...prev, repo])
+        })
+
+        eventSource.addEventListener('complete', (event) => {
+          console.log('Stream completed:', event.data)
+          setConnectionStatus('completed')
+          setLoading(false)
+          eventSource?.close()
+        })
+
+        eventSource.onerror = (event) => {
+          console.error('SSE error:', event)
+          setError('Connection to stream failed')
+          setConnectionStatus('error')
+          setLoading(false)
+          eventSource?.close()
+        }
+
+      } catch (err) {
+        console.error('Failed to connect to stream:', err)
+        setError('Failed to connect to stream')
+        setConnectionStatus('error')
+        setLoading(false)
+      }
+    }
+
+    connectToStream()
+
+    // Cleanup on unmount
+    return () => {
+      eventSource?.close()
+    }
   }, [])
 
   if (loading) {
@@ -39,7 +93,10 @@ function StarsComponent() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your starred repositories...</p>
+          <p className="mt-4 text-gray-600">
+            {connectionStatus === 'connecting' && 'Connecting to stream...'}
+            {connectionStatus === 'connected' && 'Loading your starred repositories...'}
+          </p>
         </div>
       </div>
     )
@@ -62,7 +119,7 @@ function StarsComponent() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
             Your Starred Repositories
           </h1>
-          
+
           {repos.length === 0 ? (
             <div className="text-center py-12">
               <svg
