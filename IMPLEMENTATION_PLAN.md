@@ -162,19 +162,19 @@ class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService
 
 ## Progress Tracking
 
-- [ ] Phase 1.1: Update env.config.ts
-- [ ] Phase 1.2: Replace hardcoded database paths
-- [ ] Phase 2.1: Install Better Auth tables
+- [x] Phase 1.1: Update env.config.ts ✅ **COMPLETED**
+- [x] Phase 1.2: Replace hardcoded database paths ✅ **COMPLETED**
+- [x] Phase 2.1: Install Better Auth tables ✅ **COMPLETED**
 - [ ] Phase 2.2: Drizzle schema improvements
-- [ ] Phase 2.3: Database table naming convention
+- [x] Phase 2.3: Database table naming convention ✅ **COMPLETED**
 - [x] Phase 3.1: Replace Context.GenericTag with Effect.Service ✅ **COMPLETED**
 - [x] Phase 3.2: Replace Effect.gen underscore pattern ✅ **COMPLETED**
 - [x] Phase 3.3: Replace while loops with Effect Streams ✅ **COMPLETED**
 - [x] Phase 4.1: Replace generic Error with TaggedError ✅ **COMPLETED**
-- [ ] Phase 5.1: Rename PascalCase files to kebab-case
+- [x] Phase 5.1: Rename PascalCase files to kebab-case ✅ **COMPLETED**
 - [ ] Phase 6.1: Batch database operations
-- [ ] Phase 6.2: Remove redundant interfaces
-- [ ] Phase 7.1: Install and configure Biome v2
+- [x] Phase 6.2: Remove redundant interfaces ✅ **COMPLETED**
+- [x] Phase 7.1: Install and configure Biome v2 ✅ **COMPLETED**
 - [x] Phase 7.2: Fix TypeScript compilation errors ✅ **COMPLETED**
 
 ---
