@@ -1,13 +1,13 @@
 import { Outlet, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_pathlessLayout')({
-  component: LayoutComponent,
+  component: PathlessLayoutComponent,
 })
 
-function LayoutComponent() {
+function PathlessLayoutComponent() {
   return (
     <div className="p-2">
-      <div className="border-b">I'm a layout</div>
+      <div>I'm a pathless layout</div>
       <div>
         <Outlet />
       </div>
