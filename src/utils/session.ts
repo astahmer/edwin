@@ -1,7 +1,7 @@
 import { auth } from "../auth";
 import { redirect } from "@tanstack/react-router";
 
-export async function getSession(request: Request) {
+ async function getSession(request: Request) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -9,7 +9,7 @@ export async function getSession(request: Request) {
   return session;
 }
 
-export async function requireAuth(request: Request) {
+ async function requireAuth(request: Request) {
   const session = await getSession(request);
 
   if (!session) {
