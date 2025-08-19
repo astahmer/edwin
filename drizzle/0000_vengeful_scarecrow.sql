@@ -1,6 +1,3 @@
-ALTER TABLE `repos` RENAME TO `repo`;--> statement-breakpoint
-ALTER TABLE `users` RENAME TO `user`;--> statement-breakpoint
-ALTER TABLE `user_stars` RENAME TO `user_star`;--> statement-breakpoint
 CREATE TABLE `auth_verification` (
 	`id` text PRIMARY KEY NOT NULL,
 	`identifier` text NOT NULL,
@@ -10,6 +7,36 @@ CREATE TABLE `auth_verification` (
 	`updated_at` integer
 );
 --> statement-breakpoint
+CREATE TABLE `repo` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`owner` text NOT NULL,
+	`full_name` text NOT NULL,
+	`description` text,
+	`stars` integer DEFAULT 0 NOT NULL,
+	`language` text,
+	`last_fetched_at` integer,
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `user` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`email` text NOT NULL,
+	`email_verified` integer DEFAULT false NOT NULL,
+	`image` text,
+	`login` text NOT NULL,
+	`access_token` text NOT NULL,
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`role` text DEFAULT 'user' NOT NULL,
+	`banned` integer DEFAULT false NOT NULL,
+	`ban_reason` text,
+	`ban_expires` integer
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
 CREATE TABLE `user_account` (
 	`id` text PRIMARY KEY NOT NULL,
 	`account_id` text NOT NULL,
@@ -41,27 +68,12 @@ CREATE TABLE `user_session` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_session_token_unique` ON `user_session` (`token`);--> statement-breakpoint
-ALTER TABLE `user` ADD `name` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `user` ADD `email` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `user` ADD `email_verified` integer DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE `user` ADD `image` text;--> statement-breakpoint
-ALTER TABLE `user` ADD `role` text DEFAULT 'user' NOT NULL;--> statement-breakpoint
-ALTER TABLE `user` ADD `banned` integer DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE `user` ADD `ban_reason` text;--> statement-breakpoint
-ALTER TABLE `user` ADD `ban_expires` integer;--> statement-breakpoint
-CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
-PRAGMA foreign_keys=OFF;--> statement-breakpoint
-CREATE TABLE `__new_user_star` (
+CREATE TABLE `user_star` (
 	`user_id` text NOT NULL,
-	`repo_id` text NOT NULL,
+	`repo_id` integer NOT NULL,
 	`starred_at` integer NOT NULL,
 	`last_checked_at` integer DEFAULT (unixepoch()) NOT NULL,
 	PRIMARY KEY(`user_id`, `repo_id`),
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`repo_id`) REFERENCES `repo`(`id`) ON UPDATE no action ON DELETE no action
 );
---> statement-breakpoint
-INSERT INTO `__new_user_star`("user_id", "repo_id", "starred_at", "last_checked_at") SELECT "user_id", "repo_id", "starred_at", "last_checked_at" FROM `user_star`;--> statement-breakpoint
-DROP TABLE `user_star`;--> statement-breakpoint
-ALTER TABLE `__new_user_star` RENAME TO `user_star`;--> statement-breakpoint
-PRAGMA foreign_keys=ON;

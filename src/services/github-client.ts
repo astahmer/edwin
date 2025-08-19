@@ -127,6 +127,7 @@ export interface GitHubUser {
 
 export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient", {
   effect: Effect.succeed({
+    /** @see https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-repositories-starred-by-the-authenticated-user */
     getUserStars: (accessToken: string, page = 1, perPage = 100) =>
       makeGitHubRequest<StarredGithubRepo[]>(
         `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
