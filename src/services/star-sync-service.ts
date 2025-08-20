@@ -1,6 +1,6 @@
 import { Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
-import type { Repo, NewRepo, NewUserStar } from "../db/schema";
+import type { SelectableGithubRepository, InsertableGithubRepository, InsertableGithubUserStar } from "../db/schema";
 import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
 
 export interface SyncResult {
@@ -33,7 +33,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
     const githubClient = yield* GitHubClient;
     const db = yield* DatabaseService;
 
-    const transformGitHubRepoToRepo = (ghRepo: GitHubRepo): Repo => ({
+    const transformGitHubRepoToRepo = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
       id: ghRepo.id,
       name: ghRepo.name,
       owner: ghRepo.owner.login,
@@ -60,13 +60,13 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           lastFetchedAt: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as NewRepo,
+        } as InsertableGithubRepository,
         userStar: {
           userId,
           repoId: repo.id,
           starredAt: new Date(starredRepo.starred_at),
           lastCheckedAt: new Date(),
-        } as NewUserStar,
+        } as InsertableGithubUserStar,
       };
     };
 
@@ -177,8 +177,8 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           const existingRepoIds = new Set(existingStars.map((star) => star.repoId));
 
           // Prepare batch data
-          const reposToUpsert: NewRepo[] = [];
-          const userStarsToUpsert: NewUserStar[] = [];
+          const reposToUpsert: InsertableGithubRepository[] = [];
+          const userStarsToUpsert: InsertableGithubUserStar[] = [];
           let newRepos = 0;
           let updatedRepos = 0;
 

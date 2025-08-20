@@ -10,12 +10,13 @@ import {
   DatabaseUpsertUserError,
   DatabaseUpsertUserStarError,
 } from "../errors";
-import type { NewRepo, NewUser, NewUserStar, Repo, User, UserStar } from "./schema";
+import type { InsertableGithubRepository, InsertableGithubUser, InsertableGithubUserStar, InsertableUser, SelectableGithubRepository, SelectableGithubUser, SelectableGithubUserStar, SelectableUser } from "./schema";
 
 export interface Database {
-  user: User;
-  repo: Repo;
-  user_star: UserStar;
+  user: SelectableUser;
+  github_user: SelectableGithubUser;
+  github_repository: SelectableGithubRepository;
+  github_user_star: SelectableGithubUserStar;
 }
 
 const dialect = new SqliteDialect({
@@ -35,7 +36,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () => kysely.selectFrom("user").selectAll().where("id", "=", id).executeTakeFirst(),
           catch: (error) => new DatabaseGetUserError({ userId: id, cause: error }),
         }),
-      upsertUser: (user: NewUser) =>
+      upsertUser: (user: InsertableUser) =>
         Effect.tryPromise({
           try: async () => {
             const userValues = {
@@ -52,8 +53,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .values(userValues)
               .onConflict((oc) =>
                 oc.column("id").doUpdateSet({
-                  login: userValues.login,
-                  accessToken: userValues.accessToken,
+                  name: userValues.name,
+                  email: userValues.email,
+                  image: userValues.image,
                   updatedAt: new Date(),
                 })
               )
@@ -66,7 +68,40 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           },
           catch: (error) => new DatabaseUpsertUserError({ userId: user.id, cause: error }),
         }),
-      upsertRepo: (repo: NewRepo) =>
+      upsertGithubUser: (githubUser: InsertableGithubUser) =>
+        Effect.tryPromise({
+          try: async () => {
+            const githubUserValues = {
+              ...githubUser,
+              createdAt: githubUser.createdAt || new Date(),
+              updatedAt: githubUser.updatedAt || new Date(),
+            };
+
+            await kysely
+              .insertInto("github_user")
+              .values(githubUserValues)
+              .onConflict((oc) =>
+                oc.column("userId").doUpdateSet({
+                  login: githubUserValues.login,
+                  accessToken: githubUserValues.accessToken,
+                  updatedAt: new Date(),
+                })
+              )
+              .execute();
+            return await kysely
+              .selectFrom("github_user")
+              .selectAll()
+              .where("userId", "=", githubUser.userId)
+              .executeTakeFirstOrThrow();
+          },
+          catch: (error) => new DatabaseUpsertUserError({ userId: githubUser.userId, cause: error }),
+        }),
+      getGithubUser: (userId: string) =>
+        Effect.tryPromise({
+          try: () => kysely.selectFrom("github_user").selectAll().where("userId", "=", userId).executeTakeFirst(),
+          catch: (error) => new DatabaseGetUserError({ userId, cause: error }),
+        }),
+      upsertRepo: (repo: InsertableGithubRepository) =>
         Effect.tryPromise({
           try: async () => {
             const repoValues = {
@@ -79,7 +114,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             };
 
             await kysely
-              .insertInto("repo")
+              .insertInto("github_repository")
               .values(repoValues)
               .onConflict((oc) =>
                 oc.column("id").doUpdateSet({
@@ -95,14 +130,14 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               )
               .execute();
             return await kysely
-              .selectFrom("repo")
+              .selectFrom("github_repository")
               .selectAll()
               .where("id", "=", repoValues.id)
               .executeTakeFirstOrThrow();
           },
           catch: (error) => new DatabaseUpsertRepoError({ repoId: repo.id || 0, cause: error }),
         }),
-      upsertUserStar: (userStar: NewUserStar) =>
+      upsertUserStar: (userStar: InsertableGithubUserStar) =>
         Effect.tryPromise({
           try: async () => {
             const userStarValues = {
@@ -111,7 +146,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             };
 
             await kysely
-              .insertInto("user_star")
+              .insertInto("github_user_star")
               .values(userStarValues)
               .onConflict((oc) =>
                 oc.columns(["userId", "repoId"]).doUpdateSet({
@@ -120,7 +155,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               )
               .execute();
             return await kysely
-              .selectFrom("user_star")
+              .selectFrom("github_user_star")
               .selectAll()
               .where("userId", "=", userStar.userId)
               .where("repoId", "=", userStar.repoId)
@@ -133,7 +168,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               cause: error,
             }),
         }),
-      batchUpsertRepos: (repos: NewRepo[]) =>
+      batchUpsertRepos: (repos: InsertableGithubRepository[]) =>
         Effect.tryPromise({
           try: async () => {
             if (repos.length === 0) return [];
@@ -152,7 +187,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               const results = [];
               for (const repoValue of repoValues) {
                 await trx
-                  .insertInto("repo")
+                  .insertInto("github_repository")
                   .values(repoValue)
                   .onConflict((oc) =>
                     oc.column("id").doUpdateSet({
@@ -169,7 +204,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                   .execute();
 
                 const result = await trx
-                  .selectFrom("repo")
+                  .selectFrom("github_repository")
                   .selectAll()
                   .where("id", "=", repoValue.id)
                   .executeTakeFirstOrThrow();
@@ -180,7 +215,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           },
           catch: (error) => new DatabaseUpsertRepoError({ repoId: 0, cause: error }),
         }),
-      batchUpsertUserStars: (userStars: NewUserStar[]) =>
+      batchUpsertUserStars: (userStars: InsertableGithubUserStar[]) =>
         Effect.tryPromise({
           try: async () => {
             if (userStars.length === 0) return [];
@@ -195,7 +230,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               const results = [];
               for (const userStarValue of userStarValues) {
                 await trx
-                  .insertInto("user_star")
+                  .insertInto("github_user_star")
                   .values(userStarValue)
                   .onConflict((oc) =>
                     oc.columns(["userId", "repoId"]).doUpdateSet({
@@ -205,7 +240,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                   .execute();
 
                 const result = await trx
-                  .selectFrom("user_star")
+                  .selectFrom("github_user_star")
                   .selectAll()
                   .where("userId", "=", userStarValue.userId)
                   .where("repoId", "=", userStarValue.repoId)
@@ -234,38 +269,38 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: () => {
             let query = kysely
-              .selectFrom("user_star")
-              .innerJoin("repo", "repo.id", "user_star.repoId")
+              .selectFrom("github_user_star")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
               .selectAll()
-              .where("user_star.userId", "=", userId);
+              .where("github_user_star.userId", "=", userId);
 
             // Apply search filter
             if (searchQuery?.trim()) {
               const search = `%${searchQuery.trim()}%`;
               query = query.where((eb) =>
                 eb.or([
-                  eb("repo.name", "like", search),
-                  eb("repo.fullName", "like", search),
-                  eb("repo.description", "like", search),
-                  eb("repo.owner", "like", search),
+                  eb("github_repository.name", "like", search),
+                  eb("github_repository.fullName", "like", search),
+                  eb("github_repository.description", "like", search),
+                  eb("github_repository.owner", "like", search),
                 ])
               );
             }            // Apply language filter
             if (language && language !== "all") {
-              query = query.where("repo.language", "=", language);
+              query = query.where("github_repository.language", "=", language);
             }
 
             // Apply sorting
             switch (sortBy) {
               case "stars":
-                query = query.orderBy("repo.stars", sortOrder);
+                query = query.orderBy("github_repository.stars", sortOrder);
                 break;
               case "name":
-                query = query.orderBy("repo.name", sortOrder);
+                query = query.orderBy("github_repository.name", sortOrder);
                 break;
               case "date":
               default:
-                query = query.orderBy("user_star.starredAt", sortOrder);
+                query = query.orderBy("github_user_star.starredAt", sortOrder);
                 break;
             }
 
@@ -277,13 +312,13 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: () =>
             kysely
-              .selectFrom("user_star")
-              .innerJoin("repo", "repo.id", "user_star.repoId")
-              .select("repo.language")
-              .where("user_star.userId", "=", userId)
-              .where("repo.language", "is not", null)
-              .groupBy("repo.language")
-              .orderBy("repo.language", "asc")
+              .selectFrom("github_user_star")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
+              .select("github_repository.language")
+              .where("github_user_star.userId", "=", userId)
+              .where("github_repository.language", "is not", null)
+              .groupBy("github_repository.language")
+              .orderBy("github_repository.language", "asc")
               .execute(),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
@@ -291,27 +326,27 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: () => {
             let query = kysely
-              .selectFrom("user_star")
-              .innerJoin("repo", "repo.id", "user_star.repoId")
-              .select((eb) => eb.fn.count("user_star.userId").as("count"))
-              .where("user_star.userId", "=", userId);
+              .selectFrom("github_user_star")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
+              .select((eb) => eb.fn.count("github_user_star.userId").as("count"))
+              .where("github_user_star.userId", "=", userId);
 
             // Apply search filter
             if (searchQuery?.trim()) {
               const search = `%${searchQuery.trim()}%`;
               query = query.where((eb) =>
                 eb.or([
-                  eb("repo.name", "like", search),
-                  eb("repo.fullName", "like", search),
-                  eb("repo.description", "like", search),
-                  eb("repo.owner", "like", search),
+                  eb("github_repository.name", "like", search),
+                  eb("github_repository.fullName", "like", search),
+                  eb("github_repository.description", "like", search),
+                  eb("github_repository.owner", "like", search),
                 ])
               );
             }
 
             // Apply language filter
             if (language && language !== "all") {
-              query = query.where("repo.language", "=", language);
+              query = query.where("github_repository.language", "=", language);
             }
 
             return query.executeTakeFirstOrThrow();
@@ -322,11 +357,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: () =>
             kysely
-              .selectFrom("user_star")
-              .innerJoin("repo", "repo.id", "user_star.repoId")
+              .selectFrom("github_user_star")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
               .selectAll()
-              .where("user_star.userId", "=", userId)
-              .orderBy("user_star.starredAt", "desc")
+              .where("github_user_star.userId", "=", userId)
+              .orderBy("github_user_star.starredAt", "desc")
               .limit(limit)
               .offset(offset)
               .execute(),
@@ -337,7 +372,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: () =>
             kysely
-              .selectFrom("user_star")
+              .selectFrom("github_user_star")
               .select("starredAt")
               .where("userId", "=", userId)
               .orderBy("starredAt", "desc")
@@ -351,7 +386,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: async () => {
             const result = await kysely
-              .selectFrom("user_star")
+              .selectFrom("github_user_star")
               .select("lastCheckedAt")
               .where("userId", "=", userId)
               .orderBy("lastCheckedAt", "desc")
@@ -373,7 +408,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
         Effect.tryPromise({
           try: async () => {
             const result = await kysely
-              .selectFrom("repo")
+              .selectFrom("github_repository")
               .select("lastFetchedAt")
               .where("id", "=", repoId)
               .executeTakeFirst();

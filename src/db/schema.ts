@@ -3,11 +3,33 @@ import * as sqlite from "drizzle-orm/sqlite-core";
 
 // Main user table - compatible with Better Auth
 export const user = sqlite.sqliteTable("user", {
-  id: sqlite.text().primaryKey(), // GitHub user ID
+  id: sqlite.text().primaryKey(),
   name: sqlite.text().notNull(),
   email: sqlite.text().notNull().unique(),
   emailVerified: sqlite.integer("email_verified", { mode: "boolean" }).notNull().default(false),
   image: sqlite.text(),
+  createdAt: sqlite
+    .integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: sqlite
+    .integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+    // Admin plugin
+  role: sqlite.text().notNull().default("user"),
+  banned: sqlite.integer({ mode: "boolean" }).notNull().default(false),
+  banReason: sqlite.text("ban_reason"),
+  banExpires: sqlite.integer("ban_expires", { mode: "timestamp" }),
+});
+
+// GitHub-specific user data
+export const githubUser = sqlite.sqliteTable("github_user", {
+  userId: sqlite
+    .text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  githubId: sqlite.text("github_id").notNull().unique(), // GitHub user ID
   login: sqlite.text().notNull(),
   accessToken: sqlite.text("access_token").notNull(),
   createdAt: sqlite
@@ -18,10 +40,6 @@ export const user = sqlite.sqliteTable("user", {
     .integer("updated_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-  role: sqlite.text().notNull().default("user"),
-  banned: sqlite.integer({ mode: "boolean" }).notNull().default(false),
-  banReason: sqlite.text("ban_reason"),
-  banExpires: sqlite.integer("ban_expires", { mode: "timestamp" }),
 });
 
 // Better Auth session table
@@ -71,7 +89,7 @@ export const authVerification = sqlite.sqliteTable("auth_verification", {
 });
 
 // Application-specific tables
-export const repo = sqlite.sqliteTable("repo", {
+export const githubRepository = sqlite.sqliteTable("github_repository", {
   id: sqlite.integer().primaryKey(), // GitHub repo ID is a number
   name: sqlite.text().notNull(),
   owner: sqlite.text().notNull(),
@@ -90,8 +108,8 @@ export const repo = sqlite.sqliteTable("repo", {
     .default(sql`(unixepoch())`),
 });
 
-export const userStar = sqlite.sqliteTable(
-  "user_star",
+export const githubUserStar = sqlite.sqliteTable(
+  "github_user_star",
   {
     userId: sqlite
       .text("user_id")
@@ -100,7 +118,7 @@ export const userStar = sqlite.sqliteTable(
     repoId: sqlite
       .integer("repo_id")
       .notNull()
-      .references(() => repo.id),
+      .references(() => githubRepository.id),
     starredAt: sqlite.integer("starred_at", { mode: "timestamp" }).notNull(),
     lastCheckedAt: sqlite
       .integer("last_checked_at", { mode: "timestamp" })
@@ -112,9 +130,11 @@ export const userStar = sqlite.sqliteTable(
   })
 );
 
-export type User = typeof user.$inferSelect;
-export type NewUser = typeof user.$inferInsert;
-export type Repo = typeof repo.$inferSelect;
-export type NewRepo = typeof repo.$inferInsert;
-export type UserStar = typeof userStar.$inferSelect;
-export type NewUserStar = typeof userStar.$inferInsert;
+export type SelectableUser = typeof user.$inferSelect;
+export type InsertableUser = typeof user.$inferInsert;
+export type SelectableGithubUser = typeof githubUser.$inferSelect;
+export type InsertableGithubUser = typeof githubUser.$inferInsert;
+export type SelectableGithubRepository = typeof githubRepository.$inferSelect;
+export type InsertableGithubRepository = typeof githubRepository.$inferInsert;
+export type SelectableGithubUserStar = typeof githubUserStar.$inferSelect;
+export type InsertableGithubUserStar = typeof githubUserStar.$inferInsert;
