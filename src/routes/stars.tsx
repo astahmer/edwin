@@ -352,9 +352,25 @@ function StarsComponent() {
                     )}
                     <div className="mt-auto pt-2 flex items-center gap-2">
                       {repo.language && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate({
+                              search: {
+                                ...search,
+                                language:
+                                  selectedLanguage === repo.language ? "all" : repo.language!,
+                              },
+                            })
+                          }
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                            selectedLanguage === repo.language
+                              ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                        >
                           {repo.language}
-                        </span>
+                        </button>
                       )}
                       <span className="text-xs text-gray-500 ml-auto mt-4">
                         Starred on{" "}
