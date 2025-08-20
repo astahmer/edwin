@@ -1,10 +1,21 @@
 import { createServerFileRoute } from "@tanstack/react-start/server";
-import { Effect, Stream, Schedule } from "effect";
+import { Effect, Stream } from "effect";
 import { auth } from "../../auth";
-import { StarSyncService } from "../../services/star-sync-service";
 import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
+import { StarSyncService } from "../../services/star-sync-service";
 import { getGitHubAccessToken } from "../../utils/session";
+
+export interface RepoMessage {
+  id: number;
+  name: string;
+  owner: string;
+  full_name: string;
+  description: string | null;
+  stars: number;
+  language: string | null;
+  starred_at: string;
+}
 
 // SSE message types for type safety
 interface SSEMessage {
@@ -70,6 +81,7 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
                 description: repo.description,
                 stars: repo.stars,
                 language: repo.language,
+                starred_at: repo.starred_at,
               },
             };
 

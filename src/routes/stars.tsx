@@ -2,6 +2,7 @@ import { createFileRoute, redirect, useNavigate, useSearch } from "@tanstack/rea
 import { Schema } from "effect";
 import { useEffect, useMemo, useState } from "react";
 import { authClient } from "~/auth.client";
+import type { RepoMessage } from "~/routes/api/stars.stream";
 import { requireAuthServerFn } from "~/utils/session";
 
 export const Route = createFileRoute("/stars")({
@@ -38,17 +39,6 @@ export const Route = createFileRoute("/stars")({
     }
   },
 });
-
-interface RepoMessage {
-  id: number;
-  name: string;
-  owner: string;
-  full_name: string;
-  description: string | null;
-  stars: number;
-  language: string | null;
-  starred_at: string;
-}
 
 function StarsComponent() {
   const navigate = useNavigate({ from: "/stars" });
@@ -319,7 +309,7 @@ function StarsComponent() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredRepos.map((repo) => (
                 <div key={repo.id} className="bg-white overflow-hidden shadow rounded-lg">
-                  <div className="px-4 py-5 sm:p-6">
+                  <div className="px-4 py-5 sm:p-6 flex flex-col h-full">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-medium text-gray-900 truncate">
@@ -360,11 +350,21 @@ function StarsComponent() {
                     {repo.description && (
                       <p className="mt-2 text-sm text-gray-600 line-clamp-2">{repo.description}</p>
                     )}
-                    {repo.language && (
-                      <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {repo.language}
+                    <div className="mt-auto pt-2 flex items-center gap-2">
+                      {repo.language && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {repo.language}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-500 ml-auto mt-4">
+                        Starred on{" "}
+                        {new Date(repo.starred_at).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
