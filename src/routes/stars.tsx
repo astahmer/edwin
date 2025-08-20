@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate, useSearch } from "@tanstack/react-router";
 import { Schema } from "effect";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { authClient } from "~/auth.client";
 import { requireAuthServerFn } from "~/utils/session";
 
@@ -54,17 +54,20 @@ function StarsComponent() {
   const navigate = useNavigate({ from: "/stars" });
   const search = useSearch({ from: "/stars" });
 
-  const [repos, setRepos] = useState<RepoMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "connecting" | "connected" | "completed" | "error"
-  >("connecting");
-  const [syncProgress, setSyncProgress] = useState<{
-    current: number;
-    total: number;
-    phase: "fetching" | "syncing" | "complete";
-  } | null>(null);
+  // Use custom hook for SSE connection
+  const { repos, connectionStatus, syncProgress, error } =
+    useStarredReposStream("/api/stars/stream");
+
+  const loading = connectionStatus === "connecting" || connectionStatus === "connected";
+
+  // Handle authentication error redirect
+  useEffect(() => {
+    if (error?.includes("authentication has expired")) {
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 3000);
+    }
+  }, [error]);
 
   // Get search params with defaults
   const searchQuery = search.search || "";
@@ -117,102 +120,6 @@ function StarsComponent() {
 
     return filtered;
   })();
-
-  useEffect(() => {
-    let eventSource: EventSource | null = null;
-
-    const connectToStream = () => {
-      try {
-        setLoading(true);
-        setError(null);
-        setConnectionStatus("connecting");
-
-        // Connect to SSE stream
-        eventSource = new EventSource("/api/stars/stream");
-
-        eventSource.onopen = () => {
-          console.log("SSE connection opened");
-          setConnectionStatus("connected");
-        };
-
-        eventSource.addEventListener("connected", (event) => {
-          console.log("Connected to stream:", event.data);
-          setLoading(false);
-        });
-
-        eventSource.addEventListener("progress", (event) => {
-          try {
-            const progressData = JSON.parse(event.data);
-            setSyncProgress(progressData);
-            console.log("Sync progress:", progressData);
-          } catch (e) {
-            console.error("Failed to parse progress data:", e);
-          }
-        });
-
-        eventSource.addEventListener("repo", (event) => {
-          const repo = JSON.parse(event.data) as RepoMessage;
-          console.log("Received repo:", repo.name);
-          setRepos((prev) => [...prev, repo]);
-        });
-
-        eventSource.addEventListener("complete", (event) => {
-          console.log("Stream completed:", event.data);
-          setConnectionStatus("completed");
-          setLoading(false);
-          eventSource?.close();
-        });
-
-        eventSource.addEventListener("error", (event: MessageEvent) => {
-          try {
-            const errorData = JSON.parse(event.data);
-            console.error("API error:", errorData);
-
-            if (
-              errorData.message.includes("token expired") ||
-              errorData.message.includes("invalid")
-            ) {
-              setError("Your GitHub authentication has expired. Please log in again.");
-              // Redirect to login after a delay
-              setTimeout(() => {
-                window.location.href = "/login";
-              }, 3000);
-            } else if (errorData.message.includes("Rate limit")) {
-              setError("GitHub API rate limit exceeded. Please try again later.");
-            } else {
-              setError(`GitHub API Error: ${errorData.message}`);
-            }
-          } catch (_e) {
-            console.error("Stream error:", event, _e);
-            setError("Failed to fetch repositories from GitHub");
-          }
-          setConnectionStatus("error");
-          setLoading(false);
-          eventSource?.close();
-        });
-
-        eventSource.onerror = (event) => {
-          console.error("SSE connection error:", event);
-          setError("Connection to stream failed. Please check your network connection.");
-          setConnectionStatus("error");
-          setLoading(false);
-          eventSource?.close();
-        };
-      } catch (err) {
-        console.error("Failed to connect to stream:", err);
-        setError("Failed to connect to stream");
-        setConnectionStatus("error");
-        setLoading(false);
-      }
-    };
-
-    connectToStream();
-
-    // Cleanup on unmount
-    return () => {
-      eventSource?.close();
-    };
-  }, []);
 
   if (loading) {
     return (
@@ -467,4 +374,163 @@ function StarsComponent() {
       </div>
     </div>
   );
+}
+
+// Generic SSE hook with configurable logging
+function useSSE<T = any>(
+  url: string,
+  options: {
+    enableLogging?: boolean;
+    eventHandlers: Record<string, (data: T) => void>;
+    onError?: (error: string) => void;
+    onComplete?: () => void;
+  } = { enableLogging: true, eventHandlers: {} }
+) {
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connecting" | "connected" | "completed" | "error"
+  >("connecting");
+  const [error, setError] = useState<string | null>(null);
+
+  const { enableLogging, eventHandlers, onError, onComplete } = options;
+
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+
+    const connectToStream = () => {
+      try {
+        setError(null);
+        setConnectionStatus("connecting");
+
+        if (enableLogging) {
+          console.log("Connecting to SSE stream:", url);
+        }
+
+        eventSource = new EventSource(url);
+
+        eventSource.onopen = () => {
+          if (enableLogging) {
+            console.log("SSE connection opened");
+          }
+          setConnectionStatus("connected");
+        };
+
+        // Set up custom event handlers
+        Object.entries(eventHandlers).forEach(([eventName, handler]) => {
+          eventSource!.addEventListener(eventName, (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              if (enableLogging) {
+                console.log(`SSE event '${eventName}':`, data);
+              }
+              handler(data);
+            } catch (e) {
+              if (enableLogging) {
+                console.error(`Failed to parse ${eventName} data:`, e);
+              }
+            }
+          });
+        });
+
+        // Handle completion
+        eventSource.addEventListener("complete", (event) => {
+          if (enableLogging) {
+            console.log("Stream completed:", event.data);
+          }
+          setConnectionStatus("completed");
+          onComplete?.();
+          eventSource?.close();
+        });
+
+        // Handle errors
+        eventSource.addEventListener("error", (event: MessageEvent) => {
+          try {
+            const errorData = JSON.parse(event.data);
+            if (enableLogging) {
+              console.error("SSE API error:", errorData);
+            }
+
+            let errorMessage = `Error: ${errorData.message}`;
+            if (
+              errorData.message.includes("token expired") ||
+              errorData.message.includes("invalid")
+            ) {
+              errorMessage = "Your GitHub authentication has expired. Please log in again.";
+            } else if (errorData.message.includes("Rate limit")) {
+              errorMessage = "GitHub API rate limit exceeded. Please try again later.";
+            }
+
+            setError(errorMessage);
+            onError?.(errorMessage);
+          } catch (_e) {
+            if (enableLogging) {
+              console.error("SSE stream error:", event, _e);
+            }
+            const errorMessage = "Failed to fetch data from server";
+            setError(errorMessage);
+            onError?.(errorMessage);
+          }
+          setConnectionStatus("error");
+          eventSource?.close();
+        });
+
+        eventSource.onerror = (event) => {
+          if (enableLogging) {
+            console.error("SSE connection error:", event);
+          }
+          const errorMessage = "Connection to stream failed. Please check your network connection.";
+          setError(errorMessage);
+          onError?.(errorMessage);
+          setConnectionStatus("error");
+          eventSource?.close();
+        };
+      } catch (err) {
+        if (enableLogging) {
+          console.error("Failed to connect to stream:", err);
+        }
+        const errorMessage = "Failed to connect to stream";
+        setError(errorMessage);
+        onError?.(errorMessage);
+        setConnectionStatus("error");
+      }
+    };
+
+    connectToStream();
+
+    return () => {
+      if (enableLogging) {
+        console.log("Cleaning up SSE connection");
+      }
+      eventSource?.close();
+    };
+  }, [url, enableLogging, eventHandlers, onError, onComplete]);
+
+  return { connectionStatus, error };
+}
+
+// Specialized hook for starred repositories using the generic SSE hook
+function useStarredReposStream(url: string, enableLogging?: boolean) {
+  const [repos, setRepos] = useState<RepoMessage[]>([]);
+  const [syncProgress, setSyncProgress] = useState<{
+    current: number;
+    total: number;
+    phase: "fetching" | "syncing" | "complete";
+  } | null>(null);
+
+  const { connectionStatus, error } = useSSE(url, {
+    enableLogging,
+    eventHandlers: useMemo(
+      () => ({
+        connected: () => {
+          // Connection established
+        },
+        progress: setSyncProgress,
+        repo: (data: RepoMessage) => {
+          setRepos((prev) => [...prev, data]);
+        },
+      }),
+      []
+    ),
+  });
+
+  return { repos, connectionStatus, syncProgress, error };
 }
