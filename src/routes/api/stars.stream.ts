@@ -14,9 +14,10 @@ interface SSEMessage {
 }
 
 // Helper function to format SSE messages
+const encoder = new TextEncoder();
 const formatSSEMessage = (message: SSEMessage): Uint8Array => {
   const formattedMessage = `id: ${message.id}\nevent: ${message.event}\ndata: ${JSON.stringify(message.data)}\n\n`;
-  return new TextEncoder().encode(formattedMessage);
+  return encoder.encode(formattedMessage);
 };
 
 export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
@@ -61,7 +62,15 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
             const message: SSEMessage = {
               id: repo.id.toString(),
               event: "repo",
-              data: repo,
+              data: {
+                id: repo.id,
+                name: repo.full_name,
+                owner: repo.owner,
+                full_name: repo.full_name,
+                description: repo.description,
+                stars: repo.stars,
+                language: repo.language,
+              },
             };
 
             return message;

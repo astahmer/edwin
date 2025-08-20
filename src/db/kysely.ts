@@ -339,37 +339,6 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .execute(),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
-      getUserStarsCount: (userId: string, searchQuery?: string, language?: string) =>
-        Effect.tryPromise({
-          try: () => {
-            let query = kysely
-              .selectFrom("github_user_star")
-              .innerJoin("github_repository", "github_repository.id", "github_user_star.repo_id")
-              .select((eb) => eb.fn.count("github_user_star.user_id").as("count"))
-              .where("github_user_star.user_id", "=", userId);
-
-            // Apply search filter
-            if (searchQuery?.trim()) {
-              const search = `%${searchQuery.trim()}%`;
-              query = query.where((eb) =>
-                eb.or([
-                  eb("github_repository.name", "like", search),
-                  eb("github_repository.full_name", "like", search),
-                  eb("github_repository.description", "like", search),
-                  eb("github_repository.owner", "like", search),
-                ])
-              );
-            }
-
-            // Apply language filter
-            if (language && language !== "all") {
-              query = query.where("github_repository.language", "=", language);
-            }
-
-            return query.executeTakeFirstOrThrow();
-          },
-          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
-        }),
       getUserStars: (userId: string, limit = 100, offset = 0) =>
         Effect.tryPromise({
           try: () =>
@@ -384,7 +353,20 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .execute(),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
-
+      getUserStarsCount: (userId: string, limit = 100, offset = 0) =>
+        Effect.tryPromise({
+          try: () =>
+            kysely
+              .selectFrom("github_user_star")
+              .select((eb) => eb.fn.count("github_user_star.user_id").as("count"))
+              .where("github_user_star.user_id", "=", userId)
+              .orderBy("github_user_star.starred_at", "desc")
+              .limit(limit)
+              .offset(offset)
+              .executeTakeFirstOrThrow()
+              .then((res) => Number(res.count ?? 0) ?? 0),
+          catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
+        }),
       getMostRecentStarredAt: (userId: string) =>
         Effect.tryPromise({
           try: () =>

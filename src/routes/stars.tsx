@@ -30,19 +30,19 @@ export const Route = createFileRoute("/stars")({
   },
 });
 
-interface Repo {
-  id: string;
+interface RepoMessage {
+  id: number;
   name: string;
   owner: string;
-  fullName: string;
-  description?: string;
+  full_name: string;
+  description: string | null;
   stars: number;
-  language?: string;
-  lastFetchedAt: string;
+  language: string | null;
+  starred_at: string;
 }
 
 function StarsComponent() {
-  const [repos, setRepos] = useState<Repo[]>([]);
+  const [repos, setRepos] = useState<RepoMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<
@@ -60,7 +60,7 @@ function StarsComponent() {
   const [sortBy, setSortBy] = useState<"stars" | "name" | "date">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
-  const [filteredRepos, setFilteredRepos] = useState<Repo[]>([]);
+  const [filteredRepos, setFilteredRepos] = useState<RepoMessage[]>([]);
 
   // Filter repos based on search and filter criteria
   useEffect(() => {
@@ -72,7 +72,7 @@ function StarsComponent() {
       filtered = filtered.filter(
         (repo) =>
           repo.name.toLowerCase().includes(query) ||
-          repo.fullName.toLowerCase().includes(query) ||
+          repo.full_name.toLowerCase().includes(query) ||
           repo.owner.toLowerCase().includes(query) ||
           repo.description?.toLowerCase().includes(query)
       );
@@ -93,9 +93,8 @@ function StarsComponent() {
         case "name":
           comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
           break;
-        case "date":
         default:
-          comparison = new Date(a.lastFetchedAt).getTime() - new Date(b.lastFetchedAt).getTime();
+          comparison = new Date(a.starred_at).getTime() - new Date(b.starred_at).getTime();
           break;
       }
       return sortOrder === "desc" ? -comparison : comparison;
@@ -145,7 +144,7 @@ function StarsComponent() {
         });
 
         eventSource.addEventListener("repo", (event) => {
-          const repo = JSON.parse(event.data) as Repo;
+          const repo = JSON.parse(event.data) as RepoMessage;
           console.log("Received repo:", repo.name);
           setRepos((prev) => [...prev, repo]);
         });
@@ -257,10 +256,10 @@ function StarsComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Starred Repositories</h1>
+          <h1 className="text-3xl font-bold mb-8">Your Starred Repositories</h1>
 
           {/* Search and Filter Controls */}
           <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -276,7 +275,7 @@ function StarsComponent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name, owner, or description..."
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-50"
                 />
               </div>
 

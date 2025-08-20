@@ -6,6 +6,7 @@ import type {
   InsertableGithubUserStar,
 } from "../db/schema";
 import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
+import type { DatabaseGetUserStarsError, GitHubRequestError } from "~/errors";
 
 export interface SyncResult {
   totalFetched: number;
@@ -179,16 +180,66 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             console.log({ hasNewStars, mostRecentStarredAt });
 
             if (!hasNewStars) {
-              const existingStars = yield* db.getUserStars(userId, 10000, 0);
-              return Stream.fromIterable(existingStars);
+              const count = yield* db.getUserStarsCount(userId);
+              const existingStarsStream = Stream.paginateEffect(0, (offset) =>
+                Effect.gen(function* () {
+                  {
+                    if (offset >= count) {
+                      return [[], Option.none()];
+                    }
+                    const next = yield* db.getUserStars(userId, 500, offset);
+                    return [next, Option.some(offset + 500)];
+                  }
+                })
+              );
+              return existingStarsStream.pipe(
+                Stream.flatMap((batch) =>
+                  Stream.fromIterable(
+                    batch.map((repo) => {
+                      return {
+                        id: repo.id,
+                        name: repo.name,
+                        owner: repo.owner,
+                        full_name: repo.full_name,
+                        description: repo.description,
+                        stars: repo.stars,
+                        language: repo.language,
+                        starred_at: repo.starred_at.toISOString(),
+                      };
+                    })
+                  )
+                )
+              );
             }
 
             return starsPaginated.pipe(
               Stream.groupedWithin(50, "1 second"),
               Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
               Stream.flatMap((repos) => Stream.fromIterable(repos)),
-              Stream.map((starredRepo) => transformGithubRepoToEntity(starredRepo.repo))
-            );
+              Stream.map((starredRepo) => ({
+                id: starredRepo.repo.id,
+                name: starredRepo.repo.name,
+                owner: starredRepo.repo.owner.login,
+                full_name: starredRepo.repo.full_name,
+                description: starredRepo.repo.description,
+                stars: starredRepo.repo.stargazers_count,
+                language: starredRepo.repo.language,
+                starred_at: new Date(starredRepo.starred_at).toISOString(),
+              }))
+            ) as Stream.Stream<
+              {
+                id: number;
+                name: string;
+                owner: string;
+                full_name: string;
+                description: string | null;
+                stars: number;
+                language: string | null;
+                starred_at: string;
+              },
+              GitHubRequestError | DatabaseGetUserStarsError,
+              never
+            >;
           })
         ),
 
