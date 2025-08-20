@@ -7,7 +7,7 @@ export const Route = createFileRoute("/stars")({
   component: StarsComponent,
   beforeLoad: async (ctx) => {
     if (import.meta.env.SSR) {
-      await requireAuthServerFn()
+      await requireAuthServerFn();
     } else {
       // Check authentication by making a request to our session endpoint
       try {
@@ -25,8 +25,7 @@ export const Route = createFileRoute("/stars")({
           to: "/login",
           search: { redirect: ctx.location.href },
         });
-
-    }
+      }
     }
   },
 });
@@ -178,7 +177,7 @@ function StarsComponent() {
               setError(`GitHub API Error: ${errorData.message}`);
             }
           } catch (_e) {
-            console.error("Stream error:", event);
+            console.error("Stream error:", event, _e);
             setError("Failed to fetch repositories from GitHub");
           }
           setConnectionStatus("error");
@@ -251,6 +250,10 @@ function StarsComponent() {
         </div>
       </div>
     );
+  }
+
+  if (connectionStatus === "completed") {
+    console.log(repos);
   }
 
   return (

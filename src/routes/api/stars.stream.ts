@@ -53,28 +53,15 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
         };
 
         // Create repo stream from StarSyncService
-        const repoStream = service.streamUserStars(userId, accessToken, lastEventId || undefined);
+        const repoStream = service.streamUserStars(userId, accessToken, lastEventId ?? undefined);
 
         // Transform repos to SSE message stream
         const repoMessageStream = repoStream.pipe(
           Stream.map((repo) => {
-            const formattedRepo = {
-              id: repo.id,
-              name: repo.name,
-              owner: repo.owner,
-              full_name: repo.full_name,
-              description: repo.description || undefined,
-              stars: repo.stars,
-              language: repo.language || undefined,
-              last_fetched_at: repo.last_fetched_at?.toISOString(),
-              created_at: repo.created_at?.toISOString(),
-              updated_at: repo.updated_at?.toISOString(),
-            };
-
             const message: SSEMessage = {
               id: repo.id.toString(),
               event: "repo",
-              data: formattedRepo,
+              data: repo,
             };
 
             return message;
@@ -99,8 +86,10 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
 
         // Convert SSE messages to bytes with slight delay between messages
         return allMessages.pipe(
-          Stream.schedule(Schedule.spaced("100 millis")), // Small delay for smooth streaming
-          Stream.map(formatSSEMessage),
+          Stream.groupedWithin(100, "100 millis"),
+          Stream.map((chunk) => Array.from(chunk).map(formatSSEMessage)),
+          // Stream.schedule(Schedule.spaced("1 millis")), // Small delay for smooth streaming
+          // Stream.map(formatSSEMessage),
           Stream.catchAll((error) => {
             console.error("Failed to stream repos:", error);
             const errorMessage: SSEMessage = {
@@ -133,7 +122,13 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
               const runStream = Effect.gen(function* () {
                 yield* Stream.runForEach(stream, (chunk) =>
                   Effect.sync(() => {
-                    controller.enqueue(chunk);
+                    if (Array.isArray(chunk)) {
+                      for (const chunkItem of chunk) {
+                        controller.enqueue(chunkItem);
+                      }
+                    } else {
+                      controller.enqueue(chunk);
+                    }
                   })
                 );
               }).pipe(

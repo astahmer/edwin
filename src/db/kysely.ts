@@ -57,7 +57,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               banned: user.banned ?? false,
               created_at: user.created_at || new Date(),
               updated_at: user.updated_at || new Date(),
-            };
+            } satisfies InsertableUser;
 
             await kysely
               .insertInto("user")
@@ -123,12 +123,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const repoValues = {
               ...repo,
-              id: repo.id ?? Date.now(), // Ensure id is present as number
+              id: repo.id, // Ensure id is present as number
               created_at: repo.created_at || new Date(),
               updated_at: repo.updated_at || new Date(),
               last_fetched_at: repo.last_fetched_at || new Date(),
               stars: repo.stars ?? 0,
-            };
+            } satisfies InsertableGithubRepository;
 
             await kysely
               .insertInto("github_repository")
@@ -160,7 +160,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             const userStarValues = {
               ...userStar,
               last_checked_at: userStar.last_checked_at || new Date(),
-            };
+            } satisfies InsertableGithubUserStar;
 
             await kysely
               .insertInto("github_user_star")
@@ -192,7 +192,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
 
             const repoValues = repos.map((repo) => ({
               ...repo,
-              id: repo.id ?? Date.now(), // Ensure id is present as number
+              id: repo.id, // Ensure id is present as number
               created_at: repo.created_at || new Date(),
               updated_at: repo.updated_at || new Date(),
               last_fetched_at: repo.last_fetched_at || new Date(),
@@ -395,7 +395,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .orderBy("starred_at", "desc")
               .limit(1)
               .executeTakeFirst()
-              .then((result) => result?.starred_at || null),
+              .then((result) => result?.starred_at),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
 

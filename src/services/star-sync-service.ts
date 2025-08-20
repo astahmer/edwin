@@ -14,19 +14,6 @@ export interface SyncResult {
   lastSyncAt: Date;
 }
 
-interface UserStarData {
-  id: number;
-  name: string;
-  owner: string;
-  full_name: string;
-  description: string | null;
-  stars: number;
-  language: string | null;
-  last_fetched_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
 /**
  * Unified service for syncing GitHub stars with support for both:
  * - Batch synchronization (syncUserStars)
@@ -37,7 +24,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
     const githubClient = yield* GitHubClient;
     const db = yield* DatabaseService;
 
-    const transformGitHubRepoToRepo = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
+    const transformGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
       id: ghRepo.id,
       name: ghRepo.name,
       owner: ghRepo.owner.login,
@@ -50,7 +37,10 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       updated_at: new Date(),
     });
 
-    const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string) => {
+    const transformGithubStarredRepoToInsertableEntity = (
+      starredRepo: StarredGithubRepo,
+      userId: string
+    ) => {
       const repo = starredRepo.repo;
       return {
         repo: {
@@ -74,9 +64,6 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       };
     };
 
-    const getExistingStarsStream = (existingStars: UserStarData[]) =>
-      Stream.fromIterable(existingStars);
-
     const fetchStarsFromCursor = (accessToken: string, since?: Date) =>
       Stream.paginateEffect(1, (page) =>
         Effect.gen(function* () {
@@ -96,31 +83,22 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
         })
       ).pipe(Stream.flatMap(Stream.fromIterable));
 
-    const processBatchOfStars = (
+    const upsertStarsChunk = (
       starredReposBatch: ReadonlyArray<StarredGithubRepo>,
-      userId: string,
-      accessToken: string
+      userId: string
     ) =>
       Effect.gen(function* () {
-        const reposToUpsert = [];
-        const userStarsToUpsert = [];
+        const reposToUpsert: InsertableGithubRepository[] = [];
+        const userStarsToUpsert: InsertableGithubUserStar[] = [];
 
         for (const starredRepo of starredReposBatch) {
-          const ghRepo = starredRepo.repo;
-          const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
-
-          let repoData = ghRepo;
-          // if (isRepoStale) {
-          //   repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
-          // }
-
-          const repo = transformGitHubRepoToRepo(repoData);
+          const repo = transformGithubRepoToEntity(starredRepo.repo);
           reposToUpsert.push(repo);
 
           userStarsToUpsert.push({
             user_id: userId,
-            repo_id: ghRepo.id,
-            starred_at: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
+            repo_id: starredRepo.repo.id,
+            starred_at: new Date(starredRepo.starred_at),
           });
         }
 
@@ -129,43 +107,6 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
 
         return upsertedRepos;
       });
-
-    const createStreamFromExisting = (existingStars: UserStarData[], lastEventId?: string) => {
-      let baseStream = getExistingStarsStream(existingStars);
-
-      if (lastEventId) {
-        baseStream = baseStream.pipe(
-          Stream.dropWhile((repo) => repo.id !== Number(lastEventId)),
-          Stream.drop(1)
-        );
-      }
-
-      return baseStream;
-    };
-
-    const createIncrementalStream = (
-      starsPaginated: Stream.Stream<StarredGithubRepo, unknown, never>,
-      existingStars: UserStarData[],
-      userId: string,
-      accessToken: string,
-      lastEventId?: string
-    ) => {
-      let resultStream = starsPaginated.pipe(
-        Stream.groupedWithin(50, "1 second"),
-        Stream.mapEffect((batch) => processBatchOfStars(Array.from(batch), userId, accessToken)),
-        Stream.flatMap((repos) => Stream.fromIterable(repos)),
-        Stream.concat(getExistingStarsStream(existingStars))
-      );
-
-      if (lastEventId) {
-        resultStream = resultStream.pipe(
-          Stream.dropWhile((repo) => repo.id !== Number(lastEventId)),
-          Stream.drop(1)
-        );
-      }
-
-      return resultStream;
-    };
 
     return {
       /**
@@ -191,12 +132,12 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           let updatedRepos = 0;
 
           for (const starredRepo of starredRepos) {
-            const { repo, userStar } = transformStarredRepoToDb(starredRepo, userId);
+            const insertable = transformGithubStarredRepoToInsertableEntity(starredRepo, userId);
 
-            reposToUpsert.push(repo);
-            userStarsToUpsert.push(userStar);
+            reposToUpsert.push(insertable.repo);
+            userStarsToUpsert.push(insertable.userStar);
 
-            if (repo.id && existingRepoIds.has(repo.id)) {
+            if (insertable.repo.id && existingRepoIds.has(insertable.repo.id)) {
               updatedRepos++;
             } else {
               newRepos++;
@@ -221,42 +162,32 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
        * Incremental streaming: Smart fetching with real-time updates
        * Use this for SSE endpoints or when you want incremental updates
        */
-      streamUserStars: (userId: string, accessToken: string, lastEventId?: string) =>
+      streamUserStars: (userId: string, accessToken: string, _lastEventId?: string) =>
         Stream.unwrap(
           Effect.gen(function* () {
-            const isStale = yield* db.isUserStarsStale(userId, 1);
-
-            if (!isStale) {
-              const existingStars = yield* db.getUserStars(userId);
-              return createStreamFromExisting(existingStars, lastEventId);
-            }
-
             // Get the most recent starred date to use as cursor
             const mostRecentStarredAt = yield* db.getMostRecentStarredAt(userId);
-            const existingStars = yield* db.getUserStars(userId, 10000, 0);
 
             // Fetch only new stars since the most recent starred date
-            const starsPaginated = fetchStarsFromCursor(
-              accessToken,
-              mostRecentStarredAt || undefined
-            );
+            const starsPaginated = fetchStarsFromCursor(accessToken, mostRecentStarredAt);
 
             const hasNewStars = yield* starsPaginated.pipe(
               Stream.take(1),
               Stream.runCollect,
               Effect.map((chunk) => Array.from(chunk).length > 0)
             );
+            console.log({ hasNewStars, mostRecentStarredAt });
 
             if (!hasNewStars) {
-              return createStreamFromExisting(existingStars, lastEventId);
+              const existingStars = yield* db.getUserStars(userId, 10000, 0);
+              return Stream.fromIterable(existingStars);
             }
 
-            return createIncrementalStream(
-              starsPaginated,
-              existingStars,
-              userId,
-              accessToken,
-              lastEventId
+            return starsPaginated.pipe(
+              Stream.groupedWithin(50, "1 second"),
+              Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
+              Stream.flatMap((repos) => Stream.fromIterable(repos)),
+              Stream.map((starredRepo) => transformGithubRepoToEntity(starredRepo.repo))
             );
           })
         ),
