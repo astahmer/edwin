@@ -1,9 +1,18 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useSearch } from "@tanstack/react-router";
+import { Schema } from "effect";
 import { useEffect, useState } from "react";
 import { authClient } from "~/auth.client";
 import { requireAuthServerFn } from "~/utils/session";
 
 export const Route = createFileRoute("/stars")({
+  validateSearch: Schema.standardSchemaV1(
+    Schema.Struct({
+      search: Schema.String.pipe(Schema.optional),
+      language: Schema.String.pipe(Schema.optional),
+      sortBy: Schema.String.pipe(Schema.optional),
+      sortOrder: Schema.String.pipe(Schema.optional),
+    })
+  ),
   component: StarsComponent,
   beforeLoad: async (ctx) => {
     if (import.meta.env.SSR) {
@@ -42,6 +51,9 @@ interface RepoMessage {
 }
 
 function StarsComponent() {
+  const navigate = useNavigate({ from: "/stars" });
+  const search = useSearch({ from: "/stars" });
+
   const [repos, setRepos] = useState<RepoMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,16 +66,19 @@ function StarsComponent() {
     phase: "fetching" | "syncing" | "complete";
   } | null>(null);
 
-  // Search and filter state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("all");
-  const [sortBy, setSortBy] = useState<"stars" | "name" | "date">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
-  const [filteredRepos, setFilteredRepos] = useState<RepoMessage[]>([]);
+  // Get search params with defaults
+  const searchQuery = search.search || "";
+  const selectedLanguage = search.language || "all";
+  const sortBy = (search.sortBy as "stars" | "name" | "date") || "date";
+  const sortOrder = (search.sortOrder as "asc" | "desc") || "desc";
 
-  // Filter repos based on search and filter criteria
-  useEffect(() => {
+  // Derive available languages from repos
+  const availableLanguages = Array.from(
+    new Set(repos.map((repo) => repo.language).filter((lang): lang is string => Boolean(lang)))
+  ).sort();
+
+  // Derive filtered and sorted repos
+  const filteredRepos = (() => {
     let filtered = repos;
 
     // Apply search filter
@@ -100,16 +115,8 @@ function StarsComponent() {
       return sortOrder === "desc" ? -comparison : comparison;
     });
 
-    setFilteredRepos(filtered);
-  }, [repos, searchQuery, selectedLanguage, sortBy, sortOrder]);
-
-  // Update available languages when repos change
-  useEffect(() => {
-    const languages = Array.from(
-      new Set(repos.map((repo) => repo.language).filter((lang): lang is string => Boolean(lang)))
-    ).sort();
-    setAvailableLanguages(languages);
-  }, [repos]);
+    return filtered;
+  })();
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -273,7 +280,7 @@ function StarsComponent() {
                   type="text"
                   id="search"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => navigate({ search: { ...search, search: e.target.value } })}
                   placeholder="Search by name, owner, or description..."
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-50"
                 />
@@ -287,7 +294,7 @@ function StarsComponent() {
                 <select
                   id="language"
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  onChange={(e) => navigate({ search: { ...search, language: e.target.value } })}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="all">All Languages</option>
@@ -308,7 +315,11 @@ function StarsComponent() {
                   <select
                     id="sort"
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as "stars" | "name" | "date")}
+                    onChange={(e) =>
+                      navigate({
+                        search: { ...search, sortBy: e.target.value as "stars" | "name" | "date" },
+                      })
+                    }
                     className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="date">Date</option>
@@ -317,7 +328,11 @@ function StarsComponent() {
                   </select>
                   <button
                     type="button"
-                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    onClick={() =>
+                      navigate({
+                        search: { ...search, sortOrder: sortOrder === "asc" ? "desc" : "asc" },
+                      })
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {sortOrder === "asc" ? "↑" : "↓"}
@@ -385,10 +400,7 @@ function StarsComponent() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSelectedLanguage("all");
-                    }}
+                    onClick={() => navigate({ search: { ...search, search: "", language: "all" } })}
                     className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Clear filters
