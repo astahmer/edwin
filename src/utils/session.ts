@@ -1,7 +1,9 @@
 import { redirect } from "@tanstack/react-router";
-import { auth } from "../auth";
+import { createServerFn } from "@tanstack/react-start";
+import { getWebRequest } from "@tanstack/react-start/server";
 
-async function getSession(request: Request) {
+async function getServerSession(request: Request) {
+  const auth = (await import("../auth")).auth;
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -9,8 +11,8 @@ async function getSession(request: Request) {
   return session;
 }
 
-async function requireAuth(request: Request) {
-  const session = await getSession(request);
+async function requireServerAuth(request: Request) {
+  const session = await getServerSession(request);
 
   if (!session) {
     throw redirect({
@@ -21,10 +23,18 @@ async function requireAuth(request: Request) {
   return session;
 }
 
+export const requireAuthServerFn = createServerFn().handler(async (_ctx) => {
+  const request = getWebRequest();
+  const session = await requireServerAuth(request);
+
+  return session;
+});
+
 export async function getGitHubAccessToken(request: Request) {
-  const session = await requireAuth(request);
+  const session = await requireServerAuth(request);
 
   try {
+    const auth = (await import("../auth")).auth;
     const account = await auth.api.getAccessToken({
       body: {
         providerId: "github",

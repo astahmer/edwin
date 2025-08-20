@@ -166,6 +166,7 @@ export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient",
 const makeGitHubRequest = <T>(url: string, accessToken: string) =>
   Effect.tryPromise({
     try: async (): Promise<T> => {
+      console.log("[↗️ GH]:", url);
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

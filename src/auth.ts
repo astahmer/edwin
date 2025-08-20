@@ -1,5 +1,7 @@
 import { betterAuth } from "better-auth";
 import Database from "better-sqlite3";
+import { reactStartCookies } from "better-auth/react-start";
+
 import { EnvConfig } from "./env.config.js";
 
 export const auth = betterAuth({
@@ -14,6 +16,9 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "",
   // trustedOrigins: ["http://localhost:3000"],
   trustedOrigins: ["*"],
+  plugins: [reactStartCookies()],
+  //
+
   user: {
     modelName: "user",
     fields: {

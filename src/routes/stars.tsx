@@ -1,26 +1,32 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { authClient } from "~/auth.client";
+import { requireAuthServerFn } from "~/utils/session";
 
 export const Route = createFileRoute("/stars")({
   component: StarsComponent,
-  beforeLoad: async ({ location }) => {
-    // Check authentication by making a request to our session endpoint
-    try {
-      const response = await authClient.getSession();
-      if (!response.data) {
-        throw new Error("Not authenticated");
-      }
-      const session = response.data;
-      if (!session?.user) {
-        throw new Error("No user session");
-      }
-    } catch (_error) {
-      // Redirect to login if not authenticated
-      throw redirect({
-        to: "/login",
-        search: { redirect: location.href },
-      });
+  beforeLoad: async (ctx) => {
+    if (import.meta.env.SSR) {
+      await requireAuthServerFn()
+    } else {
+      // Check authentication by making a request to our session endpoint
+      try {
+        const response = await authClient.getSession();
+        if (!response.data) {
+          throw new Error("Not authenticated");
+        }
+        const session = response.data;
+        if (!session?.user) {
+          throw new Error("No user session");
+        }
+      } catch (_error) {
+        // Redirect to login if not authenticated
+        throw redirect({
+          to: "/login",
+          search: { redirect: ctx.location.href },
+        });
+
+    }
     }
   },
 });
