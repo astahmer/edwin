@@ -110,9 +110,9 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           const isRepoStale = yield* db.isRepoStale(ghRepo.id, 24);
 
           let repoData = ghRepo;
-          if (isRepoStale) {
-            repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
-          }
+          // if (isRepoStale) {
+          //   repoData = yield* githubClient.getRepoDetails(accessToken, ghRepo.full_name);
+          // }
 
           const repo = transformGitHubRepoToRepo(repoData);
           reposToUpsert.push(repo);

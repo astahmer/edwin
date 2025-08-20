@@ -20,6 +20,7 @@ import type {
   SelectableGithubUserStar,
   SelectableUser,
 } from "./schema";
+import { SqliteDataTypePlugin } from "~/db/kysely.sqlite.plugin.js";
 
 export interface Database {
   user: SelectableUser;
@@ -34,6 +35,7 @@ const dialect = new SqliteDialect({
 
 export const kysely = new Kysely<Database>({
   dialect,
+  plugins: [new SqliteDataTypePlugin()],
 });
 
 export class DatabaseService extends Effect.Service<DatabaseService>()("DatabaseService", {
