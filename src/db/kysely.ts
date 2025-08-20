@@ -10,7 +10,16 @@ import {
   DatabaseUpsertUserError,
   DatabaseUpsertUserStarError,
 } from "../errors";
-import type { InsertableGithubRepository, InsertableGithubUser, InsertableGithubUserStar, InsertableUser, SelectableGithubRepository, SelectableGithubUser, SelectableGithubUserStar, SelectableUser } from "./schema";
+import type {
+  InsertableGithubRepository,
+  InsertableGithubUser,
+  InsertableGithubUserStar,
+  InsertableUser,
+  SelectableGithubRepository,
+  SelectableGithubUser,
+  SelectableGithubUserStar,
+  SelectableUser,
+} from "./schema";
 
 export interface Database {
   user: SelectableUser;
@@ -41,11 +50,11 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const userValues = {
               ...user,
-              emailVerified: user.emailVerified ?? false,
+              email_verified: user.email_verified ?? false,
               role: user.role ?? "user",
               banned: user.banned ?? false,
-              createdAt: user.createdAt || new Date(),
-              updatedAt: user.updatedAt || new Date(),
+              created_at: user.created_at || new Date(),
+              updated_at: user.updated_at || new Date(),
             };
 
             await kysely
@@ -56,7 +65,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                   name: userValues.name,
                   email: userValues.email,
                   image: userValues.image,
-                  updatedAt: new Date(),
+                  updated_at: new Date(),
                 })
               )
               .execute();
@@ -73,32 +82,38 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const githubUserValues = {
               ...githubUser,
-              createdAt: githubUser.createdAt || new Date(),
-              updatedAt: githubUser.updatedAt || new Date(),
+              created_at: githubUser.created_at || new Date(),
+              updated_at: githubUser.updated_at || new Date(),
             };
 
             await kysely
               .insertInto("github_user")
               .values(githubUserValues)
               .onConflict((oc) =>
-                oc.column("userId").doUpdateSet({
+                oc.column("user_id").doUpdateSet({
                   login: githubUserValues.login,
-                  accessToken: githubUserValues.accessToken,
-                  updatedAt: new Date(),
+                  access_token: githubUserValues.access_token,
+                  updated_at: new Date(),
                 })
               )
               .execute();
             return await kysely
               .selectFrom("github_user")
               .selectAll()
-              .where("userId", "=", githubUser.userId)
+              .where("user_id", "=", githubUser.user_id)
               .executeTakeFirstOrThrow();
           },
-          catch: (error) => new DatabaseUpsertUserError({ userId: githubUser.userId, cause: error }),
+          catch: (error) =>
+            new DatabaseUpsertUserError({ userId: githubUser.user_id, cause: error }),
         }),
       getGithubUser: (userId: string) =>
         Effect.tryPromise({
-          try: () => kysely.selectFrom("github_user").selectAll().where("userId", "=", userId).executeTakeFirst(),
+          try: () =>
+            kysely
+              .selectFrom("github_user")
+              .selectAll()
+              .where("user_id", "=", userId)
+              .executeTakeFirst(),
           catch: (error) => new DatabaseGetUserError({ userId, cause: error }),
         }),
       upsertRepo: (repo: InsertableGithubRepository) =>
@@ -107,9 +122,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             const repoValues = {
               ...repo,
               id: repo.id ?? Date.now(), // Ensure id is present as number
-              createdAt: repo.createdAt || new Date(),
-              updatedAt: repo.updatedAt || new Date(),
-              lastFetchedAt: repo.lastFetchedAt || new Date(),
+              created_at: repo.created_at || new Date(),
+              updated_at: repo.updated_at || new Date(),
+              last_fetched_at: repo.last_fetched_at || new Date(),
               stars: repo.stars ?? 0,
             };
 
@@ -120,12 +135,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                 oc.column("id").doUpdateSet({
                   name: repoValues.name,
                   owner: repoValues.owner,
-                  fullName: repoValues.fullName,
+                  full_name: repoValues.full_name,
                   description: repoValues.description,
                   stars: repoValues.stars,
                   language: repoValues.language,
-                  lastFetchedAt: new Date(),
-                  updatedAt: new Date(),
+                  last_fetched_at: new Date(),
+                  updated_at: new Date(),
                 })
               )
               .execute();
@@ -142,29 +157,29 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const userStarValues = {
               ...userStar,
-              lastCheckedAt: userStar.lastCheckedAt || new Date(),
+              last_checked_at: userStar.last_checked_at || new Date(),
             };
 
             await kysely
               .insertInto("github_user_star")
               .values(userStarValues)
               .onConflict((oc) =>
-                oc.columns(["userId", "repoId"]).doUpdateSet({
-                  lastCheckedAt: new Date(),
+                oc.columns(["user_id", "repo_id"]).doUpdateSet({
+                  last_checked_at: new Date(),
                 })
               )
               .execute();
             return await kysely
               .selectFrom("github_user_star")
               .selectAll()
-              .where("userId", "=", userStar.userId)
-              .where("repoId", "=", userStar.repoId)
+              .where("user_id", "=", userStar.user_id)
+              .where("repo_id", "=", userStar.repo_id)
               .executeTakeFirstOrThrow();
           },
           catch: (error) =>
             new DatabaseUpsertUserStarError({
-              userId: userStar.userId,
-              repoId: userStar.repoId,
+              userId: userStar.user_id,
+              repoId: userStar.repo_id,
               cause: error,
             }),
         }),
@@ -176,9 +191,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             const repoValues = repos.map((repo) => ({
               ...repo,
               id: repo.id ?? Date.now(), // Ensure id is present as number
-              createdAt: repo.createdAt || new Date(),
-              updatedAt: repo.updatedAt || new Date(),
-              lastFetchedAt: repo.lastFetchedAt || new Date(),
+              created_at: repo.created_at || new Date(),
+              updated_at: repo.updated_at || new Date(),
+              last_fetched_at: repo.last_fetched_at || new Date(),
               stars: repo.stars ?? 0,
             }));
 
@@ -193,12 +208,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                     oc.column("id").doUpdateSet({
                       name: repoValue.name,
                       owner: repoValue.owner,
-                      fullName: repoValue.fullName,
+                      full_name: repoValue.full_name,
                       description: repoValue.description,
                       stars: repoValue.stars,
                       language: repoValue.language,
-                      lastFetchedAt: new Date(),
-                      updatedAt: new Date(),
+                      last_fetched_at: new Date(),
+                      updated_at: new Date(),
                     })
                   )
                   .execute();
@@ -222,7 +237,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
 
             const userStarValues = userStars.map((userStar) => ({
               ...userStar,
-              lastCheckedAt: userStar.lastCheckedAt || new Date(),
+              last_checked_at: userStar.last_checked_at || new Date(),
             }));
 
             // Use transaction for batch operation
@@ -233,8 +248,8 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                   .insertInto("github_user_star")
                   .values(userStarValue)
                   .onConflict((oc) =>
-                    oc.columns(["userId", "repoId"]).doUpdateSet({
-                      lastCheckedAt: new Date(),
+                    oc.columns(["user_id", "repo_id"]).doUpdateSet({
+                      last_checked_at: new Date(),
                     })
                   )
                   .execute();
@@ -242,8 +257,8 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                 const result = await trx
                   .selectFrom("github_user_star")
                   .selectAll()
-                  .where("userId", "=", userStarValue.userId)
-                  .where("repoId", "=", userStarValue.repoId)
+                  .where("user_id", "=", userStarValue.user_id)
+                  .where("repo_id", "=", userStarValue.repo_id)
                   .executeTakeFirstOrThrow();
                 results.push(result);
               }
@@ -257,7 +272,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               cause: error,
             }),
         }),
-        searchUserStars: (
+      searchUserStars: (
         userId: string,
         searchQuery?: string,
         language?: string,
@@ -270,9 +285,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () => {
             let query = kysely
               .selectFrom("github_user_star")
-              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repo_id")
               .selectAll()
-              .where("github_user_star.userId", "=", userId);
+              .where("github_user_star.user_id", "=", userId);
 
             // Apply search filter
             if (searchQuery?.trim()) {
@@ -280,12 +295,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               query = query.where((eb) =>
                 eb.or([
                   eb("github_repository.name", "like", search),
-                  eb("github_repository.fullName", "like", search),
+                  eb("github_repository.full_name", "like", search),
                   eb("github_repository.description", "like", search),
                   eb("github_repository.owner", "like", search),
                 ])
               );
-            }            // Apply language filter
+            } // Apply language filter
             if (language && language !== "all") {
               query = query.where("github_repository.language", "=", language);
             }
@@ -300,7 +315,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
                 break;
               case "date":
               default:
-                query = query.orderBy("github_user_star.starredAt", sortOrder);
+                query = query.orderBy("github_user_star.starred_at", sortOrder);
                 break;
             }
 
@@ -313,9 +328,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () =>
             kysely
               .selectFrom("github_user_star")
-              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repo_id")
               .select("github_repository.language")
-              .where("github_user_star.userId", "=", userId)
+              .where("github_user_star.user_id", "=", userId)
               .where("github_repository.language", "is not", null)
               .groupBy("github_repository.language")
               .orderBy("github_repository.language", "asc")
@@ -327,9 +342,9 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () => {
             let query = kysely
               .selectFrom("github_user_star")
-              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
-              .select((eb) => eb.fn.count("github_user_star.userId").as("count"))
-              .where("github_user_star.userId", "=", userId);
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repo_id")
+              .select((eb) => eb.fn.count("github_user_star.user_id").as("count"))
+              .where("github_user_star.user_id", "=", userId);
 
             // Apply search filter
             if (searchQuery?.trim()) {
@@ -337,7 +352,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               query = query.where((eb) =>
                 eb.or([
                   eb("github_repository.name", "like", search),
-                  eb("github_repository.fullName", "like", search),
+                  eb("github_repository.full_name", "like", search),
                   eb("github_repository.description", "like", search),
                   eb("github_repository.owner", "like", search),
                 ])
@@ -358,10 +373,10 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () =>
             kysely
               .selectFrom("github_user_star")
-              .innerJoin("github_repository", "github_repository.id", "github_user_star.repoId")
+              .innerJoin("github_repository", "github_repository.id", "github_user_star.repo_id")
               .selectAll()
-              .where("github_user_star.userId", "=", userId)
-              .orderBy("github_user_star.starredAt", "desc")
+              .where("github_user_star.user_id", "=", userId)
+              .orderBy("github_user_star.starred_at", "desc")
               .limit(limit)
               .offset(offset)
               .execute(),
@@ -373,12 +388,12 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () =>
             kysely
               .selectFrom("github_user_star")
-              .select("starredAt")
-              .where("userId", "=", userId)
-              .orderBy("starredAt", "desc")
+              .select("starred_at")
+              .where("user_id", "=", userId)
+              .orderBy("starred_at", "desc")
               .limit(1)
               .executeTakeFirst()
-              .then((result) => result?.starredAt || null),
+              .then((result) => result?.starred_at || null),
           catch: (error) => new DatabaseGetUserStarsError({ userId, cause: error }),
         }),
 
@@ -387,15 +402,15 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const result = await kysely
               .selectFrom("github_user_star")
-              .select("lastCheckedAt")
-              .where("userId", "=", userId)
-              .orderBy("lastCheckedAt", "desc")
+              .select("last_checked_at")
+              .where("user_id", "=", userId)
+              .orderBy("last_checked_at", "desc")
               .executeTakeFirst();
 
             if (!result) return true;
 
             const staleTime = new Date(Date.now() - staleMins * 60 * 1000);
-            return result.lastCheckedAt < staleTime;
+            return result.last_checked_at < staleTime;
           },
           catch: (error) =>
             new DatabaseStaleCheckError({
@@ -409,14 +424,14 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: async () => {
             const result = await kysely
               .selectFrom("github_repository")
-              .select("lastFetchedAt")
+              .select("last_fetched_at")
               .where("id", "=", repoId)
               .executeTakeFirst();
 
-            if (!result || !result.lastFetchedAt) return true;
+            if (!result || !result.last_fetched_at) return true;
 
             const staleTime = new Date(Date.now() - staleHours * 60 * 60 * 1000);
-            return result.lastFetchedAt < staleTime;
+            return result.last_fetched_at < staleTime;
           },
           catch: (error) =>
             new DatabaseStaleCheckError({

@@ -6,76 +6,64 @@ export const user = sqlite.sqliteTable("user", {
   id: sqlite.text().primaryKey(),
   name: sqlite.text().notNull(),
   email: sqlite.text().notNull().unique(),
-  emailVerified: sqlite.integer("email_verified", { mode: "boolean" }).notNull().default(false),
+  email_verified: sqlite.integer({ mode: "boolean" }).notNull().default(false),
   image: sqlite.text(),
-  createdAt: sqlite
-    .integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: sqlite
-    .integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-    // Admin plugin
+  created_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updated_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  // Admin plugin
   role: sqlite.text().notNull().default("user"),
   banned: sqlite.integer({ mode: "boolean" }).notNull().default(false),
-  banReason: sqlite.text("ban_reason"),
-  banExpires: sqlite.integer("ban_expires", { mode: "timestamp" }),
+  ban_reason: sqlite.text(),
+  ban_expires: sqlite.integer({ mode: "timestamp" }),
 });
 
 // GitHub-specific user data
 export const githubUser = sqlite.sqliteTable("github_user", {
-  userId: sqlite
-    .text("user_id")
+  user_id: sqlite
+    .text()
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
-  githubId: sqlite.text("github_id").notNull().unique(), // GitHub user ID
+  github_id: sqlite.text().notNull().unique(), // GitHub user ID
   login: sqlite.text().notNull(),
-  accessToken: sqlite.text("access_token").notNull(),
-  createdAt: sqlite
-    .integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: sqlite
-    .integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
+  access_token: sqlite.text().notNull(),
+  created_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updated_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
 
 // Better Auth session table
 export const userSession = sqlite.sqliteTable("user_session", {
   id: sqlite.text().primaryKey(),
-  expiresAt: sqlite.integer("expires_at", { mode: "timestamp" }).notNull(),
+  expires_at: sqlite.integer({ mode: "timestamp" }).notNull(),
   token: sqlite.text().notNull().unique(),
-  createdAt: sqlite.integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }).notNull(),
-  ipAddress: sqlite.text("ip_address"),
-  userAgent: sqlite.text("user_agent"),
-  userId: sqlite
-    .text("user_id")
+  created_at: sqlite.integer({ mode: "timestamp" }).notNull(),
+  updated_at: sqlite.integer({ mode: "timestamp" }).notNull(),
+  ip_address: sqlite.text(),
+  user_agent: sqlite.text(),
+  user_id: sqlite
+    .text()
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  impersonatedBy: sqlite.text("impersonated_by"),
+  impersonated_by: sqlite.text(),
 });
 
 // Better Auth account table
 export const userAccount = sqlite.sqliteTable("user_account", {
   id: sqlite.text().primaryKey(),
-  accountId: sqlite.text("account_id").notNull(),
-  providerId: sqlite.text("provider_id").notNull(),
-  userId: sqlite
-    .text("user_id")
+  account_id: sqlite.text().notNull(),
+  provider_id: sqlite.text().notNull(),
+  user_id: sqlite
+    .text()
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: sqlite.text("access_token"),
-  refreshToken: sqlite.text("refresh_token"),
-  idToken: sqlite.text("id_token"),
-  accessTokenExpiresAt: sqlite.integer("access_token_expires_at", { mode: "timestamp" }),
-  refreshTokenExpiresAt: sqlite.integer("refresh_token_expires_at", { mode: "timestamp" }),
+  access_token: sqlite.text(),
+  refresh_token: sqlite.text(),
+  id_token: sqlite.text(),
+  access_token_expires_at: sqlite.integer({ mode: "timestamp" }),
+  refresh_token_expires_at: sqlite.integer({ mode: "timestamp" }),
   scope: sqlite.text(),
   password: sqlite.text(),
-  createdAt: sqlite.integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }).notNull(),
+  created_at: sqlite.integer({ mode: "timestamp" }).notNull(),
+  updated_at: sqlite.integer({ mode: "timestamp" }).notNull(),
 });
 
 // Better Auth verification table
@@ -83,9 +71,9 @@ export const authVerification = sqlite.sqliteTable("auth_verification", {
   id: sqlite.text().primaryKey(),
   identifier: sqlite.text().notNull(),
   value: sqlite.text().notNull(),
-  expiresAt: sqlite.integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: sqlite.integer("created_at", { mode: "timestamp" }),
-  updatedAt: sqlite.integer("updated_at", { mode: "timestamp" }),
+  expires_at: sqlite.integer({ mode: "timestamp" }).notNull(),
+  created_at: sqlite.integer({ mode: "timestamp" }),
+  updated_at: sqlite.integer({ mode: "timestamp" }),
 });
 
 // Application-specific tables
@@ -93,40 +81,31 @@ export const githubRepository = sqlite.sqliteTable("github_repository", {
   id: sqlite.integer().primaryKey(), // GitHub repo ID is a number
   name: sqlite.text().notNull(),
   owner: sqlite.text().notNull(),
-  fullName: sqlite.text("full_name").notNull(),
+  full_name: sqlite.text().notNull(),
   description: sqlite.text(),
   stars: sqlite.integer().notNull().default(0),
   language: sqlite.text(),
-  lastFetchedAt: sqlite.integer("last_fetched_at", { mode: "timestamp" }),
-  createdAt: sqlite
-    .integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: sqlite
-    .integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
+  last_fetched_at: sqlite.integer({ mode: "timestamp" }),
+  created_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updated_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
 
 export const githubUserStar = sqlite.sqliteTable(
   "github_user_star",
   {
-    userId: sqlite
-      .text("user_id")
+    user_id: sqlite
+      .text()
       .notNull()
       .references(() => user.id),
-    repoId: sqlite
-      .integer("repo_id")
+    repo_id: sqlite
+      .integer()
       .notNull()
       .references(() => githubRepository.id),
-    starredAt: sqlite.integer("starred_at", { mode: "timestamp" }).notNull(),
-    lastCheckedAt: sqlite
-      .integer("last_checked_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
+    starred_at: sqlite.integer({ mode: "timestamp" }).notNull(),
+    last_checked_at: sqlite.integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   },
   (t) => ({
-    pk: sqlite.primaryKey({ columns: [t.userId, t.repoId] }),
+    pk: sqlite.primaryKey({ columns: [t.user_id, t.repo_id] }),
   })
 );
 

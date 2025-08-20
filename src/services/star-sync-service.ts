@@ -1,6 +1,10 @@
 import { Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
-import type { SelectableGithubRepository, InsertableGithubRepository, InsertableGithubUserStar } from "../db/schema";
+import type {
+  SelectableGithubRepository,
+  InsertableGithubRepository,
+  InsertableGithubUserStar,
+} from "../db/schema";
 import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
 
 export interface SyncResult {
@@ -14,13 +18,13 @@ interface UserStarData {
   id: number;
   name: string;
   owner: string;
-  fullName: string;
+  full_name: string;
   description: string | null;
   stars: number;
   language: string | null;
-  lastFetchedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  last_fetched_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 /**
@@ -37,13 +41,13 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       id: ghRepo.id,
       name: ghRepo.name,
       owner: ghRepo.owner.login,
-      fullName: ghRepo.full_name,
+      full_name: ghRepo.full_name,
       description: ghRepo.description || null,
       stars: ghRepo.stargazers_count,
       language: ghRepo.language || null,
-      lastFetchedAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      last_fetched_at: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     });
 
     const transformStarredRepoToDb = (starredRepo: StarredGithubRepo, userId: string) => {
@@ -53,19 +57,19 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           id: repo.id,
           name: repo.name,
           owner: repo.owner.login,
-          fullName: repo.full_name,
+          full_name: repo.full_name,
           description: repo.description || null,
           stars: repo.stargazers_count,
           language: repo.language || null,
-          lastFetchedAt: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          last_fetched_at: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
         } as InsertableGithubRepository,
         userStar: {
-          userId,
-          repoId: repo.id,
-          starredAt: new Date(starredRepo.starred_at),
-          lastCheckedAt: new Date(),
+          user_id: userId,
+          repo_id: repo.id,
+          starred_at: new Date(starredRepo.starred_at),
+          last_checked_at: new Date(),
         } as InsertableGithubUserStar,
       };
     };
@@ -92,7 +96,11 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
         })
       ).pipe(Stream.flatMap(Stream.fromIterable));
 
-    const processBatchOfStars = (starredReposBatch: ReadonlyArray<StarredGithubRepo>, userId: string, accessToken: string) =>
+    const processBatchOfStars = (
+      starredReposBatch: ReadonlyArray<StarredGithubRepo>,
+      userId: string,
+      accessToken: string
+    ) =>
       Effect.gen(function* () {
         const reposToUpsert = [];
         const userStarsToUpsert = [];
@@ -110,9 +118,9 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           reposToUpsert.push(repo);
 
           userStarsToUpsert.push({
-            userId,
-            repoId: ghRepo.id,
-            starredAt: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
+            user_id: userId,
+            repo_id: ghRepo.id,
+            starred_at: starredRepo.starred_at ? new Date(starredRepo.starred_at) : new Date(),
           });
         }
 
@@ -174,7 +182,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
 
           // Get existing synced repos for this user
           const existingStars = yield* db.getUserStars(userId);
-          const existingRepoIds = new Set(existingStars.map((star) => star.repoId));
+          const existingRepoIds = new Set(existingStars.map((star) => star.repo_id));
 
           // Prepare batch data
           const reposToUpsert: InsertableGithubRepository[] = [];
@@ -228,7 +236,10 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             const existingStars = yield* db.getUserStars(userId, 10000, 0);
 
             // Fetch only new stars since the most recent starred date
-            const starsPaginated = fetchStarsFromCursor(accessToken, mostRecentStarredAt || undefined);
+            const starsPaginated = fetchStarsFromCursor(
+              accessToken,
+              mostRecentStarredAt || undefined
+            );
 
             const hasNewStars = yield* starsPaginated.pipe(
               Stream.take(1),
@@ -240,7 +251,13 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
               return createStreamFromExisting(existingStars, lastEventId);
             }
 
-            return createIncrementalStream(starsPaginated, existingStars, userId, accessToken, lastEventId);
+            return createIncrementalStream(
+              starsPaginated,
+              existingStars,
+              userId,
+              accessToken,
+              lastEventId
+            );
           })
         ),
 
@@ -257,8 +274,8 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
 
           // Find the most recent lastCheckedAt time
           const mostRecent = userStars.reduce(
-            (latest, star) => (star.lastCheckedAt > latest ? star.lastCheckedAt : latest),
-            userStars[0].lastCheckedAt
+            (latest, star) => (star.last_checked_at > latest ? star.last_checked_at : latest),
+            userStars[0].last_checked_at
           );
 
           return mostRecent;
@@ -267,7 +284,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       isRepoSynced: (userId: string, repoId: number) =>
         Effect.gen(function* () {
           const userStars = yield* db.getUserStars(userId);
-          return userStars.some((star) => star.repoId === repoId);
+          return userStars.some((star) => star.repo_id === repoId);
         }),
     };
   }),

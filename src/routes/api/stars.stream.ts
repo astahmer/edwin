@@ -62,13 +62,13 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
               id: repo.id,
               name: repo.name,
               owner: repo.owner,
-              fullName: repo.fullName,
+              full_name: repo.full_name,
               description: repo.description || undefined,
               stars: repo.stars,
               language: repo.language || undefined,
-              lastFetchedAt: repo.lastFetchedAt?.toISOString(),
-              createdAt: repo.createdAt?.toISOString(),
-              updatedAt: repo.updatedAt?.toISOString(),
+              last_fetched_at: repo.last_fetched_at?.toISOString(),
+              created_at: repo.created_at?.toISOString(),
+              updated_at: repo.updated_at?.toISOString(),
             };
 
             const message: SSEMessage = {
@@ -140,9 +140,10 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
                 Effect.catchAll((error) => {
                   console.error("Stream error:", error);
                   return Effect.sync(() => {
-                    const errorMessage = typeof error === "object" && error !== null && "message" in error
-                      ? String((error as { message: unknown }).message)
-                      : "Unknown error";
+                    const errorMessage =
+                      typeof error === "object" && error !== null && "message" in error
+                        ? String((error as { message: unknown }).message)
+                        : "Unknown error";
                     const errorChunk = formatSSEMessage({
                       id: "error",
                       event: "error",
