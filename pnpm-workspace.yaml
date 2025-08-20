@@ -1,6 +1,14 @@
-# ignoredBuiltDependencies:
-#   - esbuild
-#   - msgpackr-extract
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - msgpackr-extract
+  - prisma
 
-# onlyBuiltDependencies:
-#   - better-sqlite3
+onlyBuiltDependencies:
+  - better-sqlite3
+
+patchedDependencies:
+  better-auth@1.3.7: patches/better-auth@1.3.7.patch

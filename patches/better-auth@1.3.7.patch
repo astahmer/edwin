@@ -1,0 +1,22 @@
+diff --git a/dist/shared/better-auth.gn8iAL5-.mjs b/dist/shared/better-auth.gn8iAL5-.mjs
+index ae7a12a1b861c26fd08cdc893210dd4b8fffe4cb..a5aa2a3b2a553ca1027a0e5f6992ed5aa55ac6dc 100644
+--- a/dist/shared/better-auth.gn8iAL5-.mjs
++++ b/dist/shared/better-auth.gn8iAL5-.mjs
+@@ -122,9 +122,15 @@ const kyselyAdapter = (db, config) => createAdapter({
+         return value;
+       }
+       const { type = "sqlite" } = config || {};
+-      let f = schema[model]?.fields[field];
++      const schemaModel = schema[model]?? Object.values(schema).find((f2) => f2.modelName === model)
++      let f = schemaModel?.fields[field];
+       if (!f) {
+-        f = Object.values(schema).find((f2) => f2.modelName === model);
++        const foundField = Object.values(schemaModel?.fields || {}).find(
++          (f) => f.fieldName === field,
++        );
++        if (foundField) {
++          f = foundField;
++        }
+       }
+       if (f.type === "boolean" && (type === "sqlite" || type === "mssql") && value !== null && value !== void 0) {
+         return value ? 1 : 0;
