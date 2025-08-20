@@ -376,15 +376,24 @@ function StarsComponent() {
   );
 }
 
+// Type definitions for SSE events
+interface ProgressData {
+  current: number;
+  total: number;
+  phase: "fetching" | "syncing" | "complete";
+}
+
+type SSEEventHandler = (data: any) => void;
+
 // Generic SSE hook with configurable logging
-function useSSE<T = any>(
+function useSSE(
   url: string,
   options: {
     enableLogging?: boolean;
-    eventHandlers: Record<string, (data: T) => void>;
+    eventHandlers: Record<string, SSEEventHandler>;
     onError?: (error: string) => void;
     onComplete?: () => void;
-  } = { enableLogging: true, eventHandlers: {} }
+  } = { enableLogging: false, eventHandlers: {} }
 ) {
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "completed" | "error"
@@ -516,20 +525,32 @@ function useStarredReposStream(url: string, enableLogging?: boolean) {
     phase: "fetching" | "syncing" | "complete";
   } | null>(null);
 
+  // Memoize event handlers object
+  const eventHandlers = useMemo(
+    () => ({
+      connected: () => {
+        // Connection established
+      },
+      progress: (data: ProgressData) => {
+        setSyncProgress(data);
+      },
+      repo: (data: RepoMessage) => {
+        setRepos((prev) => {
+          const ids = new Set(prev.map((repo) => repo.id));
+          if (ids.has(data.id)) {
+            return prev;
+          }
+
+          return [...prev, data];
+        });
+      },
+    }),
+    []
+  );
+
   const { connectionStatus, error } = useSSE(url, {
     enableLogging,
-    eventHandlers: useMemo(
-      () => ({
-        connected: () => {
-          // Connection established
-        },
-        progress: setSyncProgress,
-        repo: (data: RepoMessage) => {
-          setRepos((prev) => [...prev, data]);
-        },
-      }),
-      []
-    ),
+    eventHandlers,
   });
 
   return { repos, connectionStatus, syncProgress, error };
