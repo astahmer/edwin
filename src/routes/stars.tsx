@@ -10,6 +10,8 @@ export const Route = createFileRoute("/stars")({
     Schema.Struct({
       search: Schema.String.pipe(Schema.optional),
       language: Schema.String.pipe(Schema.optional),
+      minStars: Schema.String.pipe(Schema.optional),
+      maxStars: Schema.String.pipe(Schema.optional),
       sortBy: Schema.String.pipe(Schema.optional),
       sortOrder: Schema.String.pipe(Schema.optional),
     })
@@ -62,6 +64,8 @@ function StarsComponent() {
   // Get search params with defaults
   const searchQuery = search.search || "";
   const selectedLanguage = search.language || "all";
+  const minStars = search.minStars ? Number.parseInt(search.minStars, 10) : undefined;
+  const maxStars = search.maxStars ? Number.parseInt(search.maxStars, 10) : undefined;
   const sortBy = (search.sortBy as "stars" | "name" | "date") || "date";
   const sortOrder = (search.sortOrder as "asc" | "desc") || "desc";
 
@@ -89,6 +93,16 @@ function StarsComponent() {
     // Apply language filter
     if (selectedLanguage !== "all") {
       filtered = filtered.filter((repo) => repo.language === selectedLanguage);
+    }
+
+    // Apply star range filter
+    if (minStars !== undefined || maxStars !== undefined) {
+      filtered = filtered.filter((repo) => {
+        const stars = repo.stars;
+        if (minStars !== undefined && stars < minStars) return false;
+        if (maxStars !== undefined && stars > maxStars) return false;
+        return true;
+      });
     }
 
     // Apply sorting
@@ -167,7 +181,7 @@ function StarsComponent() {
 
           {/* Search and Filter Controls */}
           <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Search Input */}
               <div className="md:col-span-2">
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
@@ -201,6 +215,54 @@ function StarsComponent() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Star Range Filter */}
+              <div>
+                <div className="flex space-y-2 flex-col">
+                  <div className="flex-1">
+                    <label htmlFor="minStars" className="sr-only">
+                      Minimum stars
+                    </label>
+                    <input
+                      type="number"
+                      id="minStars"
+                      placeholder="Min"
+                      value={minStars || ""}
+                      onChange={(e) =>
+                        navigate({
+                          search: {
+                            ...search,
+                            minStars: e.target.value || undefined,
+                          },
+                        })
+                      }
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                      min="0"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="maxStars" className="sr-only">
+                      Maximum stars
+                    </label>
+                    <input
+                      type="number"
+                      id="maxStars"
+                      placeholder="Max"
+                      value={maxStars || ""}
+                      onChange={(e) =>
+                        navigate({
+                          search: {
+                            ...search,
+                            maxStars: e.target.value || undefined,
+                          },
+                        })
+                      }
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                      min="0"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Sort Options */}
@@ -243,6 +305,14 @@ function StarsComponent() {
               Showing {filteredRepos.length} of {repos.length} repositories
               {searchQuery && ` matching "${searchQuery}"`}
               {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
+              {(minStars !== undefined || maxStars !== undefined) &&
+                ` with ${
+                  minStars !== undefined && maxStars !== undefined
+                    ? `${minStars}-${maxStars} stars`
+                    : minStars !== undefined
+                      ? `at least ${minStars} stars`
+                      : `at most ${maxStars} stars`
+                }`}
             </div>
           </div>
 
@@ -297,7 +367,17 @@ function StarsComponent() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => navigate({ search: { ...search, search: "", language: "all" } })}
+                    onClick={() =>
+                      navigate({
+                        search: {
+                          ...search,
+                          search: "",
+                          language: "all",
+                          minStars: undefined,
+                          maxStars: undefined,
+                        },
+                      })
+                    }
                     className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Clear filters
