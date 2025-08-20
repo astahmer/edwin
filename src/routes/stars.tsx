@@ -403,8 +403,26 @@ function StarsComponent() {
                   <div className="px-4 py-5 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">{repo.name}</h3>
-                        <p className="text-sm text-gray-500 truncate">{repo.owner}</p>
+                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                          <a
+                            href={`https://github.com/${repo.full_name}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-blue-600 hover:underline"
+                          >
+                            {repo.name}
+                          </a>
+                        </h3>
+                        <p className="text-sm text-gray-500 truncate">
+                          <a
+                            href={`https://github.com/${repo.owner}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-blue-600 hover:underline"
+                          >
+                            {repo.owner}
+                          </a>
+                        </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <svg
