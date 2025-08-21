@@ -5,7 +5,8 @@
         "rules": {
             "recommended": true,
             "correctness": {
-                "useUniqueElementIds": "off"
+                "useUniqueElementIds": "off",
+                "useYield": "off"
             },
             "complexity": {
                 "noExcessiveCognitiveComplexity": "warn",

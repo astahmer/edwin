@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSSE } from "~/components/use-sse";
 import type { RepoMessage } from "~/routes/api/stars.stream";
 
@@ -13,36 +13,40 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
   const [repos, setRepos] = useState<RepoMessage[]>([]);
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
 
-  // Memoize event handlers object
-  const eventHandlers = useMemo(
-    () => ({
-      connected: () => {
-        // Connection established
-      },
-      progress: (data: SyncProgress) => {
-        setSyncProgress(data);
-      },
-      repo: (data: RepoMessage) => {
-        setRepos((prev) => {
-          const ids = new Set(prev.map((repo) => repo.id));
-          if (ids.has(data.id)) {
-            return prev;
-          }
+  const repoRef = useRef<RepoMessage[]>([]);
 
-          return [...prev, data];
-        });
-      },
-    }),
-    []
+  const { connectionStatus, error } = useSSE(
+    url,
+    useMemo(
+      () => ({
+        enableLogging,
+        eventHandlers: {
+          connected: () => {
+            // Connection established
+          },
+          progress: (data: SyncProgress) => {
+            setSyncProgress(data);
+          },
+          repo: (data: RepoMessage) => {
+            setRepos((prev) => {
+              const ids = new Set(prev.map((repo) => repo.id));
+              if (ids.has(data.id)) {
+                return prev;
+              }
+
+              const update = [...prev, data];
+              repoRef.current = update;
+              return update;
+            });
+          },
+        },
+        onComplete: () => {
+          console.log("Stream complete", repoRef.current);
+        },
+      }),
+      [enableLogging]
+    )
   );
-
-  const { connectionStatus, error } = useSSE(url, {
-    enableLogging,
-    eventHandlers,
-    onComplete: useCallback(() => {
-      console.log("Stream complete", repos);
-    }, [repos]),
-  });
 
   return { repos, connectionStatus, syncProgress, error };
 }

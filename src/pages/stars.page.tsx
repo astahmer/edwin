@@ -5,11 +5,8 @@ import { useStarredReposStream, type SyncProgress } from "~/components/use-starr
 import type { RepoMessage } from "~/routes/api/stars.stream";
 
 export function StarsPage() {
-  // Use custom hook for SSE connection
-  const { repos, connectionStatus, syncProgress, error } =
-    useStarredReposStream("/api/stars/stream");
-
-  const loading = connectionStatus === "connecting" || connectionStatus === "connected";
+  const stream = useStarredReposStream("/api/stars/stream");
+  const { repos, connectionStatus, syncProgress, error } = stream;
 
   // Handle authentication error redirect
   useEffect(() => {
@@ -20,8 +17,8 @@ export function StarsPage() {
     }
   }, [error]);
 
-  if (loading) {
-    return <LoadingPage connectionStatus={connectionStatus} syncProgress={syncProgress} />;
+  if (connectionStatus === "connecting") {
+    return <LoadingPage />;
   }
 
   if (error) {
@@ -34,48 +31,25 @@ export function StarsPage() {
     );
   }
 
-  return <ConnectedPage repos={repos} />;
+  return <ConnectedPage repos={repos} syncProgress={syncProgress} />;
 }
 
-const LoadingPage = (props: { connectionStatus: string; syncProgress: SyncProgress | null }) => {
-  const { connectionStatus, syncProgress } = props;
+const LoadingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-        <p className="mt-4 text-gray-600">
-          {connectionStatus === "connecting" && "Connecting to stream..."}
-          {connectionStatus === "connected" && "Loading your starred repositories..."}
-        </p>
-        {syncProgress && (
-          <div className="mt-4 w-full max-w-md mx-auto">
-            <div className="mb-2 text-sm text-gray-600">
-              {syncProgress.phase === "fetching" &&
-                `Fetching repositories... ${syncProgress.current}/${syncProgress.total || "?"}`}
-              {syncProgress.phase === "syncing" &&
-                `Syncing repositories... ${syncProgress.current}/${syncProgress.total}`}
-              {syncProgress.phase === "complete" &&
-                `Sync complete! ${syncProgress.total} repositories processed`}
-            </div>
-            {syncProgress.total > 0 && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <p className="mt-4 text-gray-600">Connecting to stream...</p>
       </div>
     </div>
   );
 };
 
-const ConnectedPage = (props: { repos: RepoMessage[] }) => {
-  const { repos } = props;
+const ConnectedPage = (props: { repos: RepoMessage[]; syncProgress: SyncProgress | null }) => {
+  const { repos, syncProgress } = props;
   const availableLanguages = useAvailableLanguages(repos);
   const filteredRepos = useFilteredRepos(repos);
+  console.log(syncProgress);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -94,6 +68,27 @@ const ConnectedPage = (props: { repos: RepoMessage[] }) => {
             </div>
 
             {/* Results Summary */}
+            {syncProgress && (
+              <div className="mt-4 w-full max-w-md mx-auto">
+                <div className="mb-2 text-sm text-gray-600">
+                  {syncProgress.phase === "fetching" &&
+                    `Fetching repositories... ${syncProgress.current}/${syncProgress.total || "?"}`}
+                  {syncProgress.phase === "syncing" &&
+                    `Syncing repositories... ${syncProgress.current}/${syncProgress.total}`}
+                  {syncProgress.phase === "complete" &&
+                    `Sync complete! ${syncProgress.total} repositories processed`}
+                </div>
+                {syncProgress.total > 0 && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             <ResultsSummary filteredRepos={filteredRepos} repos={repos} />
           </div>
           <ResultList filteredRepos={filteredRepos} repos={repos} />

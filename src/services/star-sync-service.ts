@@ -1,12 +1,11 @@
 import { Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
 import type {
-  SelectableGithubRepository,
   InsertableGithubRepository,
   InsertableGithubUserStar,
+  SelectableGithubRepository,
 } from "../db/schema";
 import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
-import type { DatabaseGetUserStarsError, GitHubRequestError } from "~/errors";
 
 export interface SyncResult {
   totalFetched: number;
@@ -76,7 +75,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             : stars;
 
           // Stop if no results or hit pagination limit
-          if (stars.length === 0 || page > 400 || (since && filteredStars.length === 0)) {
+          if (stars.length === 0 || (since && filteredStars.length === 0)) {
             return [filteredStars, Option.none()];
           }
 
@@ -217,9 +216,11 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             }
 
             return starsPaginated.pipe(
-              Stream.groupedWithin(50, "1 second"),
+              // Stream.groupedWithin(100, "1 second"),
+              Stream.grouped(100),
               Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
-              Stream.flatMap((repos) => Stream.fromIterable(repos)),
+              Stream.flattenChunks,
+              // Stream.flatMap((repos) => Stream.fromIterable(repos)),
               Stream.map((starredRepo) => ({
                 id: starredRepo.repo.id,
                 name: starredRepo.repo.name,
