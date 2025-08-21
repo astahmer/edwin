@@ -126,7 +126,10 @@ function StarsComponent() {
           {/* Search and Filter Controls */}
           <div className="relative bg-white rounded-lg shadow p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <SearchInput />
+              <div className="flex-col gap-4">
+                <SearchInput />
+                <ClearFiltersButton />
+              </div>
               <FilterControls availableLanguages={availableLanguages} />
             </div>
 
@@ -554,7 +557,6 @@ function FilterControls({ availableLanguages }: { availableLanguages: string[] }
       <StarRangeFilter />
       <DateRangeFilter />
       <SortControls />
-      <ClearFiltersButton />
     </>
   );
 }
@@ -653,12 +655,23 @@ const RepositoryGrid = React.memo(function RepositoryGrid({ repos }: { repos: Re
     select: (search) => search.language || "all",
   });
 
-  // Virtualizer configuration
+  // Calculate items per row based on screen size
+  const getItemsPerRow = () => {
+    if (typeof window === "undefined") return 3; // SSR fallback
+    if (window.innerWidth >= 1280) return 3; // xl: 3 cards per row
+    if (window.innerWidth >= 768) return 2; // md: 2 cards per row
+    return 1; // sm: 1 card per row
+  };
+
+  const itemsPerRow = getItemsPerRow();
+  const rowCount = Math.ceil(repos.length / itemsPerRow);
+
+  // Virtualizer configuration for rows
   const virtualizer = useVirtualizer({
-    count: repos.length,
+    count: rowCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 200, // Estimated height of each repository card
-    overscan: 5, // Number of items to render outside visible area
+    estimateSize: () => 220, // Estimated height of each row
+    overscan: 3, // Number of rows to render outside visible area
   });
 
   if (repos.length === 0) {
@@ -688,7 +701,7 @@ const RepositoryGrid = React.memo(function RepositoryGrid({ repos }: { repos: Re
   return (
     <div
       ref={parentRef}
-      className="h-[600px] overflow-auto"
+      className="max-h-fit min-h-[600px] overflow-auto"
       style={{
         contain: "strict", // CSS containment for better performance
       }}
@@ -699,30 +712,36 @@ const RepositoryGrid = React.memo(function RepositoryGrid({ repos }: { repos: Re
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
-          const repo = repos[virtualItem.index];
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const rowStart = virtualRow.index * itemsPerRow;
+          const rowEnd = Math.min(rowStart + itemsPerRow, repos.length);
+          const rowRepos = repos.slice(rowStart, rowEnd);
+
           return (
             <div
-              key={repo.id}
+              key={virtualRow.index}
               className="absolute top-0 left-0 w-full"
               style={{
-                height: `${virtualItem.size}px`,
-                transform: `translateY(${virtualItem.start}px)`,
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <div className="p-3">
-                <RepositoryCard
-                  repo={repo}
-                  selectedLanguage={selectedLanguage}
-                  onLanguageClick={(language) =>
-                    navigate({
-                      search: (prev) => ({
-                        ...prev,
-                        language: selectedLanguage === language ? "all" : language,
-                      }),
-                    })
-                  }
-                />
+              <div className="grid gap-6 p-3 md:grid-cols-2 lg:grid-cols-3">
+                {rowRepos.map((repo) => (
+                  <RepositoryCard
+                    key={repo.id}
+                    repo={repo}
+                    selectedLanguage={selectedLanguage}
+                    onLanguageClick={(language) =>
+                      navigate({
+                        search: (prev) => ({
+                          ...prev,
+                          language: selectedLanguage === language ? "all" : language,
+                        }),
+                      })
+                    }
+                  />
+                ))}
               </div>
             </div>
           );
