@@ -12,6 +12,8 @@ export const Route = createFileRoute("/stars")({
       language: Schema.String.pipe(Schema.optional),
       minStars: Schema.String.pipe(Schema.optional),
       maxStars: Schema.String.pipe(Schema.optional),
+      minDate: Schema.String.pipe(Schema.optional),
+      maxDate: Schema.String.pipe(Schema.optional),
       sortBy: Schema.String.pipe(Schema.optional),
       sortOrder: Schema.String.pipe(Schema.optional),
     })
@@ -66,6 +68,8 @@ function StarsComponent() {
   const selectedLanguage = search.language || "all";
   const minStars = search.minStars ? Number.parseInt(search.minStars, 10) : undefined;
   const maxStars = search.maxStars ? Number.parseInt(search.maxStars, 10) : undefined;
+  const minDate = search.minDate ? new Date(search.minDate) : undefined;
+  const maxDate = search.maxDate ? new Date(search.maxDate) : undefined;
   const sortBy = (search.sortBy as "stars" | "name" | "date") || "date";
   const sortOrder = (search.sortOrder as "asc" | "desc") || "desc";
 
@@ -101,6 +105,16 @@ function StarsComponent() {
         const stars = repo.stars;
         if (minStars !== undefined && stars < minStars) return false;
         if (maxStars !== undefined && stars > maxStars) return false;
+        return true;
+      });
+    }
+
+    // Apply date range filter
+    if (minDate !== undefined || maxDate !== undefined) {
+      filtered = filtered.filter((repo) => {
+        const starredDate = new Date(repo.starred_at);
+        if (minDate !== undefined && starredDate < minDate) return false;
+        if (maxDate !== undefined && starredDate > maxDate) return false;
         return true;
       });
     }
@@ -181,7 +195,7 @@ function StarsComponent() {
 
           {/* Search and Filter Controls */}
           <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               {/* Search Input */}
               <div className="md:col-span-2">
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
@@ -265,6 +279,50 @@ function StarsComponent() {
                 </div>
               </div>
 
+              {/* Date Range Filter */}
+              <div>
+                <div className="flex space-y-2 flex-col">
+                  <div className="flex-1">
+                    <label htmlFor="minDate" className="text-sm font-medium text-gray-400 mb-1">
+                      From
+                    </label>
+                    <input
+                      type="date"
+                      id="minDate"
+                      value={minDate ? minDate.toISOString().split("T")[0] : ""}
+                      onChange={(e) =>
+                        navigate({
+                          search: {
+                            ...search,
+                            minDate: e.target.value || undefined,
+                          },
+                        })
+                      }
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="maxDate" className="text-sm font-medium text-gray-400 mb-1">
+                      To
+                    </label>
+                    <input
+                      type="date"
+                      id="maxDate"
+                      value={maxDate ? maxDate.toISOString().split("T")[0] : ""}
+                      onChange={(e) =>
+                        navigate({
+                          search: {
+                            ...search,
+                            maxDate: e.target.value || undefined,
+                          },
+                        })
+                      }
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Sort Options */}
               <div>
                 <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
@@ -312,6 +370,16 @@ function StarsComponent() {
                     : minStars !== undefined
                       ? `at least ${minStars} stars`
                       : `at most ${maxStars} stars`
+                }`}
+              {(minDate !== undefined || maxDate !== undefined) &&
+                ` starred ${
+                  minDate !== undefined && maxDate !== undefined
+                    ? `between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`
+                    : minDate !== undefined
+                      ? `after ${minDate.toLocaleDateString()}`
+                      : maxDate !== undefined
+                        ? `before ${maxDate.toLocaleDateString()}`
+                        : ""
                 }`}
             </div>
           </div>
@@ -375,6 +443,8 @@ function StarsComponent() {
                           language: "all",
                           minStars: undefined,
                           maxStars: undefined,
+                          minDate: undefined,
+                          maxDate: undefined,
                         },
                       })
                     }
