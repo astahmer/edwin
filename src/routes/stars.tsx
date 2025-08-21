@@ -125,8 +125,8 @@ function StarsComponent() {
 
           {/* Search and Filter Controls */}
           <div className="relative bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="flex flex-col gap-4">
                 <SearchInput />
                 <ClearFiltersButton />
               </div>
@@ -405,10 +405,26 @@ function StarRangeFilter() {
           <input
             type="number"
             id="minStars"
-            placeholder="Min"
+            placeholder="Min stars"
             value={minStars || ""}
             onChange={(e) =>
               navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
+            }
+            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            min="0"
+          />
+        </div>
+        <div className="flex-1">
+          <label htmlFor="maxStars" className="sr-only">
+            Maximum stars
+          </label>
+          <input
+            type="number"
+            id="maxStars"
+            placeholder="Max stars"
+            value={maxStars || ""}
+            onChange={(e) =>
+              navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
             }
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
             min="0"
@@ -553,10 +569,12 @@ function ClearFiltersButton() {
 function FilterControls({ availableLanguages }: { availableLanguages: string[] }) {
   return (
     <>
-      <LanguageFilter availableLanguages={availableLanguages} />
       <StarRangeFilter />
       <DateRangeFilter />
-      <SortControls />
+      <div className="flex flex-col gap-4">
+        <SortControls />
+        <LanguageFilter availableLanguages={availableLanguages} />
+      </div>
     </>
   );
 }
