@@ -185,45 +185,11 @@ function StarsComponent() {
                 </>
               ) : (
                 // No repos matching filters - use RepositoryGrid for empty state
-                <RepositoryGrid
-                  repos={filteredRepos}
-                  selectedLanguage={selectedLanguage}
-                  onLanguageClick={(language: string) =>
-                    navigate({
-                      search: {
-                        search: searchQuery,
-                        language: selectedLanguage === language ? "all" : language,
-                        minStars: minStars?.toString(),
-                        maxStars: maxStars?.toString(),
-                        minDate: minDate?.toISOString().split("T")[0],
-                        maxDate: maxDate?.toISOString().split("T")[0],
-                        sortBy,
-                        sortOrder,
-                      },
-                    })
-                  }
-                />
+                <RepositoryGrid repos={filteredRepos} />
               )}
             </div>
           ) : (
-            <RepositoryGrid
-              repos={filteredRepos}
-              selectedLanguage={selectedLanguage}
-              onLanguageClick={(language: string) =>
-                navigate({
-                  search: {
-                    search: searchQuery,
-                    language: selectedLanguage === language ? "all" : language,
-                    minStars: minStars?.toString(),
-                    maxStars: maxStars?.toString(),
-                    minDate: minDate?.toISOString().split("T")[0],
-                    maxDate: maxDate?.toISOString().split("T")[0],
-                    sortBy,
-                    sortOrder,
-                  },
-                })
-              }
-            />
+            <RepositoryGrid repos={filteredRepos} />
           )}
         </div>
       </div>
@@ -604,7 +570,7 @@ const RepositoryCard = React.memo(function RepositoryCard({
   onLanguageClick: (language: string) => void;
 }) {
   return (
-    <div key={repo.id} className="bg-white overflow-hidden shadow rounded-lg">
+    <div className="bg-white overflow-hidden shadow rounded-lg">
       <div className="px-4 py-5 sm:p-6 flex flex-col h-full">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
@@ -679,16 +645,13 @@ const RepositoryCard = React.memo(function RepositoryCard({
 });
 
 // Virtualized RepositoryGrid component for performance with large lists
-const RepositoryGrid = React.memo(function RepositoryGrid({
-  repos,
-  selectedLanguage,
-  onLanguageClick,
-}: {
-  repos: RepoMessage[];
-  selectedLanguage: string;
-  onLanguageClick: (language: string) => void;
-}) {
+const RepositoryGrid = React.memo(function RepositoryGrid({ repos }: { repos: RepoMessage[] }) {
   const parentRef = React.useRef<HTMLDivElement>(null);
+  const navigate = useNavigate({ from: "/stars" });
+  const selectedLanguage = useSearch({
+    from: "/stars",
+    select: (search) => search.language || "all",
+  });
 
   // Virtualizer configuration
   const virtualizer = useVirtualizer({
@@ -751,7 +714,14 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
                 <RepositoryCard
                   repo={repo}
                   selectedLanguage={selectedLanguage}
-                  onLanguageClick={onLanguageClick}
+                  onLanguageClick={(language) =>
+                    navigate({
+                      search: (prev) => ({
+                        ...prev,
+                        language: selectedLanguage === language ? "all" : language,
+                      }),
+                    })
+                  }
                 />
               </div>
             </div>
