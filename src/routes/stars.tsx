@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate, useSearch } from "@tanstack/react-router";
 import { Schema } from "effect";
 import React, { useEffect, useMemo, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { authClient } from "~/auth.client";
 import type { RepoMessage } from "~/routes/api/stars.stream";
 import { requireAuthServerFn } from "~/utils/session";
@@ -677,7 +678,7 @@ const RepositoryCard = React.memo(function RepositoryCard({
   );
 });
 
-// RepositoryGrid component with memoized rendering
+// Virtualized RepositoryGrid component for performance with large lists
 const RepositoryGrid = React.memo(function RepositoryGrid({
   repos,
   selectedLanguage,
@@ -687,6 +688,16 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
   selectedLanguage: string;
   onLanguageClick: (language: string) => void;
 }) {
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  // Virtualizer configuration
+  const virtualizer = useVirtualizer({
+    count: repos.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 200, // Estimated height of each repository card
+    overscan: 5, // Number of items to render outside visible area
+  });
+
   if (repos.length === 0) {
     return (
       <div className="text-center py-12">
@@ -712,15 +723,41 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {repos.map((repo) => (
-        <RepositoryCard
-          key={repo.id}
-          repo={repo}
-          selectedLanguage={selectedLanguage}
-          onLanguageClick={onLanguageClick}
-        />
-      ))}
+    <div
+      ref={parentRef}
+      className="h-[600px] overflow-auto"
+      style={{
+        contain: "strict", // CSS containment for better performance
+      }}
+    >
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((virtualItem) => {
+          const repo = repos[virtualItem.index];
+          return (
+            <div
+              key={repo.id}
+              className="absolute top-0 left-0 w-full"
+              style={{
+                height: `${virtualItem.size}px`,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <div className="p-3">
+                <RepositoryCard
+                  repo={repo}
+                  selectedLanguage={selectedLanguage}
+                  onLanguageClick={onLanguageClick}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 });
