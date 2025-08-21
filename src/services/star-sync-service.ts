@@ -109,6 +109,40 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
         return upsertedRepos;
       });
 
+    const getExistingStarsStream = (userId: string) =>
+      Effect.gen(function* () {
+        const count = yield* db.getUserStarsCount(userId);
+        const existingStarsStream = Stream.paginateEffect(0, (offset) =>
+          Effect.gen(function* () {
+            {
+              if (offset >= count) {
+                return [[], Option.none()];
+              }
+              const next = yield* db.getUserStars(userId, 500, offset);
+              return [next, Option.some(offset + 500)];
+            }
+          })
+        );
+        return existingStarsStream.pipe(
+          Stream.flatMap((batch) =>
+            Stream.fromIterable(
+              batch.map((repo) => {
+                return {
+                  id: repo.id,
+                  name: repo.name,
+                  owner: repo.owner,
+                  full_name: repo.full_name,
+                  description: repo.description,
+                  stars: repo.stars,
+                  language: repo.language,
+                  starred_at: repo.starred_at.toISOString(),
+                };
+              })
+            )
+          )
+        );
+      });
+
     return {
       /**
        * Batch synchronization: Fetch all stars and sync to database
@@ -177,39 +211,9 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
               Stream.runCollect,
               Effect.map((chunk) => Array.from(chunk).length > 0)
             );
-            console.log({ hasNewStars, mostRecentStarredAt });
 
             if (!hasNewStars) {
-              const count = yield* db.getUserStarsCount(userId);
-              const existingStarsStream = Stream.paginateEffect(0, (offset) =>
-                Effect.gen(function* () {
-                  {
-                    if (offset >= count) {
-                      return [[], Option.none()];
-                    }
-                    const next = yield* db.getUserStars(userId, 500, offset);
-                    return [next, Option.some(offset + 500)];
-                  }
-                })
-              );
-              return existingStarsStream.pipe(
-                Stream.flatMap((batch) =>
-                  Stream.fromIterable(
-                    batch.map((repo) => {
-                      return {
-                        id: repo.id,
-                        name: repo.name,
-                        owner: repo.owner,
-                        full_name: repo.full_name,
-                        description: repo.description,
-                        stars: repo.stars,
-                        language: repo.language,
-                        starred_at: repo.starred_at.toISOString(),
-                      };
-                    })
-                  )
-                )
-              );
+              return yield* getExistingStarsStream(userId);
             }
 
             return starsPaginated.pipe(
@@ -225,21 +229,9 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
                 stars: starredRepo.repo.stargazers_count,
                 language: starredRepo.repo.language,
                 starred_at: new Date(starredRepo.starred_at).toISOString(),
-              }))
-            ) as Stream.Stream<
-              {
-                id: number;
-                name: string;
-                owner: string;
-                full_name: string;
-                description: string | null;
-                stars: number;
-                language: string | null;
-                starred_at: string;
-              },
-              GitHubRequestError | DatabaseGetUserStarsError,
-              never
-            >;
+              })),
+              Stream.concat(Stream.unwrap(getExistingStarsStream(userId)))
+            );
           })
         ),
 
