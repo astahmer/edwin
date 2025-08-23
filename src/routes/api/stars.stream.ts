@@ -1,5 +1,5 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
-import { Effect, Runtime, Stream } from "effect";
+import { createServerFileRoute, getEvent } from "@tanstack/react-start/server";
+import { Deferred, Effect, Exit, Runtime, Stream } from "effect";
 import { auth } from "../../auth";
 import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
@@ -31,6 +31,7 @@ const formatSSEMessage = (message: SSEMessage) => {
 export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
   GET: async (ctx) => {
     const { request } = ctx;
+
     try {
       // Get session from better-auth
       const session = await auth.api.getSession({
@@ -42,89 +43,17 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
       }
 
       const userId = session.user.id;
-      const lastEventId = request.headers.get("Last-Event-ID");
+      const lastEventId = request.headers.get("Last-Event-ID") ?? undefined;
 
-      // Get GitHub access token
       const accessToken = await getGitHubAccessToken(request);
 
-      // Create Effect-native SSE stream
-      const sseStream = Effect.gen(function* () {
-        const service = yield* StarSyncService;
-
-        // Create initial connection message
-        const initMessage: SSEMessage = {
-          id: "init",
-          event: "connected",
-          data: {
-            message: "Connected to stars stream",
-            userId,
-            timestamp: Date.now(),
-          },
-        };
-
-        // Create repo stream from StarSyncService
-        const repoStream = service.streamUserStars(userId, accessToken, lastEventId ?? undefined);
-
-        // Transform repos to SSE message stream
-        const repoMessageStream = repoStream.pipe(
-          Stream.map((repo) => {
-            const message: SSEMessage = {
-              id: repo.id.toString(),
-              event: "repo",
-              data: {
-                id: repo.id,
-                name: repo.full_name,
-                owner: repo.owner,
-                full_name: repo.full_name,
-                description: repo.description,
-                stars: repo.stars,
-                language: repo.language,
-                starred_at: repo.starred_at,
-              },
-            };
-
-            return message;
-          })
-        );
-
-        // Create completion message
-        const completeMessage: SSEMessage = {
-          id: "complete",
-          event: "complete",
-          data: {
-            message: "All starred repositories streamed",
-            timestamp: Date.now(),
-          },
-        };
-
-        // Combine all messages: init + repos + complete
-        const allMessages = Stream.make(initMessage).pipe(
-          Stream.concat(repoMessageStream),
-          Stream.concat(Stream.make(completeMessage)),
-          Stream.catchAll((error) => {
-            console.error("Failed to stream repos:", error);
-            const errorMessage: SSEMessage = {
-              id: "error",
-              event: "error",
-              data: {
-                message: "Failed to fetch repositories",
-                error: error instanceof Error ? error.message : "Unknown error",
-                timestamp: Date.now(),
-              },
-            };
-            return Stream.make(errorMessage);
-          })
-        );
-
-        return allMessages;
-      }).pipe(
-        Effect.provide(StarSyncService.Default),
-        Effect.provide(DatabaseService.Default),
-        Effect.provide(GitHubClient.Default)
+      const starStream = await Effect.runPromise(
+        makeServerSideEventStream({ userId, accessToken, lastEventId }).pipe(
+          Effect.provide(StarSyncService.Default),
+          Effect.provide(DatabaseService.Default),
+          Effect.provide(GitHubClient.Default)
+        )
       );
-
-      // Execute the Effect and get the stream
-      const starStream = await Effect.runPromise(sseStream);
       const bodyStream = starStream.pipe(
         // Stream.groupedWithin(100, "100 millis"),
         // Stream.map(Chunk.map((msg) => encoder.encode(formatSSEMessage(msg))))
@@ -149,4 +78,112 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
       });
     }
   },
+});
+
+const makeServerSideEventStream = Effect.fn(function* (input: {
+  userId: string;
+  accessToken: string;
+  lastEventId?: string;
+}) {
+  const service = yield* StarSyncService;
+  const signal = yield* createDeferredSignal;
+
+  const { userId, accessToken, lastEventId } = input;
+
+  // Create initial connection message
+  const initMessage: SSEMessage = {
+    id: "init",
+    event: "connected",
+    data: {
+      message: "Connected to stars stream",
+      userId,
+      timestamp: Date.now(),
+    },
+  };
+
+  // Create repo stream from StarSyncService
+  const repoStream = service.streamUserStars(userId, accessToken, lastEventId ?? undefined);
+
+  // Transform repos to SSE message stream
+  const repoMessageStream = repoStream.pipe(
+    Stream.map((repo) => {
+      const message: SSEMessage = {
+        id: repo.id.toString(),
+        event: "repo",
+        data: {
+          id: repo.id,
+          name: repo.full_name,
+          owner: repo.owner,
+          full_name: repo.full_name,
+          description: repo.description,
+          stars: repo.stars,
+          language: repo.language,
+          starred_at: repo.starred_at,
+        },
+      };
+
+      return message;
+    })
+  );
+
+  // Create completion message
+  const completeMessage: SSEMessage = {
+    id: "complete",
+    event: "complete",
+    data: {
+      message: "All starred repositories streamed",
+      timestamp: Date.now(),
+    },
+  };
+
+  // Combine all messages: init + repos + complete
+  const allMessages = Stream.make(initMessage).pipe(
+    Stream.concat(repoMessageStream),
+    Stream.concat(Stream.make(completeMessage)),
+    Stream.catchAll((error) => {
+      console.error("Failed to stream repos:", error);
+      const errorMessage: SSEMessage = {
+        id: "error",
+        event: "error",
+        data: {
+          message: "Failed to fetch repositories",
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: Date.now(),
+        },
+      };
+      return Stream.make(errorMessage);
+    })
+  );
+
+  return allMessages.pipe(Stream.interruptWhenDeferred(signal));
+});
+
+/** @see https://github.com/TanStack/router/issues/3490 */
+const createAbortSignal = () => {
+  const controller = new AbortController();
+
+  const { res } = getEvent().node;
+
+  res.on("close", () => {
+    if (!res.writableEnded) {
+      controller.abort();
+    }
+  });
+
+  return controller;
+};
+
+const createDeferredSignal = Effect.gen(function* () {
+  const abortController = createAbortSignal();
+  const deferred = yield* Deferred.make();
+
+  abortController.signal.addEventListener(
+    "abort",
+    () => {
+      Deferred.unsafeDone(deferred, Exit.void);
+    },
+    { once: true }
+  );
+
+  return deferred;
 });
