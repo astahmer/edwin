@@ -1,10 +1,130 @@
-import { Effect, Option, Stream } from "effect";
+import { Effect } from "effect";
 import {
   GitHubApiError,
   GitHubAuthError,
   GitHubRateLimitError,
   GitHubRequestError,
 } from "../errors";
+
+export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient", {
+  effect: Effect.succeed({
+    /** @see https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-repositories-starred-by-the-authenticated-user */
+    getUserStars: (accessToken: string, page = 1, perPage = 100) =>
+      makeTypedGithubRequest<StarredGithubRepo[]>(
+        `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
+        accessToken
+      ),
+    getRepoDetails: (accessToken: string, fullName: string) =>
+      makeTypedGithubRequest<GitHubRepo>(`https://api.github.com/repos/${fullName}`, accessToken),
+
+    getAuthenticatedUser: (accessToken: string) =>
+      makeTypedGithubRequest<GitHubUser>("https://api.github.com/user", accessToken),
+  }),
+}) {}
+
+// https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api?apiVersion=2022-11-28
+const prevPattern = /(?<=<)([\S]*)(?=>; rel="prev")/i;
+const nextPattern = /(?<=<)([\S]*)(?=>; rel="next")/i;
+const lastPattern = /(?<=<)([\S]*)(?=>; rel="last")/i;
+
+const extractPaginationParam = (url: string, key: "page" | "per_page") => {
+  const urlObject = new URL(url);
+  const page = urlObject.searchParams.get(key);
+  return page ? Number.parseInt(page, 10) : 1;
+};
+
+const makeGitHubRequest = (url: string, accessToken: string) =>
+  Effect.tryPromise({
+    try: async (): Promise<Response> => {
+      console.log("[--> GH]:", url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/vnd.github.v3.star+json",
+          "User-Agent": "Edwin-Stars-Organizer",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+      console.log("[<-- GH]:", url, response.status);
+      // const total = response.headers.get("link")?.match(lastPattern)?.[0]
+
+      // Check for rate limiting
+      const remaining = response.headers.get("X-RateLimit-Remaining");
+      const resetTime = response.headers.get("X-RateLimit-Reset");
+
+      if (response.status === 403 && remaining === "0") {
+        const resetDate = resetTime
+          ? new Date(Number.parseInt(resetTime, 10) * 1000)
+          : new Date(Date.now() + 60000);
+        const waitTime = Math.max(0, resetDate.getTime() - Date.now());
+        throw new GitHubRateLimitError({
+          retryAfter: Math.ceil(waitTime / 1000),
+          message: `Rate limit exceeded. Retry after ${Math.ceil(waitTime / 1000)} seconds`,
+        });
+      }
+
+      if (!response.ok) {
+        const error = await response.text();
+
+        // Handle token expiration/invalidity
+        if (response.status === 401) {
+          throw new GitHubAuthError({
+            message: "GitHub token expired or invalid. Please re-authenticate.",
+          });
+        }
+
+        throw new GitHubApiError({
+          status: response.status,
+          message: `GitHub API error (${response.status}): ${error}`,
+        });
+      }
+
+      // Log rate limit info for debugging
+      if (remaining) {
+        console.log(`GitHub API calls remaining: ${remaining}`);
+      }
+
+      return response;
+    },
+    catch: (error) =>
+      new GitHubRequestError({
+        cause: error,
+        message: `GitHub API request failed: ${String(error)}`,
+      }),
+  });
+
+const getPagination = (response: Response) => {
+  const link = response.headers.get("link");
+  if (!link) return null;
+
+  const prevLink = link.match(prevPattern)?.[0];
+  const nextLink = link.match(nextPattern)?.[0];
+  const totalLink = link.match(lastPattern)?.[0];
+
+  const prev = prevLink ? extractPaginationParam(prevLink, "page") : null;
+  const next = nextLink ? extractPaginationParam(nextLink, "page") : null;
+  const total = totalLink
+    ? extractPaginationParam(totalLink, "page") * extractPaginationParam(totalLink, "per_page")
+    : null;
+
+  return { prev, next, total };
+};
+
+const makeTypedGithubRequest = Effect.fn(function* <T>(url: string, accessToken: string) {
+  const response = yield* makeGitHubRequest(url, accessToken);
+  const json = yield* Effect.tryPromise({
+    try: () => response.json(),
+    catch: (error) => new GitHubRequestError({ cause: error, message: "Failed to parse JSON" }),
+  });
+
+  const pagination = yield* Effect.try({
+    try: () => getPagination(response),
+    catch: (error) =>
+      new GitHubRequestError({ cause: error, message: "Failed to parse pagination" }),
+  });
+
+  return { json: json as T, response, pagination };
+});
 
 export interface StarredGithubRepo {
   starred_at: number;
@@ -124,99 +244,3 @@ export interface GitHubUser {
   id: string;
   login: string;
 }
-
-export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient", {
-  effect: Effect.succeed({
-    /** @see https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-repositories-starred-by-the-authenticated-user */
-    getUserStars: (accessToken: string, page = 1, perPage = 100) =>
-      makeGitHubRequest<StarredGithubRepo[]>(
-        `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
-        accessToken
-      ),
-
-    getAllUserStars: (accessToken: string) =>
-      Stream.paginateEffect(1, (page) =>
-        Effect.gen(function* () {
-          const repos = yield* makeGitHubRequest<StarredGithubRepo[]>(
-            `https://api.github.com/user/starred?page=${page}&per_page=100`,
-            accessToken
-          );
-
-          // If we got fewer than 100 repos, we've reached the end
-          if (repos.length < 100) {
-            return [repos, Option.none()];
-          }
-
-          return [repos, Option.some(page + 1)];
-        })
-      ).pipe(
-        Stream.flatMap(Stream.fromIterable),
-        Stream.runCollect,
-        Effect.map((chunk) => Array.from(chunk))
-      ),
-
-    getRepoDetails: (accessToken: string, fullName: string) =>
-      makeGitHubRequest<GitHubRepo>(`https://api.github.com/repos/${fullName}`, accessToken),
-
-    getAuthenticatedUser: (accessToken: string) =>
-      makeGitHubRequest<GitHubUser>("https://api.github.com/user", accessToken),
-  }),
-}) {}
-
-const makeGitHubRequest = <T>(url: string, accessToken: string) =>
-  Effect.tryPromise({
-    try: async (): Promise<T> => {
-      console.log("[--> GH]:", url);
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github.v3.star+json",
-          "User-Agent": "Edwin-Stars-Organizer",
-        },
-      });
-      console.log("[<-- GH]:", url);
-
-      // Check for rate limiting
-      const remaining = response.headers.get("X-RateLimit-Remaining");
-      const resetTime = response.headers.get("X-RateLimit-Reset");
-
-      if (response.status === 403 && remaining === "0") {
-        const resetDate = resetTime
-          ? new Date(Number.parseInt(resetTime, 10) * 1000)
-          : new Date(Date.now() + 60000);
-        const waitTime = Math.max(0, resetDate.getTime() - Date.now());
-        throw new GitHubRateLimitError({
-          retryAfter: Math.ceil(waitTime / 1000),
-          message: `Rate limit exceeded. Retry after ${Math.ceil(waitTime / 1000)} seconds`,
-        });
-      }
-
-      if (!response.ok) {
-        const error = await response.text();
-
-        // Handle token expiration/invalidity
-        if (response.status === 401) {
-          throw new GitHubAuthError({
-            message: "GitHub token expired or invalid. Please re-authenticate.",
-          });
-        }
-
-        throw new GitHubApiError({
-          status: response.status,
-          message: `GitHub API error (${response.status}): ${error}`,
-        });
-      }
-
-      // Log rate limit info for debugging
-      if (remaining) {
-        console.log(`GitHub API calls remaining: ${remaining}`);
-      }
-
-      return await response.json();
-    },
-    catch: (error) =>
-      new GitHubRequestError({
-        cause: error,
-        message: `GitHub API request failed: ${String(error)}`,
-      }),
-  });

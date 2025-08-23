@@ -35,46 +35,6 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
     const githubClient = yield* GitHubClient;
     const db = yield* DatabaseService;
 
-    const transformGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
-      id: ghRepo.id,
-      name: ghRepo.name,
-      owner: ghRepo.owner.login,
-      full_name: ghRepo.full_name,
-      description: ghRepo.description || null,
-      stars: ghRepo.stargazers_count,
-      language: ghRepo.language || null,
-      last_fetched_at: new Date(),
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-
-    const transformGithubStarredRepoToInsertableEntity = (
-      starredRepo: StarredGithubRepo,
-      userId: string
-    ) => {
-      const repo = starredRepo.repo;
-      return {
-        repo: {
-          id: repo.id,
-          name: repo.name,
-          owner: repo.owner.login,
-          full_name: repo.full_name,
-          description: repo.description || null,
-          stars: repo.stargazers_count,
-          language: repo.language || null,
-          last_fetched_at: new Date(),
-          created_at: new Date(),
-          updated_at: new Date(),
-        } as InsertableGithubRepository,
-        userStar: {
-          user_id: userId,
-          repo_id: repo.id,
-          starred_at: new Date(starredRepo.starred_at),
-          last_checked_at: new Date(),
-        } as InsertableGithubUserStar,
-      };
-    };
-
     const createPaginatedStarStream = (input: {
       accessToken: string;
       since?: Date;
@@ -82,7 +42,8 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
     }) =>
       Stream.paginateEffect(input.initialPage ?? 1, (page) =>
         Effect.gen(function* () {
-          const stars = yield* githubClient.getUserStars(input.accessToken, page);
+          const starsResponse = yield* githubClient.getUserStars(input.accessToken, page);
+          const stars = starsResponse.json;
 
           // Filter by cursor if provided
           const since = input.since;
@@ -91,7 +52,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             : stars;
 
           // Stop if no results or hit pagination limit
-          if (stars.length === 0 || (input.since && filteredStars.length === 0)) {
+          if (stars.length === 1 || (input.since && filteredStars.length === 0)) {
             return [filteredStars, Option.none()];
           }
 
@@ -108,7 +69,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
         const userStarsToUpsert: InsertableGithubUserStar[] = [];
 
         for (const starredRepo of starredReposBatch) {
-          const repo = transformGithubRepoToEntity(starredRepo.repo);
+          const repo = mapGithubRepoToEntity(starredRepo.repo);
           reposToUpsert.push(repo);
 
           userStarsToUpsert.push({
@@ -159,59 +120,6 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       });
 
     return {
-      /**
-       * Batch synchronization: Fetch all stars and sync to database
-       * Use this for one-time syncs or when you need the complete result
-       */
-      syncUserStars: (userId: string, accessToken: string) =>
-        Effect.gen(function* () {
-          console.log(`Starting batch sync for user ${userId}`);
-
-          // Get all starred repos from GitHub
-          const starredRepos = yield* githubClient.getAllUserStars(accessToken);
-          console.log(`Fetched ${starredRepos.length} starred repos from GitHub`);
-
-          // Get existing synced repos for this user
-          const existingStars = yield* db.getUserStars(userId);
-          const existingRepoIds = new Set(existingStars.map((star) => star.repo_id));
-
-          // Prepare batch data
-          const reposToUpsert: InsertableGithubRepository[] = [];
-          const userStarsToUpsert: InsertableGithubUserStar[] = [];
-          let newRepos = 0;
-          let updatedRepos = 0;
-
-          for (const starredRepo of starredRepos) {
-            const insertable = transformGithubStarredRepoToInsertableEntity(starredRepo, userId);
-
-            reposToUpsert.push(insertable.repo);
-            userStarsToUpsert.push(insertable.userStar);
-
-            if (insertable.repo.id && existingRepoIds.has(insertable.repo.id)) {
-              updatedRepos++;
-            } else {
-              newRepos++;
-            }
-          }
-
-          // Perform batch operations
-          yield* db.batchUpsertRepos(reposToUpsert);
-          yield* db.batchUpsertUserStars(userStarsToUpsert);
-
-          console.log(`Batch sync complete: ${newRepos} new, ${updatedRepos} updated`);
-
-          return {
-            totalFetched: starredRepos.length,
-            newRepos,
-            updatedRepos,
-            lastSyncAt: new Date(),
-          };
-        }),
-
-      /**
-       * Incremental streaming: Smart fetching with real-time updates
-       * Use this for SSE endpoints or when you want incremental updates
-       */
       createUserStarsStream: (userId: string, accessToken: string, _lastEventId?: string) =>
         Stream.unwrap(
           Effect.gen(function* () {
@@ -245,32 +153,19 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             );
           })
         ),
-
-      /**
-       * Utility methods
-       */
-      getLastSyncTime: (userId: string) =>
-        Effect.gen(function* () {
-          const userStars = yield* db.getUserStars(userId);
-
-          if (userStars.length === 0) {
-            return null;
-          }
-
-          // Find the most recent lastCheckedAt time
-          const mostRecent = userStars.reduce(
-            (latest, star) => (star.last_checked_at > latest ? star.last_checked_at : latest),
-            userStars[0].last_checked_at
-          );
-
-          return mostRecent;
-        }),
-
-      isRepoSynced: (userId: string, repoId: number) =>
-        Effect.gen(function* () {
-          const userStars = yield* db.getUserStars(userId);
-          return userStars.some((star) => star.repo_id === repoId);
-        }),
     };
   }),
 }) {}
+
+const mapGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
+  id: ghRepo.id,
+  name: ghRepo.name,
+  owner: ghRepo.owner.login,
+  full_name: ghRepo.full_name,
+  description: ghRepo.description || null,
+  stars: ghRepo.stargazers_count,
+  language: ghRepo.language || null,
+  last_fetched_at: new Date(),
+  created_at: new Date(),
+  updated_at: new Date(),
+});

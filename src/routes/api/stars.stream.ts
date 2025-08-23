@@ -7,7 +7,7 @@ import { GitHubClient } from "../../services/github-client";
 import { StarSyncService } from "../../services/star-sync-service";
 import { getGitHubAccessToken } from "../../utils/session";
 
-interface SSEMessage {
+export interface SSEMessage {
   id: string;
   event: string;
   data: unknown;
@@ -36,11 +36,8 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
       const userId = session.user.id;
       const lastEventId = request.headers.get("Last-Event-ID") ?? undefined;
 
-      console.time("getGitHubAccessToken");
       const accessToken = await getGitHubAccessToken(request);
-      console.timeEnd("getGitHubAccessToken");
 
-      console.time("makeServerSideEventStream");
       const starStream = await Effect.runPromise(
         makeServerSideEventStream({ userId, accessToken, lastEventId }).pipe(
           Effect.provide(StarSyncService.Default),
@@ -48,13 +45,12 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
           Effect.provide(GitHubClient.Default)
         )
       );
-      console.timeEnd("makeServerSideEventStream");
 
       const bodyStream = starStream.pipe(
         Stream.groupedWithin(100, "100 millis"),
         Stream.map(Chunk.map((msg) => encodeServerSideMsg(msg))),
         Stream.map((chunk) => encoder.encode(Chunk.toArray(chunk).join("")))
-        // Stream.schedule(Schedule.spaced("1 millis")), // Small delay for smooth streaming
+        // Stream.schedule(Schedule.spaced("100 millis")) // Small delay for smooth streaming
       );
 
       return HttpServerResponse.stream(bodyStream, {
