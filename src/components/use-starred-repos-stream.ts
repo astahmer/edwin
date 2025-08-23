@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { startTransition, useMemo, useRef, useState } from "react";
 import { useSSE } from "~/components/use-sse";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 
@@ -10,7 +10,7 @@ export interface SyncProgress {
 
 // Specialized hook for starred repositories using the generic SSE hook
 export function useStarredReposStream(url: string, enableLogging?: boolean) {
-  const [repos, setRepos] = useState<StarredRepoMessage[]>([]);
+  const [repoList, setRepoList] = useState<StarredRepoMessage[]>([]);
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
 
   const repoRef = useRef<StarredRepoMessage[]>([]);
@@ -28,17 +28,20 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
             setSyncProgress(data);
           },
           repo: (data: StarredRepoMessage) => {
-            setRepos((prev) => {
-              const ids = new Set(prev.map((repo) => repo.id));
-              if (ids.has(data.id)) {
-                return prev;
-              }
+            const maybeWithTransition =
+              repoRef.current.length > 0 ? startTransition : (cb: () => void) => cb();
+            maybeWithTransition(() => {
+              setRepoList((prev) => {
+                const ids = new Set(prev.map((repo) => repo.id));
+                if (ids.has(data.id)) {
+                  return prev;
+                }
 
-              const update = [...prev, data].sort((a, b) => b.starred_at - a.starred_at);
-              console.log(update.length);
-              // starred_at: new Date(starredRepo.starred_at).toISOString(),
-              repoRef.current = update;
-              return update;
+                const update = [...prev, data].sort((a, b) => b.starred_at - a.starred_at);
+                // starred_at: new Date(starredRepo.starred_at).toISOString(),
+                repoRef.current = update;
+                return update;
+              });
             });
           },
         },
@@ -49,7 +52,6 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
       [enableLogging]
     )
   );
-  console.log(connectionStatus);
 
-  return { repos, connectionStatus, syncProgress, error };
+  return { repos: repoList, connectionStatus, syncProgress, error };
 }

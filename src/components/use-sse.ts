@@ -7,7 +7,7 @@ export function useSSE(
   url: string,
   options: {
     enableLogging?: boolean;
-    eventHandlers: Record<string, SSEEventHandler>;
+    eventHandlers: Partial<Record<string, SSEEventHandler>>;
     onError?: (error: string) => void;
     onComplete?: () => void;
   } = { enableLogging: false, eventHandlers: {} }
@@ -48,7 +48,7 @@ export function useSSE(
               if (enableLogging) {
                 console.log(`SSE event '${eventName}':`, data);
               }
-              handler(data);
+              handler?.(data);
             } catch (e) {
               if (enableLogging) {
                 console.error(`Failed to parse ${eventName} data:`, e);
