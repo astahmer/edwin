@@ -7,7 +7,7 @@ import {
 } from "../errors";
 
 export interface StarredGithubRepo {
-  starred_at: string;
+  starred_at: number;
   repo: GitHubRepo;
 }
 

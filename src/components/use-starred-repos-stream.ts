@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useSSE } from "~/components/use-sse";
-import type { RepoMessage } from "~/routes/api/stars.stream";
+import type { StarredRepoMessage } from "~/services/star-sync-service";
 
 export interface SyncProgress {
   current: number;
@@ -10,10 +10,10 @@ export interface SyncProgress {
 
 // Specialized hook for starred repositories using the generic SSE hook
 export function useStarredReposStream(url: string, enableLogging?: boolean) {
-  const [repos, setRepos] = useState<RepoMessage[]>([]);
+  const [repos, setRepos] = useState<StarredRepoMessage[]>([]);
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
 
-  const repoRef = useRef<RepoMessage[]>([]);
+  const repoRef = useRef<StarredRepoMessage[]>([]);
 
   const { connectionStatus, error } = useSSE(
     url,
@@ -27,14 +27,16 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
           progress: (data: SyncProgress) => {
             setSyncProgress(data);
           },
-          repo: (data: RepoMessage) => {
+          repo: (data: StarredRepoMessage) => {
             setRepos((prev) => {
               const ids = new Set(prev.map((repo) => repo.id));
               if (ids.has(data.id)) {
                 return prev;
               }
 
-              const update = [...prev, data];
+              const update = [...prev, data].sort((a, b) => b.starred_at - a.starred_at);
+              console.log(update.length);
+              // starred_at: new Date(starredRepo.starred_at).toISOString(),
               repoRef.current = update;
               return update;
             });
@@ -47,6 +49,7 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
       [enableLogging]
     )
   );
+  console.log(connectionStatus);
 
   return { repos, connectionStatus, syncProgress, error };
 }

@@ -2,7 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useEffect, useMemo } from "react";
 import { useStarredReposStream, type SyncProgress } from "~/components/use-starred-repos-stream";
-import type { RepoMessage } from "~/routes/api/stars.stream";
+import type { StarredRepoMessage } from "~/services/star-sync-service";
 
 export function StarsPage() {
   const stream = useStarredReposStream("/api/stars/stream");
@@ -45,7 +45,10 @@ const LoadingPage = () => {
   );
 };
 
-const ConnectedPage = (props: { repos: RepoMessage[]; syncProgress: SyncProgress | null }) => {
+const ConnectedPage = (props: {
+  repos: StarredRepoMessage[];
+  syncProgress: SyncProgress | null;
+}) => {
   const { repos, syncProgress } = props;
   const availableLanguages = useAvailableLanguages(repos);
   const filteredRepos = useFilteredRepos(repos);
@@ -99,7 +102,10 @@ const ConnectedPage = (props: { repos: RepoMessage[]; syncProgress: SyncProgress
   );
 };
 
-const ResultList = (props: { filteredRepos: RepoMessage[]; repos: RepoMessage[] }) => {
+const ResultList = (props: {
+  filteredRepos: StarredRepoMessage[];
+  repos: StarredRepoMessage[];
+}) => {
   const { filteredRepos, repos } = props;
   return filteredRepos.length === 0 ? (
     <div className="text-center py-12">
@@ -136,7 +142,10 @@ const ResultList = (props: { filteredRepos: RepoMessage[]; repos: RepoMessage[] 
   );
 };
 
-const ResultsSummary = (props: { filteredRepos: RepoMessage[]; repos: RepoMessage[] }) => {
+const ResultsSummary = (props: {
+  filteredRepos: StarredRepoMessage[];
+  repos: StarredRepoMessage[];
+}) => {
   const searchQuery = useSearch({
     from: "/stars",
     select: (search) => search.search || "",
@@ -190,7 +199,7 @@ const ResultsSummary = (props: { filteredRepos: RepoMessage[]; repos: RepoMessag
 };
 
 // Custom hook for optimized filtering and sorting of repositories
-function useFilteredRepos(repos: RepoMessage[]) {
+function useFilteredRepos(repos: StarredRepoMessage[]) {
   const searchQuery = useSearch({
     from: "/stars",
     select: (search) => search.search || "",
@@ -296,7 +305,7 @@ function useFilteredRepos(repos: RepoMessage[]) {
 }
 
 // Custom hook for available languages
-function useAvailableLanguages(repos: RepoMessage[]) {
+function useAvailableLanguages(repos: StarredRepoMessage[]) {
   return useMemo(
     () =>
       Array.from(
@@ -563,7 +572,7 @@ const RepositoryCard = React.memo(function RepositoryCard({
   selectedLanguage,
   onLanguageClick,
 }: {
-  repo: RepoMessage;
+  repo: StarredRepoMessage;
   selectedLanguage: string;
   onLanguageClick: (language: string) => void;
 }) {
@@ -643,7 +652,11 @@ const RepositoryCard = React.memo(function RepositoryCard({
 });
 
 // Virtualized RepositoryGrid component for performance with large lists
-const RepositoryGrid = React.memo(function RepositoryGrid({ repos }: { repos: RepoMessage[] }) {
+const RepositoryGrid = React.memo(function RepositoryGrid({
+  repos,
+}: {
+  repos: StarredRepoMessage[];
+}) {
   const parentRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate({ from: "/stars" });
   const selectedLanguage = useSearch({

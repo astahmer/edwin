@@ -1,4 +1,4 @@
-import { Chunk, Effect, Option, Stream } from "effect";
+import { Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
 import type {
   InsertableGithubRepository,
@@ -12,6 +12,17 @@ export interface SyncResult {
   newRepos: number;
   updatedRepos: number;
   lastSyncAt: Date;
+}
+
+export interface StarredRepoMessage {
+  id: number;
+  name: string;
+  owner: string;
+  full_name: string;
+  description: string | null;
+  stars: number;
+  language: string | null;
+  starred_at: number;
 }
 
 /**
@@ -86,7 +97,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
 
           return [filteredStars, stars.length < 100 ? Option.none() : Option.some(page + 1)];
         })
-      ).pipe(Stream.flatMap(Stream.fromIterable));
+      );
 
     const upsertStarsChunk = (
       starredReposBatch: ReadonlyArray<StarredGithubRepo>,
@@ -113,7 +124,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
         return upsertedRepos;
       });
 
-    const getExistingStarsStream = (userId: string) =>
+    const createExistingStarsStream = (userId: string) =>
       Effect.gen(function* () {
         const count = yield* db.getUserStarsCount(userId);
         const existingStarsStream = Stream.paginateEffect(0, (offset) =>
@@ -139,8 +150,8 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
                   description: repo.description,
                   stars: repo.stars,
                   language: repo.language,
-                  starred_at: repo.starred_at.toISOString(),
-                };
+                  starred_at: repo.starred_at.getTime(),
+                } as StarredRepoMessage;
               })
             )
           )
@@ -201,50 +212,36 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
        * Incremental streaming: Smart fetching with real-time updates
        * Use this for SSE endpoints or when you want incremental updates
        */
-      streamUserStars: (userId: string, accessToken: string, _lastEventId?: string) =>
+      createUserStarsStream: (userId: string, accessToken: string, _lastEventId?: string) =>
         Stream.unwrap(
           Effect.gen(function* () {
-            console.time("getMostRecentStarredAt");
             const mostRecentStarredAt = yield* db.getMostRecentStarredAt(userId);
-            console.timeEnd("getMostRecentStarredAt");
 
-            // Fetch only new stars since the most recent starred date
-            const starStreamFetcher = createPaginatedStarStream({
-              accessToken,
-              since: mostRecentStarredAt,
-            });
-
-            console.time("Fetching stars...");
-            const firstPage = yield* starStreamFetcher.pipe(Stream.take(1), Stream.runCollect);
-            const hasNewStars = firstPage.length > 0;
-            console.timeEnd("Fetching stars...");
-
-            if (!hasNewStars) {
-              return yield* getExistingStarsStream(userId);
-            }
-
-            return createPaginatedStarStream({
-              accessToken,
-              since: mostRecentStarredAt,
-              initialPage: 2,
-            }).pipe(
-              Stream.concat(Stream.fromIterable(firstPage)),
-              Stream.grouped(100),
-              Stream.tap((page) => Effect.log(page.length)),
-              Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
-              Stream.flattenChunks,
-              // Stream.flatMap((repos) => Stream.fromIterable(repos)),
-              Stream.map((starredRepo) => ({
-                id: starredRepo.repo.id,
-                name: starredRepo.repo.name,
-                owner: starredRepo.repo.owner.login,
-                full_name: starredRepo.repo.full_name,
-                description: starredRepo.repo.description,
-                stars: starredRepo.repo.stargazers_count,
-                language: starredRepo.repo.language,
-                starred_at: new Date(starredRepo.starred_at).toISOString(),
-              })),
-              Stream.concat(Stream.unwrap(getExistingStarsStream(userId)))
+            return Stream.unwrap(createExistingStarsStream(userId)).pipe(
+              Stream.concat(
+                createPaginatedStarStream({
+                  accessToken,
+                  since: mostRecentStarredAt,
+                  initialPage: 1,
+                }).pipe(
+                  Stream.tap((page) => Effect.log(page.length)),
+                  Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
+                  Stream.flatMap(Stream.fromIterable),
+                  Stream.map(
+                    (starredRepo) =>
+                      ({
+                        id: starredRepo.repo.id,
+                        name: starredRepo.repo.name,
+                        owner: starredRepo.repo.owner.login,
+                        full_name: starredRepo.repo.full_name,
+                        description: starredRepo.repo.description,
+                        stars: starredRepo.repo.stargazers_count,
+                        language: starredRepo.repo.language,
+                        starred_at: starredRepo.starred_at,
+                      }) as StarredRepoMessage
+                  )
+                )
+              )
             );
           })
         ),

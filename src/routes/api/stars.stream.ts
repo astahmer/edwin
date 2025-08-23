@@ -1,22 +1,11 @@
+import { HttpServerResponse } from "@effect/platform";
 import { createServerFileRoute, getEvent } from "@tanstack/react-start/server";
-import { Chunk, Deferred, Effect, Exit, Runtime, Stream } from "effect";
+import { Chunk, Deferred, Effect, Exit, Stream } from "effect";
 import { auth } from "../../auth";
 import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
 import { StarSyncService } from "../../services/star-sync-service";
 import { getGitHubAccessToken } from "../../utils/session";
-import { HttpServerResponse } from "@effect/platform";
-
-export interface RepoMessage {
-  id: number;
-  name: string;
-  owner: string;
-  full_name: string;
-  description: string | null;
-  stars: number;
-  language: string | null;
-  starred_at: string;
-}
 
 interface SSEMessage {
   id: string;
@@ -109,10 +98,12 @@ const makeServerSideEventStream = Effect.fn(function* (input: {
   };
 
   // Create repo stream from StarSyncService
-  const repoStream = service.streamUserStars(userId, accessToken, lastEventId ?? undefined);
+  const repoStream = service.createUserStarsStream(userId, accessToken, lastEventId ?? undefined);
 
   // Transform repos to SSE message stream
   const repoMessageStream = repoStream.pipe(
+    // Stream.grouped(100),
+    // Stream.flattenChunks,
     Stream.map((repo) => {
       const message: SSEMessage = {
         id: repo.id.toString(),
