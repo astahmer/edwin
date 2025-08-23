@@ -9,11 +9,26 @@ import {
 export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient", {
   effect: Effect.succeed({
     /** @see https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-repositories-starred-by-the-authenticated-user */
-    getUserStars: (accessToken: string, page = 1, perPage = 100) =>
-      makeTypedGithubRequest<StarredGithubRepo[]>(
+    getMyStars: (input: { accessToken: string; page?: number; perPage?: number }) => {
+      const { page = 1, perPage = 100 } = input;
+      return makeTypedGithubRequest<StarredGithubRepo[]>(
         `https://api.github.com/user/starred?page=${page}&per_page=${perPage}`,
-        accessToken
-      ),
+        input.accessToken
+      );
+    },
+    /** @see https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-repositories-starred-by-a-user */
+    getUserStars: (input: {
+      username: string;
+      accessToken: string;
+      page: number;
+      perPage: number;
+    }) => {
+      const { page = 1, perPage = 100 } = input;
+      return makeTypedGithubRequest<StarredGithubRepo[]>(
+        `https://api.github.com/user/${input.username}starred?page=${page}&per_page=${perPage}`,
+        input.accessToken
+      );
+    },
     getRepoDetails: (accessToken: string, fullName: string) =>
       makeTypedGithubRequest<GitHubRepo>(`https://api.github.com/repos/${fullName}`, accessToken),
 
@@ -45,7 +60,6 @@ const makeGitHubRequest = (url: string, accessToken: string) =>
           "X-GitHub-Api-Version": "2022-11-28",
         },
       });
-      console.log("[<-- GH]:", url, response.status);
       // const total = response.headers.get("link")?.match(lastPattern)?.[0]
 
       // Check for rate limiting

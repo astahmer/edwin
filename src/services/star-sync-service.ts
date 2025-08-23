@@ -42,7 +42,10 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
     }) =>
       Stream.paginateEffect(input.initialPage ?? 1, (page) =>
         Effect.gen(function* () {
-          const starsResponse = yield* githubClient.getUserStars(input.accessToken, page);
+          const starsResponse = yield* githubClient.getMyStars({
+            accessToken: input.accessToken,
+            page,
+          });
           const stars = starsResponse.json;
 
           // Filter by cursor if provided
