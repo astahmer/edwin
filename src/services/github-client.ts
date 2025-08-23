@@ -166,7 +166,7 @@ export class GitHubClient extends Effect.Service<GitHubClient>()("GitHubClient",
 const makeGitHubRequest = <T>(url: string, accessToken: string) =>
   Effect.tryPromise({
     try: async (): Promise<T> => {
-      console.log("[↗️ GH]:", url);
+      console.log("[--> GH]:", url);
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -174,6 +174,7 @@ const makeGitHubRequest = <T>(url: string, accessToken: string) =>
           "User-Agent": "Edwin-Stars-Organizer",
         },
       });
+      console.log("[<-- GH]:", url);
 
       // Check for rate limiting
       const remaining = response.headers.get("X-RateLimit-Remaining");

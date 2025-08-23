@@ -1,10 +1,11 @@
 import { createServerFileRoute, getEvent } from "@tanstack/react-start/server";
-import { Deferred, Effect, Exit, Runtime, Stream } from "effect";
+import { Chunk, Deferred, Effect, Exit, Runtime, Stream } from "effect";
 import { auth } from "../../auth";
 import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
 import { StarSyncService } from "../../services/star-sync-service";
 import { getGitHubAccessToken } from "../../utils/session";
+import { HttpServerResponse } from "@effect/platform";
 
 export interface RepoMessage {
   id: number;
@@ -24,8 +25,9 @@ interface SSEMessage {
 }
 
 const encoder = new TextEncoder();
-const formatSSEMessage = (message: SSEMessage) => {
-  return `id: ${message.id}\nevent: ${message.event}\ndata: ${JSON.stringify(message.data)}\n\n`;
+const endOfMessage = `\n\n`;
+const encodeServerSideMsg = (message: SSEMessage) => {
+  return `id: ${message.id}\nevent: ${message.event}\ndata: ${JSON.stringify(message.data)}${endOfMessage}`;
 };
 
 export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
@@ -45,8 +47,11 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
       const userId = session.user.id;
       const lastEventId = request.headers.get("Last-Event-ID") ?? undefined;
 
+      console.time("getGitHubAccessToken");
       const accessToken = await getGitHubAccessToken(request);
+      console.timeEnd("getGitHubAccessToken");
 
+      console.time("makeServerSideEventStream");
       const starStream = await Effect.runPromise(
         makeServerSideEventStream({ userId, accessToken, lastEventId }).pipe(
           Effect.provide(StarSyncService.Default),
@@ -54,14 +59,16 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
           Effect.provide(GitHubClient.Default)
         )
       );
+      console.timeEnd("makeServerSideEventStream");
+
       const bodyStream = starStream.pipe(
-        // Stream.groupedWithin(100, "100 millis"),
-        // Stream.map(Chunk.map((msg) => encoder.encode(formatSSEMessage(msg))))
-        Stream.map((msg) => encoder.encode(formatSSEMessage(msg)))
+        Stream.groupedWithin(100, "100 millis"),
+        Stream.map(Chunk.map((msg) => encodeServerSideMsg(msg))),
+        Stream.map((chunk) => encoder.encode(Chunk.toArray(chunk).join("")))
         // Stream.schedule(Schedule.spaced("1 millis")), // Small delay for smooth streaming
       );
 
-      return new Response(Stream.toReadableStreamRuntime(bodyStream, Runtime.defaultRuntime), {
+      return HttpServerResponse.stream(bodyStream, {
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
@@ -69,7 +76,7 @@ export const ServerRoute = createServerFileRoute("/api/stars/stream").methods({
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers": "Last-Event-ID",
         },
-      });
+      }).pipe(HttpServerResponse.toWeb);
     } catch (error) {
       console.error("Stream setup error:", error);
       return new Response(JSON.stringify({ error: "Internal server error" }), {

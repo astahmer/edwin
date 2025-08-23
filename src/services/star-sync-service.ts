@@ -1,4 +1,4 @@
-import { Effect, Option, Stream } from "effect";
+import { Chunk, Effect, Option, Stream } from "effect";
 import { DatabaseService } from "../db/kysely";
 import type {
   InsertableGithubRepository,
@@ -64,18 +64,23 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       };
     };
 
-    const fetchStarsFromCursor = (accessToken: string, since?: Date) =>
-      Stream.paginateEffect(1, (page) =>
+    const createPaginatedStarStream = (input: {
+      accessToken: string;
+      since?: Date;
+      initialPage?: number;
+    }) =>
+      Stream.paginateEffect(input.initialPage ?? 1, (page) =>
         Effect.gen(function* () {
-          const stars = yield* githubClient.getUserStars(accessToken, page);
+          const stars = yield* githubClient.getUserStars(input.accessToken, page);
 
           // Filter by cursor if provided
+          const since = input.since;
           const filteredStars = since
             ? stars.filter((star) => new Date(star.starred_at) > since)
             : stars;
 
           // Stop if no results or hit pagination limit
-          if (stars.length === 0 || (since && filteredStars.length === 0)) {
+          if (stars.length === 0 || (input.since && filteredStars.length === 0)) {
             return [filteredStars, Option.none()];
           }
 
@@ -199,25 +204,33 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       streamUserStars: (userId: string, accessToken: string, _lastEventId?: string) =>
         Stream.unwrap(
           Effect.gen(function* () {
-            // Get the most recent starred date to use as cursor
+            console.time("getMostRecentStarredAt");
             const mostRecentStarredAt = yield* db.getMostRecentStarredAt(userId);
+            console.timeEnd("getMostRecentStarredAt");
 
             // Fetch only new stars since the most recent starred date
-            const starsPaginated = fetchStarsFromCursor(accessToken, mostRecentStarredAt);
+            const starStreamFetcher = createPaginatedStarStream({
+              accessToken,
+              since: mostRecentStarredAt,
+            });
 
-            const hasNewStars = yield* starsPaginated.pipe(
-              Stream.take(1),
-              Stream.runCollect,
-              Effect.map((chunk) => Array.from(chunk).length > 0)
-            );
+            console.time("Fetching stars...");
+            const firstPage = yield* starStreamFetcher.pipe(Stream.take(1), Stream.runCollect);
+            const hasNewStars = firstPage.length > 0;
+            console.timeEnd("Fetching stars...");
 
             if (!hasNewStars) {
               return yield* getExistingStarsStream(userId);
             }
 
-            return starsPaginated.pipe(
-              // Stream.groupedWithin(100, "1 second"),
+            return createPaginatedStarStream({
+              accessToken,
+              since: mostRecentStarredAt,
+              initialPage: 2,
+            }).pipe(
+              Stream.concat(Stream.fromIterable(firstPage)),
               Stream.grouped(100),
+              Stream.tap((page) => Effect.log(page.length)),
               Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
               Stream.flattenChunks,
               // Stream.flatMap((repos) => Stream.fromIterable(repos)),

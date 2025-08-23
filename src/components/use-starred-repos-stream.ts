@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useSSE } from "~/components/use-sse";
 import type { RepoMessage } from "~/routes/api/stars.stream";
 

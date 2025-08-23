@@ -49,6 +49,7 @@ const ConnectedPage = (props: { repos: RepoMessage[]; syncProgress: SyncProgress
   const { repos, syncProgress } = props;
   const availableLanguages = useAvailableLanguages(repos);
   const filteredRepos = useFilteredRepos(repos);
+  //   TODO?
   console.log(syncProgress);
 
   return (
