@@ -53,10 +53,16 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
 
           // Stop if no results or hit pagination limit
           if (stars.length === 1 || (input.since && filteredStars.length === 0)) {
-            return [filteredStars, Option.none()];
+            return [
+              { stars: filteredStars, total: starsResponse.pagination?.total },
+              Option.none(),
+            ];
           }
 
-          return [filteredStars, stars.length < 100 ? Option.none() : Option.some(page + 1)];
+          return [
+            { stars: filteredStars, total: starsResponse.pagination?.total },
+            stars.length < 100 ? Option.none() : Option.some(page + 1),
+          ];
         })
       );
 
@@ -125,32 +131,22 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           Effect.gen(function* () {
             const mostRecentStarredAt = yield* db.getMostRecentStarredAt(userId);
 
-            return Stream.unwrap(createExistingStarsStream(userId)).pipe(
-              Stream.concat(
-                createPaginatedStarStream({
-                  accessToken,
-                  since: mostRecentStarredAt,
-                  initialPage: 1,
-                }).pipe(
-                  Stream.tap((page) => Effect.log(page.length)),
-                  Stream.tap((chunk) => upsertStarsChunk(Array.from(chunk), userId)),
-                  Stream.flatMap(Stream.fromIterable),
-                  Stream.map(
-                    (starredRepo) =>
-                      ({
-                        id: starredRepo.repo.id,
-                        name: starredRepo.repo.name,
-                        owner: starredRepo.repo.owner.login,
-                        full_name: starredRepo.repo.full_name,
-                        description: starredRepo.repo.description,
-                        stars: starredRepo.repo.stargazers_count,
-                        language: starredRepo.repo.language,
-                        starred_at: starredRepo.starred_at,
-                      }) as StarredRepoMessage
-                  )
+            const makeFetchedStarStream = createPaginatedStarStream({
+              accessToken,
+              since: mostRecentStarredAt,
+              initialPage: 1,
+            }).pipe(
+              Stream.tap((page) => upsertStarsChunk(page.stars, userId)),
+              Stream.flatMap((page) =>
+                Stream.merge(
+                  Stream.fromIterable(page.stars.map(fetchedStarredRepoToMsg)),
+                  Stream.when(Stream.make(page.total as number), () => page.total != null)
                 )
               )
             );
+
+            const existingStarsStream = Stream.unwrap(createExistingStarsStream(userId));
+            return existingStarsStream.pipe(Stream.concat(makeFetchedStarStream));
           })
         ),
     };
@@ -169,3 +165,15 @@ const mapGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository =
   created_at: new Date(),
   updated_at: new Date(),
 });
+
+const fetchedStarredRepoToMsg = (starredRepo: StarredGithubRepo) =>
+  ({
+    id: starredRepo.repo.id,
+    name: starredRepo.repo.name,
+    owner: starredRepo.repo.owner.login,
+    full_name: starredRepo.repo.full_name,
+    description: starredRepo.repo.description,
+    stars: starredRepo.repo.stargazers_count,
+    language: starredRepo.repo.language,
+    starred_at: starredRepo.starred_at,
+  }) as StarredRepoMessage;

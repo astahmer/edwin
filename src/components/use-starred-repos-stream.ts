@@ -2,16 +2,9 @@ import { startTransition, useMemo, useRef, useState } from "react";
 import { useSSE } from "~/components/use-sse";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 
-export interface SyncProgress {
-  current: number;
-  total: number;
-  phase: "fetching" | "syncing" | "complete";
-}
-
-// Specialized hook for starred repositories using the generic SSE hook
 export function useStarredReposStream(url: string, enableLogging?: boolean) {
   const [repoList, setRepoList] = useState<StarredRepoMessage[]>([]);
-  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
+  const [total, setTotal] = useState<number | undefined>(undefined);
 
   const repoRef = useRef<StarredRepoMessage[]>([]);
 
@@ -21,13 +14,23 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
       () => ({
         enableLogging,
         eventHandlers: {
-          connected: () => {
-            // Connection established
+          error: (ctx) => {
+            const errorData = ctx.data;
+            let errorMessage = `Error: ${errorData.message}`;
+            if (
+              errorData.message.includes("token expired") ||
+              errorData.message.includes("invalid")
+            ) {
+              errorMessage = "Your GitHub authentication has expired. Please log in again.";
+            } else if (errorData.message.includes("Rate limit")) {
+              errorMessage = "GitHub API rate limit exceeded. Please try again later.";
+            }
+
+            ctx.setError(errorMessage);
           },
-          progress: (data: SyncProgress) => {
-            setSyncProgress(data);
-          },
-          repo: (data: StarredRepoMessage) => {
+          total: (ctx) => setTotal(ctx.data as number),
+          repo: (ctx) => {
+            const data = ctx.data as StarredRepoMessage;
             const maybeWithTransition =
               repoRef.current.length > 0 ? startTransition : (cb: () => void) => cb();
             maybeWithTransition(() => {
@@ -44,14 +47,18 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
               });
             });
           },
-        },
-        onComplete: () => {
-          console.log("Stream complete", repoRef.current);
+          complete: (ctx) => {
+            console.log("Stream complete", repoRef.current);
+            ctx.setConnectionStatus("completed");
+            ctx.eventSource.close();
+          },
         },
       }),
       [enableLogging]
     )
   );
 
-  return { repos: repoList, connectionStatus, syncProgress, error };
+  console.log(total);
+
+  return { total, repoList, connectionStatus, error };
 }

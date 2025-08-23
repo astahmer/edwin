@@ -1,12 +1,12 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useEffect, useMemo } from "react";
-import { useStarredReposStream, type SyncProgress } from "~/components/use-starred-repos-stream";
+import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 
 export function StarsPage() {
   const stream = useStarredReposStream("/api/stars/stream");
-  const { repos, connectionStatus, syncProgress, error } = stream;
+  const { repoList, connectionStatus, error } = stream;
 
   // Handle authentication error redirect
   useEffect(() => {
@@ -31,7 +31,12 @@ export function StarsPage() {
     );
   }
 
-  return <ConnectedPage repos={repos} syncProgress={syncProgress} />;
+  return (
+    <YourStarredRepositories
+      repoList={repoList}
+      total={connectionStatus === "completed" ? undefined : stream.total}
+    />
+  );
 }
 
 const LoadingPage = () => {
@@ -45,15 +50,13 @@ const LoadingPage = () => {
   );
 };
 
-const ConnectedPage = (props: {
-  repos: StarredRepoMessage[];
-  syncProgress: SyncProgress | null;
+const YourStarredRepositories = (props: {
+  repoList: StarredRepoMessage[];
+  total: number | undefined;
 }) => {
-  const { repos, syncProgress } = props;
-  const availableLanguages = useAvailableLanguages(repos);
-  const filteredRepos = useFilteredRepos(repos);
-  //   TODO?
-  console.log(syncProgress);
+  const { repoList } = props;
+  const availableLanguages = useAvailableLanguages(repoList);
+  const filteredRepos = useFilteredRepos(repoList);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -70,32 +73,10 @@ const ConnectedPage = (props: {
               </div>
               <FilterControls availableLanguages={availableLanguages} />
             </div>
-
-            {/* Results Summary */}
-            {syncProgress && (
-              <div className="mt-4 w-full max-w-md mx-auto">
-                <div className="mb-2 text-sm text-gray-600">
-                  {syncProgress.phase === "fetching" &&
-                    `Fetching repositories... ${syncProgress.current}/${syncProgress.total || "?"}`}
-                  {syncProgress.phase === "syncing" &&
-                    `Syncing repositories... ${syncProgress.current}/${syncProgress.total}`}
-                  {syncProgress.phase === "complete" &&
-                    `Sync complete! ${syncProgress.total} repositories processed`}
-                </div>
-                {syncProgress.total > 0 && (
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            <ResultsSummary filteredRepos={filteredRepos} repos={repos} />
+            <ResultsSummary filteredRepos={filteredRepos} repoList={repoList} total={props.total} />
           </div>
-          <ResultList filteredRepos={filteredRepos} repos={repos} />
+
+          <ResultList filteredRepos={filteredRepos} repoList={repoList} />
         </div>
       </div>
     </div>
@@ -104,13 +85,13 @@ const ConnectedPage = (props: {
 
 const ResultList = (props: {
   filteredRepos: StarredRepoMessage[];
-  repos: StarredRepoMessage[];
+  repoList: StarredRepoMessage[];
 }) => {
-  const { filteredRepos, repos } = props;
+  const { filteredRepos, repoList } = props;
   return filteredRepos.length === 0 ? (
     <div className="text-center py-12">
-      {repos.length === 0 ? (
-        // No repos at all
+      {repoList.length === 0 ? (
+        // No repoList at all
         <>
           <svg
             className="mx-auto h-12 w-12 text-gray-400"
@@ -133,18 +114,19 @@ const ResultList = (props: {
           </p>
         </>
       ) : (
-        // No repos matching filters - use RepositoryGrid for empty state
-        <RepositoryGrid repos={filteredRepos} />
+        // No repoList matching filters - use RepositoryGrid for empty state
+        <RepositoryGrid repoList={filteredRepos} />
       )}
     </div>
   ) : (
-    <RepositoryGrid repos={filteredRepos} />
+    <RepositoryGrid repoList={filteredRepos} />
   );
 };
 
 const ResultsSummary = (props: {
   filteredRepos: StarredRepoMessage[];
-  repos: StarredRepoMessage[];
+  repoList: StarredRepoMessage[];
+  total: number | undefined;
 }) => {
   const searchQuery = useSearch({
     from: "/stars",
@@ -173,7 +155,13 @@ const ResultsSummary = (props: {
 
   return (
     <div className="mt-4 text-sm text-gray-600">
-      Showing {props.filteredRepos.length} of {props.repos.length} repositories
+      Showing {props.filteredRepos.length} of{" "}
+      {props.total
+        ? props.total > props.repoList.length
+          ? `~${props.total}`
+          : props.repoList.length
+        : props.repoList.length}{" "}
+      repositories
       {searchQuery && ` matching "${searchQuery}"`}
       {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
       {(minStars !== undefined || maxStars !== undefined) &&
@@ -199,7 +187,7 @@ const ResultsSummary = (props: {
 };
 
 // Custom hook for optimized filtering and sorting of repositories
-function useFilteredRepos(repos: StarredRepoMessage[]) {
+function useFilteredRepos(repoList: StarredRepoMessage[]) {
   const searchQuery = useSearch({
     from: "/stars",
     select: (search) => search.search || "",
@@ -234,7 +222,7 @@ function useFilteredRepos(repos: StarredRepoMessage[]) {
   });
 
   return useMemo(() => {
-    let filtered = repos;
+    let filtered = repoList;
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -292,7 +280,7 @@ function useFilteredRepos(repos: StarredRepoMessage[]) {
 
     return filtered;
   }, [
-    repos,
+    repoList,
     searchQuery,
     selectedLanguage,
     minStars,
@@ -305,13 +293,15 @@ function useFilteredRepos(repos: StarredRepoMessage[]) {
 }
 
 // Custom hook for available languages
-function useAvailableLanguages(repos: StarredRepoMessage[]) {
+function useAvailableLanguages(repoList: StarredRepoMessage[]) {
   return useMemo(
     () =>
       Array.from(
-        new Set(repos.map((repo) => repo.language).filter((lang): lang is string => Boolean(lang)))
+        new Set(
+          repoList.map((repo) => repo.language).filter((lang): lang is string => Boolean(lang))
+        )
       ).sort(),
-    [repos]
+    [repoList]
   );
 }
 
@@ -653,9 +643,9 @@ const RepositoryCard = React.memo(function RepositoryCard({
 
 // Virtualized RepositoryGrid component for performance with large lists
 const RepositoryGrid = React.memo(function RepositoryGrid({
-  repos,
+  repoList,
 }: {
-  repos: StarredRepoMessage[];
+  repoList: StarredRepoMessage[];
 }) {
   const parentRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate({ from: "/stars" });
@@ -673,7 +663,7 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
   };
 
   const itemsPerRow = getItemsPerRow();
-  const rowCount = Math.ceil(repos.length / itemsPerRow);
+  const rowCount = Math.ceil(repoList.length / itemsPerRow);
 
   // Virtualizer configuration for rows
   const virtualizer = useVirtualizer({
@@ -683,7 +673,7 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
     overscan: 3, // Number of rows to render outside visible area
   });
 
-  if (repos.length === 0) {
+  if (repoList.length === 0) {
     return (
       <div className="text-center py-12">
         <svg
@@ -723,8 +713,8 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
       >
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const rowStart = virtualRow.index * itemsPerRow;
-          const rowEnd = Math.min(rowStart + itemsPerRow, repos.length);
-          const rowRepos = repos.slice(rowStart, rowEnd);
+          const rowEnd = Math.min(rowStart + itemsPerRow, repoList.length);
+          const rowRepos = repoList.slice(rowStart, rowEnd);
 
           return (
             <div

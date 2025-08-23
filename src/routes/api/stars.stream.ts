@@ -96,11 +96,17 @@ const makeServerSideEventStream = Effect.fn(function* (input: {
   // Create repo stream from StarSyncService
   const repoStream = service.createUserStarsStream(userId, accessToken, lastEventId ?? undefined);
 
-  // Transform repos to SSE message stream
   const repoMessageStream = repoStream.pipe(
-    // Stream.grouped(100),
-    // Stream.flattenChunks,
-    Stream.map((repo) => {
+    Stream.map((value) => {
+      if (typeof value === "number") {
+        return {
+          id: "total",
+          event: "total",
+          data: value,
+        } as SSEMessage;
+      }
+
+      const repo = value;
       const message: SSEMessage = {
         id: repo.id.toString(),
         event: "repo",
