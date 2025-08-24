@@ -37889,7 +37889,6 @@ export namespace Endpoints {
     path: "/";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.root;
     responses: { 200: Schemas.root };
   };
   export type get_Security__advisories_list__global__advisories = {
@@ -37931,7 +37930,6 @@ export namespace Endpoints {
         sort: "updated" | "published" | "epss_percentage" | "epss_percentile";
       }>;
     };
-    response: Array<Schemas.global_advisory>;
     responses: { 200: Array<Schemas.global_advisory>; 422: Schemas.validation_error_simple; 429: Schemas.basic_error };
   };
   export type get_Security__advisories_get__global__advisory = {
@@ -37941,7 +37939,6 @@ export namespace Endpoints {
     parameters: {
       path: { ghsa_id: string };
     };
-    response: Schemas.global_advisory;
     responses: { 200: Schemas.global_advisory; 404: Schemas.basic_error };
   };
   export type get_Apps_get__authenticated = {
@@ -37949,7 +37946,6 @@ export namespace Endpoints {
     path: "/app";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.integration;
     responses: { 200: Schemas.integration };
   };
   export type post_Apps_create__from__manifest = {
@@ -37959,8 +37955,6 @@ export namespace Endpoints {
     parameters: {
       path: { code: string };
     };
-    response: Schemas.integration &
-      ({ client_id: string; client_secret: string; webhook_secret: string | null; pem: string } & Record<string, any>);
     responses: {
       201: Schemas.integration &
         ({ client_id: string; client_secret: string; webhook_secret: string | null; pem: string } & Record<
@@ -37976,7 +37970,6 @@ export namespace Endpoints {
     path: "/app/hook/config";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type patch_Apps_update__webhook__config__for__app = {
@@ -37991,7 +37984,6 @@ export namespace Endpoints {
         insecure_ssl: Schemas.webhook_config_insecure_ssl;
       }>;
     };
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type get_Apps_list__webhook__deliveries = {
@@ -38001,8 +37993,7 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; cursor: string }>;
     };
-    response: Array<Schemas.hook_delivery_item>;
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type get_Apps_get__webhook__delivery = {
     method: "GET";
@@ -38011,8 +38002,7 @@ export namespace Endpoints {
     parameters: {
       path: { delivery_id: number };
     };
-    response: Schemas.hook_delivery;
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type post_Apps_redeliver__webhook__delivery = {
     method: "POST";
@@ -38021,8 +38011,7 @@ export namespace Endpoints {
     parameters: {
       path: { delivery_id: number };
     };
-    response: Record<string, unknown>;
-    responses: { 202: Record<string, unknown>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type get_Apps_list__installation__requests__for__authenticated__app = {
     method: "GET";
@@ -38031,7 +38020,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.integration_installation_request>;
     responses: { 200: Array<Schemas.integration_installation_request>; 304: unknown; 401: Schemas.basic_error };
   };
   export type get_Apps_list__installations = {
@@ -38041,9 +38029,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number; since: string; outdated: string }>;
     };
-    response: Array<Schemas.installation>;
     responses: { 200: Array<Schemas.installation> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_get__installation = {
     method: "GET";
@@ -38052,7 +38039,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number };
     };
-    response: Schemas.installation;
     responses: { 200: Schemas.installation; 404: Schemas.basic_error };
   };
   export type delete_Apps_delete__installation = {
@@ -38062,7 +38048,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type post_Apps_create__installation__access__token = {
@@ -38078,7 +38063,6 @@ export namespace Endpoints {
         permissions: Schemas.app_permissions;
       }>;
     };
-    response: Schemas.installation_token;
     responses: {
       201: Schemas.installation_token;
       401: Schemas.basic_error;
@@ -38094,7 +38078,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type delete_Apps_unsuspend__installation = {
@@ -38104,7 +38087,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type delete_Apps_delete__authorization = {
@@ -38116,7 +38098,6 @@ export namespace Endpoints {
 
       body: { access_token: string };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Schemas.validation_error };
   };
   export type post_Apps_check__token = {
@@ -38128,7 +38109,6 @@ export namespace Endpoints {
 
       body: { access_token: string };
     };
-    response: Schemas.authorization;
     responses: { 200: Schemas.authorization; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type patch_Apps_reset__token = {
@@ -38140,7 +38120,6 @@ export namespace Endpoints {
 
       body: { access_token: string };
     };
-    response: Schemas.authorization;
     responses: { 200: Schemas.authorization; 422: Schemas.validation_error };
   };
   export type delete_Apps_delete__token = {
@@ -38152,7 +38131,6 @@ export namespace Endpoints {
 
       body: { access_token: string };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Schemas.validation_error };
   };
   export type post_Apps_scope__token = {
@@ -38171,7 +38149,6 @@ export namespace Endpoints {
         permissions?: Schemas.app_permissions | undefined;
       };
     };
-    response: Schemas.authorization;
     responses: {
       200: Schemas.authorization;
       401: Schemas.basic_error;
@@ -38187,7 +38164,6 @@ export namespace Endpoints {
     parameters: {
       path: { app_slug: string };
     };
-    response: Schemas.integration;
     responses: { 200: Schemas.integration; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Classroom_get__an__assignment = {
@@ -38197,7 +38173,6 @@ export namespace Endpoints {
     parameters: {
       path: { assignment_id: number };
     };
-    response: Schemas.classroom_assignment;
     responses: { 200: Schemas.classroom_assignment; 404: Schemas.basic_error };
   };
   export type get_Classroom_list__accepted__assignments__for__an__assignment = {
@@ -38208,7 +38183,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { assignment_id: number };
     };
-    response: Array<Schemas.classroom_accepted_assignment>;
     responses: { 200: Array<Schemas.classroom_accepted_assignment> };
   };
   export type get_Classroom_get__assignment__grades = {
@@ -38218,7 +38192,6 @@ export namespace Endpoints {
     parameters: {
       path: { assignment_id: number };
     };
-    response: Array<Schemas.classroom_assignment_grade>;
     responses: { 200: Array<Schemas.classroom_assignment_grade>; 404: Schemas.basic_error };
   };
   export type get_Classroom_list__classrooms = {
@@ -38228,7 +38201,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ page: number; per_page: number }>;
     };
-    response: Array<Schemas.simple_classroom>;
     responses: { 200: Array<Schemas.simple_classroom> };
   };
   export type get_Classroom_get__a__classroom = {
@@ -38238,7 +38210,6 @@ export namespace Endpoints {
     parameters: {
       path: { classroom_id: number };
     };
-    response: Schemas.classroom;
     responses: { 200: Schemas.classroom; 404: Schemas.basic_error };
   };
   export type get_Classroom_list__assignments__for__a__classroom = {
@@ -38249,7 +38220,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { classroom_id: number };
     };
-    response: Array<Schemas.simple_classroom_assignment>;
     responses: { 200: Array<Schemas.simple_classroom_assignment> };
   };
   export type get_Codes__of__conduct_get__all__codes__of__conduct = {
@@ -38257,7 +38227,6 @@ export namespace Endpoints {
     path: "/codes_of_conduct";
     requestFormat: "json";
     parameters: never;
-    response: Array<Schemas.code_of_conduct>;
     responses: { 200: Array<Schemas.code_of_conduct>; 304: unknown };
   };
   export type get_Codes__of__conduct_get__conduct__code = {
@@ -38267,7 +38236,6 @@ export namespace Endpoints {
     parameters: {
       path: { key: string };
     };
-    response: Schemas.code_of_conduct;
     responses: { 200: Schemas.code_of_conduct; 304: unknown; 404: Schemas.basic_error };
   };
   export type post_Credentials_revoke = {
@@ -38277,7 +38245,6 @@ export namespace Endpoints {
     parameters: {
       body: { credentials: Array<string> };
     };
-    response: Record<string, unknown>;
     responses: { 202: Record<string, unknown>; 422: Schemas.validation_error_simple; 500: Schemas.basic_error };
   };
   export type get_Emojis_get = {
@@ -38285,7 +38252,6 @@ export namespace Endpoints {
     path: "/emojis";
     requestFormat: "json";
     parameters: never;
-    response: Record<string, string>;
     responses: { 200: Record<string, string>; 304: unknown };
   };
   export type get_Code__security_get__configurations__for__enterprise = {
@@ -38296,7 +38262,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string }>;
       path: { enterprise: string };
     };
-    response: Array<Schemas.code_security_configuration>;
     responses: { 200: Array<Schemas.code_security_configuration>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Code__security_create__configuration__for__enterprise = {
@@ -38331,10 +38296,9 @@ export namespace Endpoints {
         enforcement?: ("enforced" | "unenforced") | undefined;
       };
     };
-    response: Schemas.code_security_configuration;
     responses: {
       201: Schemas.code_security_configuration;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
@@ -38346,7 +38310,6 @@ export namespace Endpoints {
     parameters: {
       path: { enterprise: string };
     };
-    response: Schemas.code_security_default_configurations;
     responses: { 200: Schemas.code_security_default_configurations };
   };
   export type get_Code__security_get__single__configuration__for__enterprise = {
@@ -38356,7 +38319,6 @@ export namespace Endpoints {
     parameters: {
       path: { enterprise: string; configuration_id: number };
     };
-    response: Schemas.code_security_configuration;
     responses: {
       200: Schemas.code_security_configuration;
       304: unknown;
@@ -38395,7 +38357,6 @@ export namespace Endpoints {
         enforcement: "enforced" | "unenforced";
       }>;
     };
-    response: Schemas.code_security_configuration;
     responses: {
       200: Schemas.code_security_configuration;
       304: unknown;
@@ -38411,10 +38372,9 @@ export namespace Endpoints {
     parameters: {
       path: { enterprise: string; configuration_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -38429,7 +38389,6 @@ export namespace Endpoints {
 
       body: { scope: "all" | "all_without_configurations" };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
       403: Schemas.basic_error;
@@ -38446,10 +38405,6 @@ export namespace Endpoints {
 
       body: Partial<{ default_for_new_repos: "all" | "none" | "private_and_internal" | "public" }>;
     };
-    response: Partial<{
-      default_for_new_repos: "all" | "none" | "private_and_internal" | "public";
-      configuration: Schemas.code_security_configuration;
-    }>;
     responses: {
       200: Partial<{
         default_for_new_repos: "all" | "none" | "private_and_internal" | "public";
@@ -38467,7 +38422,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string; status: string }>;
       path: { enterprise: string; configuration_id: number };
     };
-    response: Array<Schemas.code_security_configuration_repositories>;
     responses: {
       200: Array<Schemas.code_security_configuration_repositories>;
       403: Schemas.basic_error;
@@ -38497,7 +38451,6 @@ export namespace Endpoints {
       }>;
       path: { enterprise: string };
     };
-    response: Array<Schemas.dependabot_alert_with_repository>;
     responses: {
       200: Array<Schemas.dependabot_alert_with_repository>;
       304: unknown;
@@ -38527,13 +38480,12 @@ export namespace Endpoints {
       }>;
       path: { enterprise: string };
     };
-    response: Array<Schemas.organization_secret_scanning_alert>;
     responses: {
       200: Array<Schemas.organization_secret_scanning_alert>;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_list__public__events = {
     method: "GET";
@@ -38542,7 +38494,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.event>;
     responses: {
       200: Array<Schemas.event>;
       304: unknown;
@@ -38555,7 +38506,6 @@ export namespace Endpoints {
     path: "/feeds";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.feed;
     responses: { 200: Schemas.feed };
   };
   export type get_Gists_list = {
@@ -38565,9 +38515,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: string; per_page: number; page: number }>;
     };
-    response: Array<Schemas.base_gist>;
     responses: { 200: Array<Schemas.base_gist>; 304: unknown; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Gists_create = {
     method: "POST";
@@ -38580,7 +38529,6 @@ export namespace Endpoints {
         public?: (boolean | ("true" | "false")) | undefined;
       };
     };
-    response: Schemas.gist_simple;
     responses: {
       201: Schemas.gist_simple;
       304: unknown;
@@ -38588,7 +38536,7 @@ export namespace Endpoints {
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Gists_list__public = {
     method: "GET";
@@ -38597,9 +38545,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: string; per_page: number; page: number }>;
     };
-    response: Array<Schemas.base_gist>;
     responses: { 200: Array<Schemas.base_gist>; 304: unknown; 403: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Gists_list__starred = {
     method: "GET";
@@ -38608,9 +38555,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: string; per_page: number; page: number }>;
     };
-    response: Array<Schemas.base_gist>;
     responses: { 200: Array<Schemas.base_gist>; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Gists_get = {
     method: "GET";
@@ -38619,7 +38565,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: Schemas.gist_simple;
     responses: {
       200: Schemas.gist_simple;
       304: unknown;
@@ -38643,7 +38588,6 @@ export namespace Endpoints {
         files: Record<string, Partial<{ content: string; filename: string | null }> | null>;
       }> | null;
     };
-    response: Schemas.gist_simple;
     responses: { 200: Schemas.gist_simple; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Gists_delete = {
@@ -38653,7 +38597,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Gists_list__comments = {
@@ -38664,9 +38607,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { gist_id: string };
     };
-    response: Array<Schemas.gist_comment>;
     responses: { 200: Array<Schemas.gist_comment>; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Gists_create__comment = {
     method: "POST";
@@ -38677,9 +38619,8 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.gist_comment;
     responses: { 201: Schemas.gist_comment; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Gists_get__comment = {
     method: "GET";
@@ -38688,7 +38629,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string; comment_id: number };
     };
-    response: Schemas.gist_comment;
     responses: {
       200: Schemas.gist_comment;
       304: unknown;
@@ -38709,7 +38649,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.gist_comment;
     responses: { 200: Schemas.gist_comment; 404: Schemas.basic_error };
   };
   export type delete_Gists_delete__comment = {
@@ -38719,7 +38658,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string; comment_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Gists_list__commits = {
@@ -38730,9 +38668,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { gist_id: string };
     };
-    response: Array<Schemas.gist_commit>;
     responses: { 200: Array<Schemas.gist_commit>; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Gists_list__forks = {
     method: "GET";
@@ -38742,9 +38679,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { gist_id: string };
     };
-    response: Array<Schemas.gist_simple>;
     responses: { 200: Array<Schemas.gist_simple>; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Gists_fork = {
     method: "POST";
@@ -38753,7 +38689,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: Schemas.base_gist;
     responses: {
       201: Schemas.base_gist;
       304: unknown;
@@ -38761,7 +38696,7 @@ export namespace Endpoints {
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Gists_check__is__starred = {
     method: "GET";
@@ -38770,7 +38705,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Partial<{}> };
   };
   export type put_Gists_star = {
@@ -38780,7 +38714,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type delete_Gists_unstar = {
@@ -38790,7 +38723,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Gists_get__revision = {
@@ -38800,7 +38732,6 @@ export namespace Endpoints {
     parameters: {
       path: { gist_id: string; sha: string };
     };
-    response: Schemas.gist_simple;
     responses: {
       200: Schemas.gist_simple;
       403: Schemas.basic_error;
@@ -38813,7 +38744,6 @@ export namespace Endpoints {
     path: "/gitignore/templates";
     requestFormat: "json";
     parameters: never;
-    response: Array<string>;
     responses: { 200: Array<string>; 304: unknown };
   };
   export type get_Gitignore_get__template = {
@@ -38823,7 +38753,6 @@ export namespace Endpoints {
     parameters: {
       path: { name: string };
     };
-    response: Schemas.gitignore_template;
     responses: { 200: Schemas.gitignore_template; 304: unknown };
   };
   export type get_Apps_list__repos__accessible__to__installation = {
@@ -38833,25 +38762,19 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: {
-      total_count: number;
-      repositories: Array<Schemas.repository>;
-      repository_selection?: string | undefined;
-    };
     responses: {
       200: { total_count: number; repositories: Array<Schemas.repository>; repository_selection?: string | undefined };
       304: unknown;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type delete_Apps_revoke__installation__access__token = {
     method: "DELETE";
     path: "/installation/token";
     requestFormat: "json";
     parameters: never;
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Issues_list = {
@@ -38874,9 +38797,8 @@ export namespace Endpoints {
         page: number;
       }>;
     };
-    response: Array<Schemas.issue>;
     responses: { 200: Array<Schemas.issue>; 304: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Licenses_get__all__commonly__used = {
     method: "GET";
@@ -38885,7 +38807,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ featured: boolean; per_page: number; page: number }>;
     };
-    response: Array<Schemas.license_simple>;
     responses: { 200: Array<Schemas.license_simple>; 304: unknown };
   };
   export type get_Licenses_get = {
@@ -38895,7 +38816,6 @@ export namespace Endpoints {
     parameters: {
       path: { license: string };
     };
-    response: Schemas.license;
     responses: { 200: Schemas.license; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Markdown_render = {
@@ -38905,9 +38825,8 @@ export namespace Endpoints {
     parameters: {
       body: { text: string; mode?: ("markdown" | "gfm") | undefined; context?: string | undefined };
     };
-    response: unknown;
     responses: { 200: unknown; 304: unknown };
-    responseHeaders: { "content-type": string; "content-length": string; "x-commonmarker-version": string };
+    responseHeaders: { 200: { "Content-Type": string; "Content-Length": string; "X-CommonMarker-Version": string } };
   };
   export type post_Markdown_render__raw = {
     method: "POST";
@@ -38916,9 +38835,8 @@ export namespace Endpoints {
     parameters: {
       body: string;
     };
-    response: unknown;
     responses: { 200: unknown; 304: unknown };
-    responseHeaders: { "x-commonmarker-version": string };
+    responseHeaders: { 200: { "X-CommonMarker-Version": string } };
   };
   export type get_Apps_get__subscription__plan__for__account = {
     method: "GET";
@@ -38927,7 +38845,6 @@ export namespace Endpoints {
     parameters: {
       path: { account_id: number };
     };
-    response: Schemas.marketplace_purchase;
     responses: { 200: Schemas.marketplace_purchase; 401: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Apps_list__plans = {
@@ -38937,9 +38854,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.marketplace_listing_plan>;
     responses: { 200: Array<Schemas.marketplace_listing_plan>; 401: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_list__accounts__for__plan = {
     method: "GET";
@@ -38949,14 +38865,13 @@ export namespace Endpoints {
       query: Partial<{ sort: "created" | "updated"; direction: "asc" | "desc"; per_page: number; page: number }>;
       path: { plan_id: number };
     };
-    response: Array<Schemas.marketplace_purchase>;
     responses: {
       200: Array<Schemas.marketplace_purchase>;
       401: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_get__subscription__plan__for__account__stubbed = {
     method: "GET";
@@ -38965,7 +38880,6 @@ export namespace Endpoints {
     parameters: {
       path: { account_id: number };
     };
-    response: Schemas.marketplace_purchase;
     responses: { 200: Schemas.marketplace_purchase; 401: Schemas.basic_error; 404: unknown };
   };
   export type get_Apps_list__plans__stubbed = {
@@ -38975,9 +38889,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.marketplace_listing_plan>;
     responses: { 200: Array<Schemas.marketplace_listing_plan>; 401: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_list__accounts__for__plan__stubbed = {
     method: "GET";
@@ -38987,16 +38900,14 @@ export namespace Endpoints {
       query: Partial<{ sort: "created" | "updated"; direction: "asc" | "desc"; per_page: number; page: number }>;
       path: { plan_id: number };
     };
-    response: Array<Schemas.marketplace_purchase>;
     responses: { 200: Array<Schemas.marketplace_purchase>; 401: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Meta_get = {
     method: "GET";
     path: "/meta";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.api_overview;
     responses: { 200: Schemas.api_overview; 304: unknown };
   };
   export type get_Activity_list__public__events__for__repo__network = {
@@ -39007,7 +38918,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.event>;
     responses: {
       200: Array<Schemas.event>;
       301: Schemas.basic_error;
@@ -39030,7 +38940,6 @@ export namespace Endpoints {
         per_page: number;
       }>;
     };
-    response: Array<Schemas.thread>;
     responses: {
       200: Array<Schemas.thread>;
       304: unknown;
@@ -39038,7 +38947,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Activity_mark__notifications__as__read = {
     method: "PUT";
@@ -39047,7 +38956,6 @@ export namespace Endpoints {
     parameters: {
       body: Partial<{ last_read_at: string; read: boolean }>;
     };
-    response: Partial<{ message: string }>;
     responses: {
       202: Partial<{ message: string }>;
       205: unknown;
@@ -39063,7 +38971,6 @@ export namespace Endpoints {
     parameters: {
       path: { thread_id: number };
     };
-    response: Schemas.thread;
     responses: { 200: Schemas.thread; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type patch_Activity_mark__thread__as__read = {
@@ -39073,7 +38980,6 @@ export namespace Endpoints {
     parameters: {
       path: { thread_id: number };
     };
-    response: unknown;
     responses: { 205: unknown; 304: unknown; 403: Schemas.basic_error };
   };
   export type delete_Activity_mark__thread__as__done = {
@@ -39083,7 +38989,6 @@ export namespace Endpoints {
     parameters: {
       path: { thread_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Activity_get__thread__subscription__for__authenticated__user = {
@@ -39093,7 +38998,6 @@ export namespace Endpoints {
     parameters: {
       path: { thread_id: number };
     };
-    response: Schemas.thread_subscription;
     responses: { 200: Schemas.thread_subscription; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type put_Activity_set__thread__subscription = {
@@ -39105,7 +39009,6 @@ export namespace Endpoints {
 
       body: Partial<{ ignored: boolean }>;
     };
-    response: Schemas.thread_subscription;
     responses: { 200: Schemas.thread_subscription; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type delete_Activity_delete__thread__subscription = {
@@ -39115,7 +39018,6 @@ export namespace Endpoints {
     parameters: {
       path: { thread_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type get_Meta_get__octocat = {
@@ -39125,7 +39027,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ s: string }>;
     };
-    response: unknown;
     responses: { 200: unknown };
   };
   export type get_Orgs_list = {
@@ -39135,9 +39036,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: number; per_page: number }>;
     };
-    response: Array<Schemas.organization_simple>;
     responses: { 200: Array<Schemas.organization_simple>; 304: unknown };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Dependabot_repository__access__for__org = {
     method: "GET";
@@ -39147,7 +39047,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string };
     };
-    response: Schemas.dependabot_repository_access_details;
     responses: {
       200: Schemas.dependabot_repository_access_details;
       403: Schemas.basic_error;
@@ -39163,7 +39062,6 @@ export namespace Endpoints {
 
       body: Partial<{ repository_ids_to_add: Array<number>; repository_ids_to_remove: Array<number> }>;
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type put_Dependabot_set__repository__access__default__level = {
@@ -39175,7 +39073,6 @@ export namespace Endpoints {
 
       body: { default_level: "public" | "internal" };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Billing_get__github__billing__usage__report__org = {
@@ -39186,10 +39083,9 @@ export namespace Endpoints {
       query: Partial<{ year: number; month: number; day: number; hour: number }>;
       path: { org: string };
     };
-    response: Schemas.billing_usage_report;
     responses: {
       200: Schemas.billing_usage_report;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       500: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -39202,7 +39098,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.organization_full;
     responses: { 200: Schemas.organization_full; 404: Schemas.basic_error };
   };
   export type patch_Orgs_update = {
@@ -39245,7 +39140,6 @@ export namespace Endpoints {
         deploy_keys_enabled_for_repositories: boolean;
       }>;
     };
-    response: Schemas.organization_full;
     responses: {
       200: Schemas.organization_full;
       409: Schemas.basic_error;
@@ -39259,7 +39153,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Record<string, unknown>;
     responses: { 202: Record<string, unknown>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Actions_get__actions__cache__usage__for__org = {
@@ -39269,9 +39162,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_cache_usage_org_enterprise;
     responses: { 200: Schemas.actions_cache_usage_org_enterprise };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__actions__cache__usage__by__repo__for__org = {
     method: "GET";
@@ -39281,11 +39173,10 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; repository_cache_usages: Array<Schemas.actions_cache_usage_by_repository> };
     responses: {
       200: { total_count: number; repository_cache_usages: Array<Schemas.actions_cache_usage_by_repository> };
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_list__hosted__runners__for__org = {
     method: "GET";
@@ -39295,9 +39186,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; runners: Array<Schemas.actions_hosted_runner> };
     responses: { 200: { total_count: number; runners: Array<Schemas.actions_hosted_runner> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Actions_create__hosted__runner__for__org = {
     method: "POST";
@@ -39315,7 +39205,6 @@ export namespace Endpoints {
         enable_static_ip?: boolean | undefined;
       };
     };
-    response: Schemas.actions_hosted_runner;
     responses: { 201: Schemas.actions_hosted_runner };
   };
   export type get_Actions_get__hosted__runners__github__owned__images__for__org = {
@@ -39325,7 +39214,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: { total_count: number; images: Array<Schemas.actions_hosted_runner_curated_image> };
     responses: { 200: { total_count: number; images: Array<Schemas.actions_hosted_runner_curated_image> } };
   };
   export type get_Actions_get__hosted__runners__partner__images__for__org = {
@@ -39335,7 +39223,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: { total_count: number; images: Array<Schemas.actions_hosted_runner_curated_image> };
     responses: { 200: { total_count: number; images: Array<Schemas.actions_hosted_runner_curated_image> } };
   };
   export type get_Actions_get__hosted__runners__limits__for__org = {
@@ -39345,7 +39232,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_hosted_runner_limits;
     responses: { 200: Schemas.actions_hosted_runner_limits };
   };
   export type get_Actions_get__hosted__runners__machine__specs__for__org = {
@@ -39355,7 +39241,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: { total_count: number; machine_specs: Array<Schemas.actions_hosted_runner_machine_spec> };
     responses: { 200: { total_count: number; machine_specs: Array<Schemas.actions_hosted_runner_machine_spec> } };
   };
   export type get_Actions_get__hosted__runners__platforms__for__org = {
@@ -39365,7 +39250,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: { total_count: number; platforms: Array<string> };
     responses: { 200: { total_count: number; platforms: Array<string> } };
   };
   export type get_Actions_get__hosted__runner__for__org = {
@@ -39375,9 +39259,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hosted_runner_id: number };
     };
-    response: Schemas.actions_hosted_runner;
     responses: { 200: Schemas.actions_hosted_runner };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type patch_Actions_update__hosted__runner__for__org = {
     method: "PATCH";
@@ -39388,7 +39271,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; runner_group_id: number; maximum_runners: number; enable_static_ip: boolean }>;
     };
-    response: Schemas.actions_hosted_runner;
     responses: { 200: Schemas.actions_hosted_runner };
   };
   export type delete_Actions_delete__hosted__runner__for__org = {
@@ -39398,7 +39280,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hosted_runner_id: number };
     };
-    response: Schemas.actions_hosted_runner;
     responses: { 202: Schemas.actions_hosted_runner };
   };
   export type get_Oidc_get__oidc__custom__sub__template__for__org = {
@@ -39408,7 +39289,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.oidc_custom_sub;
     responses: { 200: Schemas.oidc_custom_sub };
   };
   export type put_Oidc_update__oidc__custom__sub__template__for__org = {
@@ -39420,7 +39300,6 @@ export namespace Endpoints {
 
       body: Schemas.oidc_custom_sub;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Actions_get__github__actions__permissions__organization = {
@@ -39430,7 +39309,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_organization_permissions;
     responses: { 200: Schemas.actions_organization_permissions };
   };
   export type put_Actions_set__github__actions__permissions__organization = {
@@ -39446,7 +39324,6 @@ export namespace Endpoints {
         sha_pinning_required?: Schemas.sha_pinning_required | undefined;
       };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__artifact__and__log__retention__settings__organization = {
@@ -39456,7 +39333,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_artifact_and_log_retention_response;
     responses: {
       200: Schemas.actions_artifact_and_log_retention_response;
       403: Schemas.basic_error;
@@ -39472,7 +39348,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_artifact_and_log_retention;
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -39488,7 +39363,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_fork_pr_contributor_approval;
     responses: { 200: Schemas.actions_fork_pr_contributor_approval; 404: Schemas.basic_error };
   };
   export type put_Actions_set__fork__pr__contributor__approval__permissions__organization = {
@@ -39500,7 +39374,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_fork_pr_contributor_approval;
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Actions_get__private__repo__fork__pr__workflows__settings__organization = {
@@ -39510,7 +39383,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_fork_pr_workflows_private_repos;
     responses: {
       200: Schemas.actions_fork_pr_workflows_private_repos;
       403: Schemas.basic_error;
@@ -39526,7 +39398,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_fork_pr_workflows_private_repos_request;
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Actions_list__selected__repositories__enabled__github__actions__organization = {
@@ -39537,7 +39408,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.repository> };
     responses: { 200: { total_count: number; repositories: Array<Schemas.repository> } };
   };
   export type put_Actions_set__selected__repositories__enabled__github__actions__organization = {
@@ -39549,7 +39419,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Actions_enable__selected__repository__github__actions__organization = {
@@ -39559,7 +39428,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_disable__selected__repository__github__actions__organization = {
@@ -39569,7 +39437,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__allowed__actions__organization = {
@@ -39579,7 +39446,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.selected_actions;
     responses: { 200: Schemas.selected_actions };
   };
   export type put_Actions_set__allowed__actions__organization = {
@@ -39591,7 +39457,6 @@ export namespace Endpoints {
 
       body: Schemas.selected_actions;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__self__hosted__runners__permissions__organization = {
@@ -39601,7 +39466,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.self_hosted_runners_settings;
     responses: { 200: Schemas.self_hosted_runners_settings; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type put_Actions_set__self__hosted__runners__permissions__organization = {
@@ -39613,7 +39477,6 @@ export namespace Endpoints {
 
       body: { enabled_repositories: "all" | "selected" | "none" };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -39630,7 +39493,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Partial<{ total_count: number; repositories: Array<Schemas.repository> }>;
     responses: {
       200: Partial<{ total_count: number; repositories: Array<Schemas.repository> }>;
       403: Schemas.basic_error;
@@ -39646,7 +39508,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type put_Actions_enable__selected__repository__self__hosted__runners__organization = {
@@ -39656,7 +39517,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; repository_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -39672,7 +39532,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; repository_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -39688,7 +39547,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_get_default_workflow_permissions;
     responses: { 200: Schemas.actions_get_default_workflow_permissions };
   };
   export type put_Actions_set__github__actions__default__workflow__permissions__organization = {
@@ -39700,7 +39558,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_set_default_workflow_permissions;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__self__hosted__runner__groups__for__org = {
@@ -39711,7 +39568,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; visible_to_repository: string }>;
       path: { org: string };
     };
-    response: { total_count: number; runner_groups: Array<Schemas.runner_groups_org> };
     responses: { 200: { total_count: number; runner_groups: Array<Schemas.runner_groups_org> } };
   };
   export type post_Actions_create__self__hosted__runner__group__for__org = {
@@ -39732,7 +39588,6 @@ export namespace Endpoints {
         network_configuration_id?: string | undefined;
       };
     };
-    response: Schemas.runner_groups_org;
     responses: { 201: Schemas.runner_groups_org };
   };
   export type get_Actions_get__self__hosted__runner__group__for__org = {
@@ -39742,7 +39597,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number };
     };
-    response: Schemas.runner_groups_org;
     responses: { 200: Schemas.runner_groups_org };
   };
   export type patch_Actions_update__self__hosted__runner__group__for__org = {
@@ -39761,7 +39615,6 @@ export namespace Endpoints {
         network_configuration_id?: (string | null) | undefined;
       };
     };
-    response: Schemas.runner_groups_org;
     responses: { 200: Schemas.runner_groups_org };
   };
   export type delete_Actions_delete__self__hosted__runner__group__from__org = {
@@ -39771,7 +39624,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__github__hosted__runners__in__group__for__org = {
@@ -39782,9 +39634,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; runner_group_id: number };
     };
-    response: { total_count: number; runners: Array<Schemas.actions_hosted_runner> };
     responses: { 200: { total_count: number; runners: Array<Schemas.actions_hosted_runner> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_list__repo__access__to__self__hosted__runner__group__in__org = {
     method: "GET";
@@ -39794,7 +39645,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string; runner_group_id: number };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: { 200: { total_count: number; repositories: Array<Schemas.minimal_repository> } };
   };
   export type put_Actions_set__repo__access__to__self__hosted__runner__group__in__org = {
@@ -39806,7 +39656,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Actions_add__repo__access__to__self__hosted__runner__group__in__org = {
@@ -39816,7 +39665,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_remove__repo__access__to__self__hosted__runner__group__in__org = {
@@ -39826,7 +39674,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__self__hosted__runners__in__group__for__org = {
@@ -39837,9 +39684,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; runner_group_id: number };
     };
-    response: { total_count: number; runners: Array<Schemas.runner> };
     responses: { 200: { total_count: number; runners: Array<Schemas.runner> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Actions_set__self__hosted__runners__in__group__for__org = {
     method: "PUT";
@@ -39850,7 +39696,6 @@ export namespace Endpoints {
 
       body: { runners: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Actions_add__self__hosted__runner__to__group__for__org = {
@@ -39860,7 +39705,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number; runner_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_remove__self__hosted__runner__from__group__for__org = {
@@ -39870,7 +39714,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_group_id: number; runner_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__self__hosted__runners__for__org = {
@@ -39881,9 +39724,8 @@ export namespace Endpoints {
       query: Partial<{ name: string; per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; runners: Array<Schemas.runner> };
     responses: { 200: { total_count: number; runners: Array<Schemas.runner> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_list__runner__applications__for__org = {
     method: "GET";
@@ -39892,7 +39734,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Array<Schemas.runner_application>;
     responses: { 200: Array<Schemas.runner_application> };
   };
   export type post_Actions_generate__runner__jitconfig__for__org = {
@@ -39904,7 +39745,6 @@ export namespace Endpoints {
 
       body: { name: string; runner_group_id: number; labels: Array<string>; work_folder?: string | undefined };
     };
-    response: { runner: Schemas.runner; encoded_jit_config: string };
     responses: {
       201: { runner: Schemas.runner; encoded_jit_config: string };
       404: Schemas.basic_error;
@@ -39919,7 +39759,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.authentication_token;
     responses: { 201: Schemas.authentication_token };
   };
   export type post_Actions_create__remove__token__for__org = {
@@ -39929,7 +39768,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.authentication_token;
     responses: { 201: Schemas.authentication_token };
   };
   export type get_Actions_get__self__hosted__runner__for__org = {
@@ -39939,7 +39777,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_id: number };
     };
-    response: Schemas.runner;
     responses: { 200: Schemas.runner };
   };
   export type delete_Actions_delete__self__hosted__runner__from__org = {
@@ -39949,7 +39786,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Schemas.validation_error_simple };
   };
   export type get_Actions_list__labels__for__self__hosted__runner__for__org = {
@@ -39959,7 +39795,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_id: number };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: { 200: { total_count: number; labels: Array<Schemas.runner_label> }; 404: Schemas.basic_error };
   };
   export type post_Actions_add__custom__labels__to__self__hosted__runner__for__org = {
@@ -39971,7 +39806,6 @@ export namespace Endpoints {
 
       body: { labels: Array<string> };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -39987,7 +39821,6 @@ export namespace Endpoints {
 
       body: { labels: Array<string> };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -40001,7 +39834,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_id: number };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: { 200: { total_count: number; labels: Array<Schemas.runner_label> }; 404: Schemas.basic_error };
   };
   export type delete_Actions_remove__custom__label__from__self__hosted__runner__for__org = {
@@ -40011,7 +39843,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; runner_id: number; name: string };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -40026,9 +39857,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.organization_actions_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.organization_actions_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__org__public__key = {
     method: "GET";
@@ -40037,7 +39867,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_public_key;
     responses: { 200: Schemas.actions_public_key };
   };
   export type get_Actions_get__org__secret = {
@@ -40047,7 +39876,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: Schemas.organization_actions_secret;
     responses: { 200: Schemas.organization_actions_secret };
   };
   export type put_Actions_create__or__update__org__secret = {
@@ -40064,7 +39892,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number> | undefined;
       };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Actions_delete__org__secret = {
@@ -40074,7 +39901,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__selected__repos__for__org__secret = {
@@ -40085,7 +39911,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string; secret_name: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: { 200: { total_count: number; repositories: Array<Schemas.minimal_repository> } };
   };
   export type put_Actions_set__selected__repos__for__org__secret = {
@@ -40097,7 +39922,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Actions_add__selected__repo__to__org__secret = {
@@ -40107,7 +39931,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type delete_Actions_remove__selected__repo__from__org__secret = {
@@ -40117,7 +39940,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type get_Actions_list__org__variables = {
@@ -40128,9 +39950,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; variables: Array<Schemas.organization_actions_variable> };
     responses: { 200: { total_count: number; variables: Array<Schemas.organization_actions_variable> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Actions_create__org__variable = {
     method: "POST";
@@ -40146,7 +39967,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number> | undefined;
       };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type get_Actions_get__org__variable = {
@@ -40156,7 +39976,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; name: string };
     };
-    response: Schemas.organization_actions_variable;
     responses: { 200: Schemas.organization_actions_variable };
   };
   export type patch_Actions_update__org__variable = {
@@ -40173,7 +39992,6 @@ export namespace Endpoints {
         selected_repository_ids: Array<number>;
       }>;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_delete__org__variable = {
@@ -40183,7 +40001,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__selected__repos__for__org__variable = {
@@ -40194,7 +40011,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string; name: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: { 200: { total_count: number; repositories: Array<Schemas.minimal_repository> }; 409: unknown };
   };
   export type put_Actions_set__selected__repos__for__org__variable = {
@@ -40206,7 +40022,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type put_Actions_add__selected__repo__to__org__variable = {
@@ -40216,7 +40031,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type delete_Actions_remove__selected__repo__from__org__variable = {
@@ -40226,7 +40040,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type post_Orgs_list__attestations__bulk = {
@@ -40239,23 +40052,6 @@ export namespace Endpoints {
 
       body: { subject_digests: Array<string>; predicate_type?: string | undefined };
     };
-    response: Partial<{
-      attestations_subject_digests: Record<
-        string,
-        Array<
-          Partial<{
-            bundle: Partial<{
-              mediaType: string;
-              verificationMaterial: Partial<{} & Record<string, any>>;
-              dsseEnvelope: Partial<{} & Record<string, any>>;
-            }>;
-            repository_id: number;
-            bundle_url: string;
-          }>
-        > | null
-      >;
-      page_info: Partial<{ has_next: boolean; has_previous: boolean; next: string; previous: string }>;
-    }>;
     responses: {
       200: Partial<{
         attestations_subject_digests: Record<
@@ -40285,7 +40081,6 @@ export namespace Endpoints {
 
       body: { subject_digests: Array<string> } | { attestation_ids: Array<number> };
     };
-    response: unknown;
     responses: { 200: unknown; 404: Schemas.basic_error };
   };
   export type delete_Orgs_delete__attestations__by__subject__digest = {
@@ -40295,7 +40090,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; subject_digest: string };
     };
-    response: unknown;
     responses: { 200: unknown; 204: unknown; 404: Schemas.basic_error };
   };
   export type delete_Orgs_delete__attestations__by__id = {
@@ -40305,7 +40099,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; attestation_id: number };
     };
-    response: unknown;
     responses: { 200: unknown; 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_list__attestations = {
@@ -40316,19 +40109,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string; predicate_type: string }>;
       path: { org: string; subject_digest: string };
     };
-    response: Partial<{
-      attestations: Array<
-        Partial<{
-          bundle: Partial<{
-            mediaType: string;
-            verificationMaterial: Partial<{} & Record<string, any>>;
-            dsseEnvelope: Partial<{} & Record<string, any>>;
-          }>;
-          repository_id: number;
-          bundle_url: string;
-        }>
-      >;
-    }>;
     responses: {
       200: Partial<{
         attestations: Array<
@@ -40353,7 +40133,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
   };
   export type get_Orgs_check__blocked__user = {
@@ -40363,7 +40142,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type put_Orgs_block__user = {
@@ -40373,7 +40151,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Schemas.validation_error };
   };
   export type delete_Orgs_unblock__user = {
@@ -40383,7 +40160,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Campaigns_list__org__campaigns = {
@@ -40400,13 +40176,12 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.campaign_summary>;
     responses: {
       200: Array<Schemas.campaign_summary>;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Campaigns_create__campaign = {
     method: "POST";
@@ -40426,7 +40201,6 @@ export namespace Endpoints {
         generate_issues?: boolean | undefined;
       };
     };
-    response: Schemas.campaign_summary;
     responses: {
       200: Schemas.campaign_summary;
       400: Schemas.basic_error;
@@ -40443,7 +40217,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; campaign_number: number };
     };
-    response: Schemas.campaign_summary;
     responses: {
       200: Schemas.campaign_summary;
       404: Schemas.basic_error;
@@ -40468,7 +40241,6 @@ export namespace Endpoints {
         state: Schemas.campaign_state;
       }>;
     };
-    response: Schemas.campaign_summary;
     responses: {
       200: Schemas.campaign_summary;
       400: Schemas.basic_error;
@@ -40484,7 +40256,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; campaign_number: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       404: Schemas.basic_error;
@@ -40510,13 +40281,12 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.code_scanning_organization_alert_items>;
     responses: {
       200: Array<Schemas.code_scanning_organization_alert_items>;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Code__security_get__configurations__for__org = {
     method: "GET";
@@ -40526,7 +40296,6 @@ export namespace Endpoints {
       query: Partial<{ target_type: "global" | "all"; per_page: number; before: string; after: string }>;
       path: { org: string };
     };
-    response: Array<Schemas.code_security_configuration>;
     responses: { 200: Array<Schemas.code_security_configuration>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Code__security_create__configuration = {
@@ -40565,7 +40334,6 @@ export namespace Endpoints {
         enforcement?: ("enforced" | "unenforced") | undefined;
       };
     };
-    response: Schemas.code_security_configuration;
     responses: { 201: Schemas.code_security_configuration };
   };
   export type get_Code__security_get__default__configurations = {
@@ -40575,7 +40343,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.code_security_default_configurations;
     responses: {
       200: Schemas.code_security_default_configurations;
       304: unknown;
@@ -40592,10 +40359,9 @@ export namespace Endpoints {
 
       body: Partial<{ selected_repository_ids: Array<number> }>;
     };
-    response: unknown;
     responses: {
       204: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -40608,7 +40374,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; configuration_id: number };
     };
-    response: Schemas.code_security_configuration;
     responses: {
       200: Schemas.code_security_configuration;
       304: unknown;
@@ -40651,7 +40416,6 @@ export namespace Endpoints {
         enforcement: "enforced" | "unenforced";
       }>;
     };
-    response: Schemas.code_security_configuration;
     responses: { 200: Schemas.code_security_configuration; 204: unknown };
   };
   export type delete_Code__security_delete__configuration = {
@@ -40661,10 +40425,9 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; configuration_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -40682,7 +40445,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number> | undefined;
       };
     };
-    response: Record<string, unknown>;
     responses: { 202: Record<string, unknown> };
   };
   export type put_Code__security_set__configuration__as__default = {
@@ -40694,10 +40456,6 @@ export namespace Endpoints {
 
       body: Partial<{ default_for_new_repos: "all" | "none" | "private_and_internal" | "public" }>;
     };
-    response: Partial<{
-      default_for_new_repos: "all" | "none" | "private_and_internal" | "public";
-      configuration: Schemas.code_security_configuration;
-    }>;
     responses: {
       200: Partial<{
         default_for_new_repos: "all" | "none" | "private_and_internal" | "public";
@@ -40715,7 +40473,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string; status: string }>;
       path: { org: string; configuration_id: number };
     };
-    response: Array<Schemas.code_security_configuration_repositories>;
     responses: {
       200: Array<Schemas.code_security_configuration_repositories>;
       403: Schemas.basic_error;
@@ -40730,7 +40487,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; codespaces: Array<Schemas.codespace> };
     responses: {
       200: { total_count: number; codespaces: Array<Schemas.codespace> };
       304: unknown;
@@ -40748,9 +40504,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.codespaces_org_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.codespaces_org_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Codespaces_get__org__public__key = {
     method: "GET";
@@ -40759,7 +40514,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.codespaces_public_key;
     responses: { 200: Schemas.codespaces_public_key };
   };
   export type get_Codespaces_get__org__secret = {
@@ -40769,9 +40523,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: Schemas.codespaces_org_secret;
     responses: { 200: Schemas.codespaces_org_secret };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Codespaces_create__or__update__org__secret = {
     method: "PUT";
@@ -40787,7 +40540,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number> | undefined;
       };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Codespaces_delete__org__secret = {
@@ -40797,7 +40549,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Codespaces_list__selected__repos__for__org__secret = {
@@ -40808,7 +40559,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string; secret_name: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: {
       200: { total_count: number; repositories: Array<Schemas.minimal_repository> };
       404: Schemas.basic_error;
@@ -40823,7 +40573,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 409: unknown };
   };
   export type put_Codespaces_add__selected__repo__to__org__secret = {
@@ -40833,7 +40582,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 409: unknown; 422: Schemas.validation_error };
   };
   export type delete_Codespaces_remove__selected__repo__from__org__secret = {
@@ -40843,7 +40591,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 409: unknown; 422: Schemas.validation_error };
   };
   export type get_Copilot_get__copilot__organization__details = {
@@ -40853,7 +40600,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.copilot_organization_details;
     responses: {
       200: Schemas.copilot_organization_details;
       401: Schemas.basic_error;
@@ -40871,7 +40617,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string };
     };
-    response: Partial<{ total_seats: number; seats: Array<Schemas.copilot_seat_details> }>;
     responses: {
       200: Partial<{ total_seats: number; seats: Array<Schemas.copilot_seat_details> }>;
       401: Schemas.basic_error;
@@ -40879,7 +40624,7 @@ export namespace Endpoints {
       404: Schemas.basic_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Copilot_add__copilot__seats__for__teams = {
     method: "POST";
@@ -40890,7 +40635,6 @@ export namespace Endpoints {
 
       body: { selected_teams: Array<string> };
     };
-    response: { seats_created: number };
     responses: {
       201: { seats_created: number };
       401: Schemas.basic_error;
@@ -40909,7 +40653,6 @@ export namespace Endpoints {
 
       body: { selected_teams: Array<string> };
     };
-    response: { seats_cancelled: number };
     responses: {
       200: { seats_cancelled: number };
       401: Schemas.basic_error;
@@ -40928,7 +40671,6 @@ export namespace Endpoints {
 
       body: { selected_usernames: Array<string> };
     };
-    response: { seats_created: number };
     responses: {
       201: { seats_created: number };
       401: Schemas.basic_error;
@@ -40947,7 +40689,6 @@ export namespace Endpoints {
 
       body: { selected_usernames: Array<string> };
     };
-    response: { seats_cancelled: number };
     responses: {
       200: { seats_cancelled: number };
       401: Schemas.basic_error;
@@ -40965,7 +40706,6 @@ export namespace Endpoints {
       query: Partial<{ since: string; until: string; page: number; per_page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.copilot_usage_metrics_day>;
     responses: {
       200: Array<Schemas.copilot_usage_metrics_day>;
       403: Schemas.basic_error;
@@ -40999,11 +40739,10 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.dependabot_alert_with_repository>;
     responses: {
       200: Array<Schemas.dependabot_alert_with_repository>;
       304: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
@@ -41017,9 +40756,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.organization_dependabot_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.organization_dependabot_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Dependabot_get__org__public__key = {
     method: "GET";
@@ -41028,7 +40766,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.dependabot_public_key;
     responses: { 200: Schemas.dependabot_public_key };
   };
   export type get_Dependabot_get__org__secret = {
@@ -41038,7 +40775,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: Schemas.organization_dependabot_secret;
     responses: { 200: Schemas.organization_dependabot_secret };
   };
   export type put_Dependabot_create__or__update__org__secret = {
@@ -41055,7 +40791,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<string> | undefined;
       };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Dependabot_delete__org__secret = {
@@ -41065,7 +40800,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Dependabot_list__selected__repos__for__org__secret = {
@@ -41076,7 +40810,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { org: string; secret_name: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: { 200: { total_count: number; repositories: Array<Schemas.minimal_repository> } };
   };
   export type put_Dependabot_set__selected__repos__for__org__secret = {
@@ -41088,7 +40821,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Dependabot_add__selected__repo__to__org__secret = {
@@ -41098,7 +40830,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type delete_Dependabot_remove__selected__repo__from__org__secret = {
@@ -41108,7 +40839,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type get_Packages_list__docker__migration__conflicting__packages__for__organization = {
@@ -41118,7 +40848,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package>; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type get_Activity_list__public__org__events = {
@@ -41129,7 +40858,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Orgs_list__failed__invitations = {
@@ -41140,9 +40868,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.organization_invitation>;
     responses: { 200: Array<Schemas.organization_invitation>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__webhooks = {
     method: "GET";
@@ -41152,9 +40879,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.org_hook>;
     responses: { 200: Array<Schemas.org_hook>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Orgs_create__webhook = {
     method: "POST";
@@ -41177,9 +40903,8 @@ export namespace Endpoints {
         active?: boolean | undefined;
       };
     };
-    response: Schemas.org_hook;
     responses: { 201: Schemas.org_hook; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Orgs_get__webhook = {
     method: "GET";
@@ -41188,7 +40913,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number };
     };
-    response: Schemas.org_hook;
     responses: { 200: Schemas.org_hook; 404: Schemas.basic_error };
   };
   export type patch_Orgs_update__webhook = {
@@ -41210,7 +40934,6 @@ export namespace Endpoints {
         name: string;
       }>;
     };
-    response: Schemas.org_hook;
     responses: { 200: Schemas.org_hook; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Orgs_delete__webhook = {
@@ -41220,7 +40943,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Orgs_get__webhook__config__for__org = {
@@ -41230,7 +40952,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number };
     };
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type patch_Orgs_update__webhook__config__for__org = {
@@ -41247,7 +40968,6 @@ export namespace Endpoints {
         insecure_ssl: Schemas.webhook_config_insecure_ssl;
       }>;
     };
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type get_Orgs_list__webhook__deliveries = {
@@ -41258,8 +40978,7 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; cursor: string }>;
       path: { org: string; hook_id: number };
     };
-    response: Array<Schemas.hook_delivery_item>;
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type get_Orgs_get__webhook__delivery = {
     method: "GET";
@@ -41268,8 +40987,7 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number; delivery_id: number };
     };
-    response: Schemas.hook_delivery;
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type post_Orgs_redeliver__webhook__delivery = {
     method: "POST";
@@ -41278,8 +40996,7 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number; delivery_id: number };
     };
-    response: Record<string, unknown>;
-    responses: { 202: Record<string, unknown>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type post_Orgs_ping__webhook = {
     method: "POST";
@@ -41288,7 +41005,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Api__insights_get__route__stats__by__actor = {
@@ -41320,7 +41036,6 @@ export namespace Endpoints {
         actor_id: number;
       };
     };
-    response: Schemas.api_insights_route_stats;
     responses: { 200: Schemas.api_insights_route_stats };
   };
   export type get_Api__insights_get__subject__stats = {
@@ -41347,7 +41062,6 @@ export namespace Endpoints {
       };
       path: { org: string };
     };
-    response: Schemas.api_insights_subject_stats;
     responses: { 200: Schemas.api_insights_subject_stats };
   };
   export type get_Api__insights_get__summary__stats = {
@@ -41358,7 +41072,6 @@ export namespace Endpoints {
       query: { min_timestamp: string; max_timestamp?: string | undefined };
       path: { org: string };
     };
-    response: Schemas.api_insights_summary_stats;
     responses: { 200: Schemas.api_insights_summary_stats };
   };
   export type get_Api__insights_get__summary__stats__by__user = {
@@ -41369,7 +41082,6 @@ export namespace Endpoints {
       query: { min_timestamp: string; max_timestamp?: string | undefined };
       path: { org: string; user_id: string };
     };
-    response: Schemas.api_insights_summary_stats;
     responses: { 200: Schemas.api_insights_summary_stats };
   };
   export type get_Api__insights_get__summary__stats__by__actor = {
@@ -41384,7 +41096,6 @@ export namespace Endpoints {
         actor_id: number;
       };
     };
-    response: Schemas.api_insights_summary_stats;
     responses: { 200: Schemas.api_insights_summary_stats };
   };
   export type get_Api__insights_get__time__stats = {
@@ -41395,7 +41106,6 @@ export namespace Endpoints {
       query: { min_timestamp: string; max_timestamp?: string | undefined; timestamp_increment: string };
       path: { org: string };
     };
-    response: Schemas.api_insights_time_stats;
     responses: { 200: Schemas.api_insights_time_stats };
   };
   export type get_Api__insights_get__time__stats__by__user = {
@@ -41406,7 +41116,6 @@ export namespace Endpoints {
       query: { min_timestamp: string; max_timestamp?: string | undefined; timestamp_increment: string };
       path: { org: string; user_id: string };
     };
-    response: Schemas.api_insights_time_stats;
     responses: { 200: Schemas.api_insights_time_stats };
   };
   export type get_Api__insights_get__time__stats__by__actor = {
@@ -41421,7 +41130,6 @@ export namespace Endpoints {
         actor_id: number;
       };
     };
-    response: Schemas.api_insights_time_stats;
     responses: { 200: Schemas.api_insights_time_stats };
   };
   export type get_Api__insights_get__user__stats = {
@@ -41448,7 +41156,6 @@ export namespace Endpoints {
       };
       path: { org: string; user_id: string };
     };
-    response: Schemas.api_insights_user_stats;
     responses: { 200: Schemas.api_insights_user_stats };
   };
   export type get_Apps_get__org__installation = {
@@ -41458,7 +41165,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.installation;
     responses: { 200: Schemas.installation };
   };
   export type get_Orgs_list__app__installations = {
@@ -41469,9 +41175,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; installations: Array<Schemas.installation> };
     responses: { 200: { total_count: number; installations: Array<Schemas.installation> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Interactions_get__restrictions__for__org = {
     method: "GET";
@@ -41480,7 +41185,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.interaction_limit_response | Partial<{}>;
     responses: { 200: Schemas.interaction_limit_response | Partial<{}> };
   };
   export type put_Interactions_set__restrictions__for__org = {
@@ -41492,7 +41196,6 @@ export namespace Endpoints {
 
       body: Schemas.interaction_limit;
     };
-    response: Schemas.interaction_limit_response;
     responses: { 200: Schemas.interaction_limit_response; 422: Schemas.validation_error };
   };
   export type delete_Interactions_remove__restrictions__for__org = {
@@ -41502,7 +41205,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Orgs_list__pending__invitations = {
@@ -41518,9 +41220,8 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.organization_invitation>;
     responses: { 200: Array<Schemas.organization_invitation>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Orgs_create__invitation = {
     method: "POST";
@@ -41536,7 +41237,6 @@ export namespace Endpoints {
         team_ids: Array<number>;
       }>;
     };
-    response: Schemas.organization_invitation;
     responses: { 201: Schemas.organization_invitation; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Orgs_cancel__invitation = {
@@ -41546,7 +41246,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; invitation_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Orgs_list__invitation__teams = {
@@ -41557,9 +41256,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; invitation_id: number };
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__issue__types = {
     method: "GET";
@@ -41568,7 +41266,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Array<Schemas.issue_type>;
     responses: { 200: Array<Schemas.issue_type>; 404: Schemas.basic_error };
   };
   export type post_Orgs_create__issue__type = {
@@ -41580,7 +41277,6 @@ export namespace Endpoints {
 
       body: Schemas.organization_create_issue_type;
     };
-    response: Schemas.issue_type;
     responses: { 200: Schemas.issue_type; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type put_Orgs_update__issue__type = {
@@ -41592,7 +41288,6 @@ export namespace Endpoints {
 
       body: Schemas.organization_update_issue_type;
     };
-    response: Schemas.issue_type;
     responses: { 200: Schemas.issue_type; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type delete_Orgs_delete__issue__type = {
@@ -41602,7 +41297,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; issue_type_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type get_Issues_list__for__org = {
@@ -41623,9 +41317,8 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.issue>;
     responses: { 200: Array<Schemas.issue>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__members = {
     method: "GET";
@@ -41640,9 +41333,8 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_check__membership__for__user = {
     method: "GET";
@@ -41651,8 +41343,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 302: unknown; 404: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type delete_Orgs_remove__member = {
     method: "DELETE";
@@ -41661,7 +41353,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error };
   };
   export type get_Codespaces_get__codespaces__for__user__in__org = {
@@ -41672,7 +41363,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; username: string };
     };
-    response: { total_count: number; codespaces: Array<Schemas.codespace> };
     responses: {
       200: { total_count: number; codespaces: Array<Schemas.codespace> };
       304: unknown;
@@ -41689,7 +41379,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string; codespace_name: string };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
       304: unknown;
@@ -41706,7 +41395,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string; codespace_name: string };
     };
-    response: Schemas.codespace;
     responses: {
       200: Schemas.codespace;
       304: unknown;
@@ -41723,7 +41411,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: Schemas.copilot_seat_details;
     responses: {
       200: Schemas.copilot_seat_details;
       401: Schemas.basic_error;
@@ -41740,7 +41427,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: Schemas.org_membership;
     responses: { 200: Schemas.org_membership; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type put_Orgs_set__membership__for__user = {
@@ -41752,7 +41438,6 @@ export namespace Endpoints {
 
       body: Partial<{ role: "admin" | "member" }>;
     };
-    response: Schemas.org_membership;
     responses: { 200: Schemas.org_membership; 403: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Orgs_remove__membership__for__user = {
@@ -41762,7 +41447,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Migrations_list__for__org = {
@@ -41773,9 +41457,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; exclude: Array<"repositories"> }>;
       path: { org: string };
     };
-    response: Array<Schemas.migration>;
     responses: { 200: Array<Schemas.migration> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Migrations_start__for__org = {
     method: "POST";
@@ -41796,7 +41479,6 @@ export namespace Endpoints {
         exclude?: Array<"repositories"> | undefined;
       };
     };
-    response: Schemas.migration;
     responses: { 201: Schemas.migration; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Migrations_get__status__for__org = {
@@ -41807,7 +41489,6 @@ export namespace Endpoints {
       query: Partial<{ exclude: Array<"repositories"> }>;
       path: { org: string; migration_id: number };
     };
-    response: Schemas.migration;
     responses: { 200: Schemas.migration; 404: Schemas.basic_error };
   };
   export type get_Migrations_download__archive__for__org = {
@@ -41817,7 +41498,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; migration_id: number };
     };
-    response: unknown;
     responses: { 302: unknown; 404: Schemas.basic_error };
   };
   export type delete_Migrations_delete__archive__for__org = {
@@ -41827,7 +41507,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; migration_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type delete_Migrations_unlock__repo__for__org = {
@@ -41837,7 +41516,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; migration_id: number; repo_name: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Migrations_list__repos__for__org = {
@@ -41848,9 +41526,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; migration_id: number };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__org__roles = {
     method: "GET";
@@ -41859,7 +41536,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Partial<{ total_count: number; roles: Array<Schemas.organization_role> }>;
     responses: {
       200: Partial<{ total_count: number; roles: Array<Schemas.organization_role> }>;
       404: Schemas.basic_error;
@@ -41873,7 +41549,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Orgs_assign__team__to__org__role = {
@@ -41883,7 +41558,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; role_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown; 422: unknown };
   };
   export type delete_Orgs_revoke__org__role__team = {
@@ -41893,7 +41567,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; role_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Orgs_revoke__all__org__roles__user = {
@@ -41903,7 +41576,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Orgs_assign__user__to__org__role = {
@@ -41913,7 +41585,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string; role_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown; 422: unknown };
   };
   export type delete_Orgs_revoke__org__role__user = {
@@ -41923,7 +41594,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string; role_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Orgs_get__org__role = {
@@ -41933,7 +41603,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; role_id: number };
     };
-    response: Schemas.organization_role;
     responses: { 200: Schemas.organization_role; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Orgs_list__org__role__teams = {
@@ -41944,9 +41613,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; role_id: number };
     };
-    response: Array<Schemas.team_role_assignment>;
     responses: { 200: Array<Schemas.team_role_assignment>; 404: unknown; 422: unknown };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__org__role__users = {
     method: "GET";
@@ -41956,9 +41624,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; role_id: number };
     };
-    response: Array<Schemas.user_role_assignment>;
     responses: { 200: Array<Schemas.user_role_assignment>; 404: unknown; 422: unknown };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__outside__collaborators = {
     method: "GET";
@@ -41968,9 +41635,8 @@ export namespace Endpoints {
       query: Partial<{ filter: "2fa_disabled" | "2fa_insecure" | "all"; per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Orgs_convert__member__to__outside__collaborator = {
     method: "PUT";
@@ -41981,7 +41647,6 @@ export namespace Endpoints {
 
       body: Partial<{ async: boolean }>;
     };
-    response: Partial<{}>;
     responses: { 202: Partial<{}>; 204: unknown; 403: unknown; 404: Schemas.basic_error };
   };
   export type delete_Orgs_remove__outside__collaborator = {
@@ -41991,7 +41656,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Partial<{ message: string; documentation_url: string }> };
   };
   export type get_Packages_list__packages__for__organization = {
@@ -42007,7 +41671,6 @@ export namespace Endpoints {
       };
       path: { org: string };
     };
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package>; 400: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type get_Packages_get__package__for__organization = {
@@ -42021,7 +41684,6 @@ export namespace Endpoints {
         org: string;
       };
     };
-    response: Schemas.Schema_package;
     responses: { 200: Schemas.Schema_package };
   };
   export type delete_Packages_delete__package__for__org = {
@@ -42035,7 +41697,6 @@ export namespace Endpoints {
         org: string;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__for__org = {
@@ -42050,7 +41711,6 @@ export namespace Endpoints {
         org: string;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Packages_get__all__package__versions__for__package__owned__by__org = {
@@ -42065,7 +41725,6 @@ export namespace Endpoints {
         org: string;
       };
     };
-    response: Array<Schemas.package_version>;
     responses: {
       200: Array<Schemas.package_version>;
       401: Schemas.basic_error;
@@ -42085,7 +41744,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: Schemas.package_version;
     responses: { 200: Schemas.package_version };
   };
   export type delete_Packages_delete__package__version__for__org = {
@@ -42100,7 +41758,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__version__for__org = {
@@ -42115,7 +41772,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_list__pat__grant__requests = {
@@ -42137,7 +41793,6 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.organization_programmatic_access_grant_request>;
     responses: {
       200: Array<Schemas.organization_programmatic_access_grant_request>;
       403: Schemas.basic_error;
@@ -42145,7 +41800,7 @@ export namespace Endpoints {
       422: Schemas.validation_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Orgs_review__pat__grant__requests__in__bulk = {
     method: "POST";
@@ -42160,7 +41815,6 @@ export namespace Endpoints {
         reason?: (string | null) | undefined;
       };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
       403: Schemas.basic_error;
@@ -42178,7 +41832,6 @@ export namespace Endpoints {
 
       body: { action: "approve" | "deny"; reason?: (string | null) | undefined };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -42195,14 +41848,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; pat_request_id: number };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: {
       200: Array<Schemas.minimal_repository>;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__pat__grants = {
     method: "GET";
@@ -42223,7 +41875,6 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.organization_programmatic_access_grant>;
     responses: {
       200: Array<Schemas.organization_programmatic_access_grant>;
       403: Schemas.basic_error;
@@ -42231,7 +41882,7 @@ export namespace Endpoints {
       422: Schemas.validation_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Orgs_update__pat__accesses = {
     method: "POST";
@@ -42242,7 +41893,6 @@ export namespace Endpoints {
 
       body: { action: "revoke"; pat_ids: Array<number> };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
       403: Schemas.basic_error;
@@ -42260,7 +41910,6 @@ export namespace Endpoints {
 
       body: { action: "revoke" };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -42277,14 +41926,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; pat_id: number };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: {
       200: Array<Schemas.minimal_repository>;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Private__registries_list__org__private__registries = {
     method: "GET";
@@ -42294,13 +41942,12 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; configurations: Array<Schemas.org_private_registry_configuration> };
     responses: {
       200: { total_count: number; configurations: Array<Schemas.org_private_registry_configuration> };
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Private__registries_create__org__private__registry = {
     method: "POST";
@@ -42334,7 +41981,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number> | undefined;
       };
     };
-    response: Schemas.org_private_registry_configuration_with_selected_repositories;
     responses: {
       201: Schemas.org_private_registry_configuration_with_selected_repositories;
       404: Schemas.basic_error;
@@ -42348,9 +41994,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: { key_id: string; key: string };
     responses: { 200: { key_id: string; key: string }; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Private__registries_get__org__private__registry = {
     method: "GET";
@@ -42359,7 +42004,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: Schemas.org_private_registry_configuration;
     responses: { 200: Schemas.org_private_registry_configuration; 404: Schemas.basic_error };
   };
   export type patch_Private__registries_update__org__private__registry = {
@@ -42394,7 +42038,6 @@ export namespace Endpoints {
         selected_repository_ids: Array<number>;
       }>;
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Private__registries_delete__org__private__registry = {
@@ -42404,8 +42047,7 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    response: unknown;
-    responses: { 204: unknown; 400: Schemas.basic_error; 404: Schemas.basic_error };
+    responses: { 204: unknown; 400: Schemas.scim_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_get__all__custom__properties = {
     method: "GET";
@@ -42414,7 +42056,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Array<Schemas.custom_property>;
     responses: { 200: Array<Schemas.custom_property>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type patch_Orgs_create__or__update__custom__properties = {
@@ -42426,7 +42067,6 @@ export namespace Endpoints {
 
       body: { properties: Array<Schemas.custom_property> };
     };
-    response: Array<Schemas.custom_property>;
     responses: { 200: Array<Schemas.custom_property>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_get__custom__property = {
@@ -42436,7 +42076,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; custom_property_name: string };
     };
-    response: Schemas.custom_property;
     responses: { 200: Schemas.custom_property; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type put_Orgs_create__or__update__custom__property = {
@@ -42448,7 +42087,6 @@ export namespace Endpoints {
 
       body: Schemas.custom_property_set_payload;
     };
-    response: Schemas.custom_property;
     responses: { 200: Schemas.custom_property; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type delete_Orgs_remove__custom__property = {
@@ -42458,7 +42096,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; custom_property_name: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_list__custom__properties__values__for__repos = {
@@ -42469,13 +42106,12 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; repository_query: string }>;
       path: { org: string };
     };
-    response: Array<Schemas.org_repo_custom_property_values>;
     responses: {
       200: Array<Schemas.org_repo_custom_property_values>;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type patch_Orgs_create__or__update__custom__properties__values__for__repos = {
     method: "PATCH";
@@ -42486,7 +42122,6 @@ export namespace Endpoints {
 
       body: { repository_names: Array<string>; properties: Array<Schemas.custom_property_value> };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Orgs_list__public__members = {
@@ -42497,9 +42132,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_check__public__membership__for__user = {
     method: "GET";
@@ -42508,7 +42142,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown };
   };
   export type put_Orgs_set__public__membership__for__authenticated__user = {
@@ -42518,7 +42151,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error };
   };
   export type delete_Orgs_remove__public__membership__for__authenticated__user = {
@@ -42528,7 +42160,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__for__org = {
@@ -42545,9 +42176,8 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__in__org = {
     method: "POST";
@@ -42584,9 +42214,8 @@ export namespace Endpoints {
         custom_properties?: Record<string, unknown> | undefined;
       };
     };
-    response: Schemas.full_repository;
     responses: { 201: Schemas.full_repository; 403: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__org__rulesets = {
     method: "GET";
@@ -42596,7 +42225,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; targets: string }>;
       path: { org: string };
     };
-    response: Array<Schemas.repository_ruleset>;
     responses: { 200: Array<Schemas.repository_ruleset>; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type post_Repos_create__org__ruleset = {
@@ -42615,7 +42243,6 @@ export namespace Endpoints {
         rules?: Array<Schemas.org_rules> | undefined;
       };
     };
-    response: Schemas.repository_ruleset;
     responses: { 201: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__org__rule__suites = {
@@ -42634,7 +42261,6 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Schemas.rule_suites;
     responses: { 200: Schemas.rule_suites; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__org__rule__suite = {
@@ -42644,7 +42270,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; rule_suite_id: number };
     };
-    response: Schemas.rule_suite;
     responses: { 200: Schemas.rule_suite; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__org__ruleset = {
@@ -42654,7 +42279,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; ruleset_id: number };
     };
-    response: Schemas.repository_ruleset;
     responses: { 200: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type put_Repos_update__org__ruleset = {
@@ -42673,7 +42297,6 @@ export namespace Endpoints {
         rules: Array<Schemas.org_rules>;
       }>;
     };
-    response: Schemas.repository_ruleset;
     responses: { 200: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type delete_Repos_delete__org__ruleset = {
@@ -42683,7 +42306,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; ruleset_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Orgs_get__org__ruleset__history = {
@@ -42694,7 +42316,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; ruleset_id: number };
     };
-    response: Array<Schemas.ruleset_version>;
     responses: { 200: Array<Schemas.ruleset_version>; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Orgs_get__org__ruleset__version = {
@@ -42704,7 +42325,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; ruleset_id: number; version_id: number };
     };
-    response: Schemas.ruleset_version_with_state;
     responses: { 200: Schemas.ruleset_version_with_state; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Secret__scanning_list__alerts__for__org = {
@@ -42729,13 +42349,12 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.organization_secret_scanning_alert>;
     responses: {
       200: Array<Schemas.organization_secret_scanning_alert>;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Secret__scanning_list__org__pattern__configs = {
     method: "GET";
@@ -42744,7 +42363,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.secret_scanning_pattern_configuration;
     responses: {
       200: Schemas.secret_scanning_pattern_configuration;
       403: Schemas.basic_error;
@@ -42772,10 +42390,9 @@ export namespace Endpoints {
         >;
       }>;
     };
-    response: Partial<{ pattern_config_version: string }>;
     responses: {
       200: Partial<{ pattern_config_version: string }>;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -42797,8 +42414,7 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    response: Array<Schemas.repository_advisory>;
-    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.basic_error; 404: Schemas.basic_error };
+    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.scim_error; 404: Schemas.basic_error };
   };
   export type get_Billing_get__github__actions__billing__org = {
     method: "GET";
@@ -42807,7 +42423,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.actions_billing_usage;
     responses: { 200: Schemas.actions_billing_usage };
   };
   export type get_Billing_get__github__packages__billing__org = {
@@ -42817,7 +42432,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.packages_billing_usage;
     responses: { 200: Schemas.packages_billing_usage };
   };
   export type get_Billing_get__shared__storage__billing__org = {
@@ -42827,7 +42441,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.combined_billing_usage;
     responses: { 200: Schemas.combined_billing_usage };
   };
   export type get_Hosted__compute_list__network__configurations__for__org = {
@@ -42838,9 +42451,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: { total_count: number; network_configurations: Array<Schemas.network_configuration> };
     responses: { 200: { total_count: number; network_configurations: Array<Schemas.network_configuration> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Hosted__compute_create__network__configuration__for__org = {
     method: "POST";
@@ -42851,7 +42463,6 @@ export namespace Endpoints {
 
       body: { name: string; compute_service?: ("none" | "actions") | undefined; network_settings_ids: Array<string> };
     };
-    response: Schemas.network_configuration;
     responses: { 201: Schemas.network_configuration };
   };
   export type get_Hosted__compute_get__network__configuration__for__org = {
@@ -42861,9 +42472,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; network_configuration_id: string };
     };
-    response: Schemas.network_configuration;
     responses: { 200: Schemas.network_configuration };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type patch_Hosted__compute_update__network__configuration__for__org = {
     method: "PATCH";
@@ -42874,7 +42484,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; compute_service: "none" | "actions"; network_settings_ids: Array<string> }>;
     };
-    response: Schemas.network_configuration;
     responses: { 200: Schemas.network_configuration };
   };
   export type delete_Hosted__compute_delete__network__configuration__from__org = {
@@ -42884,7 +42493,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; network_configuration_id: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Hosted__compute_get__network__settings__for__org = {
@@ -42894,9 +42502,8 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; network_settings_id: string };
     };
-    response: Schemas.network_settings;
     responses: { 200: Schemas.network_settings };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Copilot_copilot__metrics__for__team = {
     method: "GET";
@@ -42906,7 +42513,6 @@ export namespace Endpoints {
       query: Partial<{ since: string; until: string; page: number; per_page: number }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.copilot_usage_metrics_day>;
     responses: {
       200: Array<Schemas.copilot_usage_metrics_day>;
       403: Schemas.basic_error;
@@ -42923,9 +42529,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string };
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Teams_create = {
     method: "POST";
@@ -42945,7 +42550,6 @@ export namespace Endpoints {
         parent_team_id?: number | undefined;
       };
     };
-    response: Schemas.team_full;
     responses: { 201: Schemas.team_full; 403: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Teams_get__by__name = {
@@ -42955,7 +42559,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string };
     };
-    response: Schemas.team_full;
     responses: { 200: Schemas.team_full; 404: Schemas.basic_error };
   };
   export type patch_Teams_update__in__org = {
@@ -42974,7 +42577,6 @@ export namespace Endpoints {
         parent_team_id: number | null;
       }>;
     };
-    response: Schemas.team_full;
     responses: {
       200: Schemas.team_full;
       201: Schemas.team_full;
@@ -42990,7 +42592,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Teams_list__discussions__in__org = {
@@ -43001,9 +42602,8 @@ export namespace Endpoints {
       query: Partial<{ direction: "asc" | "desc"; per_page: number; page: number; pinned: string }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.team_discussion>;
     responses: { 200: Array<Schemas.team_discussion> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Teams_create__discussion__in__org = {
     method: "POST";
@@ -43014,7 +42614,6 @@ export namespace Endpoints {
 
       body: { title: string; body: string; private?: boolean | undefined };
     };
-    response: Schemas.team_discussion;
     responses: { 201: Schemas.team_discussion };
   };
   export type get_Teams_get__discussion__in__org = {
@@ -43024,7 +42623,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number };
     };
-    response: Schemas.team_discussion;
     responses: { 200: Schemas.team_discussion };
   };
   export type patch_Teams_update__discussion__in__org = {
@@ -43036,7 +42634,6 @@ export namespace Endpoints {
 
       body: Partial<{ title: string; body: string }>;
     };
-    response: Schemas.team_discussion;
     responses: { 200: Schemas.team_discussion };
   };
   export type delete_Teams_delete__discussion__in__org = {
@@ -43046,7 +42643,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Teams_list__discussion__comments__in__org = {
@@ -43057,9 +42653,8 @@ export namespace Endpoints {
       query: Partial<{ direction: "asc" | "desc"; per_page: number; page: number }>;
       path: { org: string; team_slug: string; discussion_number: number };
     };
-    response: Array<Schemas.team_discussion_comment>;
     responses: { 200: Array<Schemas.team_discussion_comment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Teams_create__discussion__comment__in__org = {
     method: "POST";
@@ -43070,7 +42665,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.team_discussion_comment;
     responses: { 201: Schemas.team_discussion_comment };
   };
   export type get_Teams_get__discussion__comment__in__org = {
@@ -43080,7 +42674,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number; comment_number: number };
     };
-    response: Schemas.team_discussion_comment;
     responses: { 200: Schemas.team_discussion_comment };
   };
   export type patch_Teams_update__discussion__comment__in__org = {
@@ -43092,7 +42685,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.team_discussion_comment;
     responses: { 200: Schemas.team_discussion_comment };
   };
   export type delete_Teams_delete__discussion__comment__in__org = {
@@ -43102,7 +42694,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number; comment_number: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Reactions_list__for__team__discussion__comment__in__org = {
@@ -43117,9 +42708,8 @@ export namespace Endpoints {
       }>;
       path: { org: string; team_slug: string; discussion_number: number; comment_number: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__team__discussion__comment__in__org = {
     method: "POST";
@@ -43130,7 +42720,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction };
   };
   export type delete_Reactions_delete__for__team__discussion__comment = {
@@ -43140,7 +42729,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number; comment_number: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Reactions_list__for__team__discussion__in__org = {
@@ -43155,9 +42743,8 @@ export namespace Endpoints {
       }>;
       path: { org: string; team_slug: string; discussion_number: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__team__discussion__in__org = {
     method: "POST";
@@ -43168,7 +42755,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction };
   };
   export type delete_Reactions_delete__for__team__discussion = {
@@ -43178,7 +42764,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; discussion_number: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Teams_list__pending__invitations__in__org = {
@@ -43189,9 +42774,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.organization_invitation>;
     responses: { 200: Array<Schemas.organization_invitation> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Teams_list__members__in__org = {
     method: "GET";
@@ -43201,9 +42785,8 @@ export namespace Endpoints {
       query: Partial<{ role: "member" | "maintainer" | "all"; per_page: number; page: number }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Teams_get__membership__for__user__in__org = {
     method: "GET";
@@ -43212,7 +42795,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; username: string };
     };
-    response: Schemas.team_membership;
     responses: { 200: Schemas.team_membership; 404: unknown };
   };
   export type put_Teams_add__or__update__membership__for__user__in__org = {
@@ -43224,7 +42806,6 @@ export namespace Endpoints {
 
       body: Partial<{ role: "member" | "maintainer" }>;
     };
-    response: Schemas.team_membership;
     responses: { 200: Schemas.team_membership; 403: unknown; 422: unknown };
   };
   export type delete_Teams_remove__membership__for__user__in__org = {
@@ -43234,7 +42815,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: unknown };
   };
   export type get_Teams_list__repos__in__org = {
@@ -43245,9 +42825,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Teams_check__permissions__for__repo__in__org = {
     method: "GET";
@@ -43256,7 +42835,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; owner: string; repo: string };
     };
-    response: Schemas.team_repository;
     responses: { 200: Schemas.team_repository; 204: unknown; 404: unknown };
   };
   export type put_Teams_add__or__update__repo__permissions__in__org = {
@@ -43268,7 +42846,6 @@ export namespace Endpoints {
 
       body: Partial<{ permission: string }>;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Teams_remove__repo__in__org = {
@@ -43278,7 +42855,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; team_slug: string; owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Teams_list__child__in__org = {
@@ -43289,18 +42865,18 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { org: string; team_slug: string };
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Rate__limit_get = {
     method: "GET";
     path: "/rate_limit";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.rate_limit_overview;
     responses: { 200: Schemas.rate_limit_overview; 304: unknown; 404: Schemas.basic_error };
-    responseHeaders: { "x-ratelimit-limit": number; "x-ratelimit-remaining": number; "x-ratelimit-reset": number };
+    responseHeaders: {
+      200: { "X-RateLimit-Limit": number; "X-RateLimit-Remaining": number; "X-RateLimit-Reset": number };
+    };
   };
   export type get_Repos_get = {
     method: "GET";
@@ -43309,7 +42885,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.full_repository;
     responses: {
       200: Schemas.full_repository;
       301: Schemas.basic_error;
@@ -43359,7 +42934,6 @@ export namespace Endpoints {
         web_commit_signoff_required: boolean;
       }>;
     };
-    response: Schemas.full_repository;
     responses: {
       200: Schemas.full_repository;
       307: Schemas.basic_error;
@@ -43375,7 +42949,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       307: Schemas.basic_error;
@@ -43392,9 +42965,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; name: string }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; artifacts: Array<Schemas.artifact> };
     responses: { 200: { total_count: number; artifacts: Array<Schemas.artifact> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__artifact = {
     method: "GET";
@@ -43403,7 +42975,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; artifact_id: number };
     };
-    response: Schemas.artifact;
     responses: { 200: Schemas.artifact };
   };
   export type delete_Actions_delete__artifact = {
@@ -43413,7 +42984,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; artifact_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_download__artifact = {
@@ -43423,8 +42993,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; artifact_id: number; archive_format: string };
     };
-    response: unknown;
     responses: { 302: unknown; 410: Schemas.basic_error };
+    responseHeaders: { 302: { Location: string } };
   };
   export type get_Actions_get__actions__cache__usage = {
     method: "GET";
@@ -43433,7 +43003,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_cache_usage_by_repository;
     responses: { 200: Schemas.actions_cache_usage_by_repository };
   };
   export type get_Actions_get__actions__cache__list = {
@@ -43451,9 +43020,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_cache_list;
     responses: { 200: Schemas.actions_cache_list };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type delete_Actions_delete__actions__cache__by__key = {
     method: "DELETE";
@@ -43463,7 +43031,6 @@ export namespace Endpoints {
       query: { key: string; ref?: string | undefined };
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_cache_list;
     responses: { 200: Schemas.actions_cache_list };
   };
   export type delete_Actions_delete__actions__cache__by__id = {
@@ -43473,7 +43040,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; cache_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__job__for__workflow__run = {
@@ -43483,7 +43049,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; job_id: number };
     };
-    response: Schemas.job;
     responses: { 200: Schemas.job };
   };
   export type get_Actions_download__job__logs__for__workflow__run = {
@@ -43493,8 +43058,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; job_id: number };
     };
-    response: unknown;
     responses: { 302: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type post_Actions_re__run__job__for__workflow__run = {
     method: "POST";
@@ -43505,7 +43070,6 @@ export namespace Endpoints {
 
       body: Partial<{ enable_debug_logging: boolean }> | null;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 403: Schemas.basic_error };
   };
   export type get_Actions_get__custom__oidc__sub__claim__for__repo = {
@@ -43515,8 +43079,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.oidc_custom_sub_repo;
-    responses: { 200: Schemas.oidc_custom_sub_repo; 400: Schemas.basic_error; 404: Schemas.basic_error };
+    responses: { 200: Schemas.oidc_custom_sub_repo; 400: Schemas.scim_error; 404: Schemas.basic_error };
   };
   export type put_Actions_set__custom__oidc__sub__claim__for__repo = {
     method: "PUT";
@@ -43527,10 +43090,9 @@ export namespace Endpoints {
 
       body: { use_default: boolean; include_claim_keys?: Array<string> | undefined };
     };
-    response: Schemas.empty_object;
     responses: {
       201: Schemas.empty_object;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
     };
@@ -43543,9 +43105,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.actions_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.actions_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_list__repo__organization__variables = {
     method: "GET";
@@ -43555,9 +43116,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; variables: Array<Schemas.actions_variable> };
     responses: { 200: { total_count: number; variables: Array<Schemas.actions_variable> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__github__actions__permissions__repository = {
     method: "GET";
@@ -43566,7 +43126,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_repository_permissions;
     responses: { 200: Schemas.actions_repository_permissions };
   };
   export type put_Actions_set__github__actions__permissions__repository = {
@@ -43582,7 +43141,6 @@ export namespace Endpoints {
         sha_pinning_required?: Schemas.sha_pinning_required | undefined;
       };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__workflow__access__to__repository = {
@@ -43592,7 +43150,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_workflow_access_to_repository;
     responses: { 200: Schemas.actions_workflow_access_to_repository };
   };
   export type put_Actions_set__workflow__access__to__repository = {
@@ -43604,7 +43161,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_workflow_access_to_repository;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__artifact__and__log__retention__settings__repository = {
@@ -43614,7 +43170,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_artifact_and_log_retention_response;
     responses: { 200: Schemas.actions_artifact_and_log_retention_response; 404: Schemas.basic_error };
   };
   export type put_Actions_set__artifact__and__log__retention__settings__repository = {
@@ -43626,7 +43181,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_artifact_and_log_retention;
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Actions_get__fork__pr__contributor__approval__permissions__repository = {
@@ -43636,7 +43190,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_fork_pr_contributor_approval;
     responses: { 200: Schemas.actions_fork_pr_contributor_approval; 404: Schemas.basic_error };
   };
   export type put_Actions_set__fork__pr__contributor__approval__permissions__repository = {
@@ -43648,7 +43201,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_fork_pr_contributor_approval;
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Actions_get__private__repo__fork__pr__workflows__settings__repository = {
@@ -43658,7 +43210,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_fork_pr_workflows_private_repos;
     responses: {
       200: Schemas.actions_fork_pr_workflows_private_repos;
       403: Schemas.basic_error;
@@ -43674,7 +43225,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_fork_pr_workflows_private_repos_request;
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Actions_get__allowed__actions__repository = {
@@ -43684,7 +43234,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.selected_actions;
     responses: { 200: Schemas.selected_actions };
   };
   export type put_Actions_set__allowed__actions__repository = {
@@ -43696,7 +43245,6 @@ export namespace Endpoints {
 
       body: Schemas.selected_actions;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__github__actions__default__workflow__permissions__repository = {
@@ -43706,7 +43254,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_get_default_workflow_permissions;
     responses: { 200: Schemas.actions_get_default_workflow_permissions };
   };
   export type put_Actions_set__github__actions__default__workflow__permissions__repository = {
@@ -43718,7 +43265,6 @@ export namespace Endpoints {
 
       body: Schemas.actions_set_default_workflow_permissions;
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type get_Actions_list__self__hosted__runners__for__repo = {
@@ -43729,9 +43275,8 @@ export namespace Endpoints {
       query: Partial<{ name: string; per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; runners: Array<Schemas.runner> };
     responses: { 200: { total_count: number; runners: Array<Schemas.runner> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_list__runner__applications__for__repo = {
     method: "GET";
@@ -43740,7 +43285,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.runner_application>;
     responses: { 200: Array<Schemas.runner_application> };
   };
   export type post_Actions_generate__runner__jitconfig__for__repo = {
@@ -43752,7 +43296,6 @@ export namespace Endpoints {
 
       body: { name: string; runner_group_id: number; labels: Array<string>; work_folder?: string | undefined };
     };
-    response: { runner: Schemas.runner; encoded_jit_config: string };
     responses: {
       201: { runner: Schemas.runner; encoded_jit_config: string };
       404: Schemas.basic_error;
@@ -43767,7 +43310,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.authentication_token;
     responses: { 201: Schemas.authentication_token };
   };
   export type post_Actions_create__remove__token__for__repo = {
@@ -43777,7 +43319,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.authentication_token;
     responses: { 201: Schemas.authentication_token };
   };
   export type get_Actions_get__self__hosted__runner__for__repo = {
@@ -43787,7 +43328,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; runner_id: number };
     };
-    response: Schemas.runner;
     responses: { 200: Schemas.runner };
   };
   export type delete_Actions_delete__self__hosted__runner__from__repo = {
@@ -43797,7 +43337,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; runner_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 422: Schemas.validation_error_simple };
   };
   export type get_Actions_list__labels__for__self__hosted__runner__for__repo = {
@@ -43807,7 +43346,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; runner_id: number };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: { 200: { total_count: number; labels: Array<Schemas.runner_label> }; 404: Schemas.basic_error };
   };
   export type post_Actions_add__custom__labels__to__self__hosted__runner__for__repo = {
@@ -43819,7 +43357,6 @@ export namespace Endpoints {
 
       body: { labels: Array<string> };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -43835,7 +43372,6 @@ export namespace Endpoints {
 
       body: { labels: Array<string> };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -43849,7 +43385,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; runner_id: number };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: { 200: { total_count: number; labels: Array<Schemas.runner_label> }; 404: Schemas.basic_error };
   };
   export type delete_Actions_remove__custom__label__from__self__hosted__runner__for__repo = {
@@ -43859,7 +43394,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; runner_id: number; name: string };
     };
-    response: { total_count: number; labels: Array<Schemas.runner_label> };
     responses: {
       200: { total_count: number; labels: Array<Schemas.runner_label> };
       404: Schemas.basic_error;
@@ -43899,9 +43433,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; workflow_runs: Array<Schemas.workflow_run> };
     responses: { 200: { total_count: number; workflow_runs: Array<Schemas.workflow_run> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__workflow__run = {
     method: "GET";
@@ -43911,7 +43444,6 @@ export namespace Endpoints {
       query: Partial<{ exclude_pull_requests: boolean }>;
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Schemas.workflow_run;
     responses: { 200: Schemas.workflow_run };
   };
   export type delete_Actions_delete__workflow__run = {
@@ -43921,7 +43453,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_get__reviews__for__run = {
@@ -43931,7 +43462,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Array<Schemas.environment_approvals>;
     responses: { 200: Array<Schemas.environment_approvals> };
   };
   export type post_Actions_approve__workflow__run = {
@@ -43941,7 +43471,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Actions_list__workflow__run__artifacts = {
@@ -43952,9 +43481,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; name: string }>;
       path: { owner: string; repo: string; run_id: number };
     };
-    response: { total_count: number; artifacts: Array<Schemas.artifact> };
     responses: { 200: { total_count: number; artifacts: Array<Schemas.artifact> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__workflow__run__attempt = {
     method: "GET";
@@ -43964,7 +43492,6 @@ export namespace Endpoints {
       query: Partial<{ exclude_pull_requests: boolean }>;
       path: { owner: string; repo: string; run_id: number; attempt_number: number };
     };
-    response: Schemas.workflow_run;
     responses: { 200: Schemas.workflow_run };
   };
   export type get_Actions_list__jobs__for__workflow__run__attempt = {
@@ -43975,9 +43502,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; run_id: number; attempt_number: number };
     };
-    response: { total_count: number; jobs: Array<Schemas.job> };
     responses: { 200: { total_count: number; jobs: Array<Schemas.job> }; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_download__workflow__run__attempt__logs = {
     method: "GET";
@@ -43986,8 +43512,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number; attempt_number: number };
     };
-    response: unknown;
     responses: { 302: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type post_Actions_cancel__workflow__run = {
     method: "POST";
@@ -43996,7 +43522,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Schemas.empty_object;
     responses: { 202: Schemas.empty_object; 409: Schemas.basic_error };
   };
   export type post_Actions_review__custom__gates__for__run = {
@@ -44008,7 +43533,6 @@ export namespace Endpoints {
 
       body: Schemas.review_custom_gates_comment_required | Schemas.review_custom_gates_state_required;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type post_Actions_force__cancel__workflow__run = {
@@ -44018,7 +43542,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Schemas.empty_object;
     responses: { 202: Schemas.empty_object; 409: Schemas.basic_error };
   };
   export type get_Actions_list__jobs__for__workflow__run = {
@@ -44029,9 +43552,8 @@ export namespace Endpoints {
       query: Partial<{ filter: "latest" | "all"; per_page: number; page: number }>;
       path: { owner: string; repo: string; run_id: number };
     };
-    response: { total_count: number; jobs: Array<Schemas.job> };
     responses: { 200: { total_count: number; jobs: Array<Schemas.job> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_download__workflow__run__logs = {
     method: "GET";
@@ -44040,8 +43562,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: unknown;
     responses: { 302: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type delete_Actions_delete__workflow__run__logs = {
     method: "DELETE";
@@ -44050,7 +43572,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Actions_get__pending__deployments__for__run = {
@@ -44060,7 +43581,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Array<Schemas.pending_deployment>;
     responses: { 200: Array<Schemas.pending_deployment> };
   };
   export type post_Actions_review__pending__deployments__for__run = {
@@ -44072,7 +43592,6 @@ export namespace Endpoints {
 
       body: { environment_ids: Array<number>; state: "approved" | "rejected"; comment: string };
     };
-    response: Array<Schemas.deployment>;
     responses: { 200: Array<Schemas.deployment> };
   };
   export type post_Actions_re__run__workflow = {
@@ -44084,7 +43603,6 @@ export namespace Endpoints {
 
       body: Partial<{ enable_debug_logging: boolean }> | null;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type post_Actions_re__run__workflow__failed__jobs = {
@@ -44096,7 +43614,6 @@ export namespace Endpoints {
 
       body: Partial<{ enable_debug_logging: boolean }> | null;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type get_Actions_get__workflow__run__usage = {
@@ -44106,7 +43623,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; run_id: number };
     };
-    response: Schemas.workflow_run_usage;
     responses: { 200: Schemas.workflow_run_usage };
   };
   export type get_Actions_list__repo__secrets = {
@@ -44117,9 +43633,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.actions_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.actions_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__repo__public__key = {
     method: "GET";
@@ -44128,7 +43643,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.actions_public_key;
     responses: { 200: Schemas.actions_public_key };
   };
   export type get_Actions_get__repo__secret = {
@@ -44138,7 +43652,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: Schemas.actions_secret;
     responses: { 200: Schemas.actions_secret };
   };
   export type put_Actions_create__or__update__repo__secret = {
@@ -44150,7 +43663,6 @@ export namespace Endpoints {
 
       body: { encrypted_value: string; key_id: string };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Actions_delete__repo__secret = {
@@ -44160,7 +43672,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__repo__variables = {
@@ -44171,9 +43682,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; variables: Array<Schemas.actions_variable> };
     responses: { 200: { total_count: number; variables: Array<Schemas.actions_variable> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Actions_create__repo__variable = {
     method: "POST";
@@ -44184,7 +43694,6 @@ export namespace Endpoints {
 
       body: { name: string; value: string };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type get_Actions_get__repo__variable = {
@@ -44194,7 +43703,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; name: string };
     };
-    response: Schemas.actions_variable;
     responses: { 200: Schemas.actions_variable };
   };
   export type patch_Actions_update__repo__variable = {
@@ -44206,7 +43714,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; value: string }>;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_delete__repo__variable = {
@@ -44216,7 +43723,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__repo__workflows = {
@@ -44227,9 +43733,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; workflows: Array<Schemas.workflow> };
     responses: { 200: { total_count: number; workflows: Array<Schemas.workflow> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__workflow = {
     method: "GET";
@@ -44238,7 +43743,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; workflow_id: number | string };
     };
-    response: Schemas.workflow;
     responses: { 200: Schemas.workflow };
   };
   export type put_Actions_disable__workflow = {
@@ -44248,7 +43752,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; workflow_id: number | string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type post_Actions_create__workflow__dispatch = {
@@ -44260,7 +43763,6 @@ export namespace Endpoints {
 
       body: { ref: string; inputs?: Record<string, unknown> | undefined };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type put_Actions_enable__workflow = {
@@ -44270,7 +43772,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; workflow_id: number | string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__workflow__runs = {
@@ -44306,9 +43807,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; workflow_id: number | string };
     };
-    response: { total_count: number; workflow_runs: Array<Schemas.workflow_run> };
     responses: { 200: { total_count: number; workflow_runs: Array<Schemas.workflow_run> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__workflow__usage = {
     method: "GET";
@@ -44317,7 +43817,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; workflow_id: number | string };
     };
-    response: Schemas.workflow_usage;
     responses: { 200: Schemas.workflow_usage };
   };
   export type get_Repos_list__activities = {
@@ -44337,9 +43836,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.activity>;
     responses: { 200: Array<Schemas.activity>; 422: Schemas.validation_error_simple };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_list__assignees = {
     method: "GET";
@@ -44349,9 +43847,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_check__user__can__be__assigned = {
     method: "GET";
@@ -44360,7 +43857,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; assignee: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type post_Repos_create__attestation = {
@@ -44378,7 +43874,6 @@ export namespace Endpoints {
         }>;
       };
     };
-    response: Partial<{ id: number }>;
     responses: { 201: Partial<{ id: number }>; 403: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_list__attestations = {
@@ -44389,19 +43884,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string; predicate_type: string }>;
       path: { owner: string; repo: string; subject_digest: string };
     };
-    response: Partial<{
-      attestations: Array<
-        Partial<{
-          bundle: Partial<{
-            mediaType: string;
-            verificationMaterial: Partial<{} & Record<string, any>>;
-            dsseEnvelope: Partial<{} & Record<string, any>>;
-          }>;
-          repository_id: number;
-          bundle_url: string;
-        }>
-      >;
-    }>;
     responses: {
       200: Partial<{
         attestations: Array<
@@ -44425,7 +43907,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.autolink>;
     responses: { 200: Array<Schemas.autolink> };
   };
   export type post_Repos_create__autolink = {
@@ -44437,9 +43918,8 @@ export namespace Endpoints {
 
       body: { key_prefix: string; url_template: string; is_alphanumeric?: boolean | undefined };
     };
-    response: Schemas.autolink;
     responses: { 201: Schemas.autolink; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__autolink = {
     method: "GET";
@@ -44448,7 +43928,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; autolink_id: number };
     };
-    response: Schemas.autolink;
     responses: { 200: Schemas.autolink; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__autolink = {
@@ -44458,7 +43937,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; autolink_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_check__automated__security__fixes = {
@@ -44468,7 +43946,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.check_automated_security_fixes;
     responses: { 200: Schemas.check_automated_security_fixes; 404: unknown };
   };
   export type put_Repos_enable__automated__security__fixes = {
@@ -44478,7 +43955,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Repos_disable__automated__security__fixes = {
@@ -44488,7 +43964,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__branches = {
@@ -44499,9 +43974,8 @@ export namespace Endpoints {
       query: Partial<{ protected: boolean; per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.short_branch>;
     responses: { 200: Array<Schemas.short_branch>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__branch = {
     method: "GET";
@@ -44510,7 +43984,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.branch_with_protection;
     responses: { 200: Schemas.branch_with_protection; 301: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Repos_get__branch__protection = {
@@ -44520,7 +43993,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.branch_protection;
     responses: { 200: Schemas.branch_protection; 404: Schemas.basic_error };
   };
   export type put_Repos_update__branch__protection = {
@@ -44555,7 +44027,6 @@ export namespace Endpoints {
         allow_fork_syncing?: boolean | undefined;
       };
     };
-    response: Schemas.protected_branch;
     responses: {
       200: Schemas.protected_branch;
       403: Schemas.basic_error;
@@ -44570,7 +44041,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error };
   };
   export type get_Repos_get__admin__branch__protection = {
@@ -44580,7 +44050,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.protected_branch_admin_enforced;
     responses: { 200: Schemas.protected_branch_admin_enforced };
   };
   export type post_Repos_set__admin__branch__protection = {
@@ -44590,7 +44059,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.protected_branch_admin_enforced;
     responses: { 200: Schemas.protected_branch_admin_enforced };
   };
   export type delete_Repos_delete__admin__branch__protection = {
@@ -44600,7 +44068,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_get__pull__request__review__protection = {
@@ -44610,7 +44077,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.protected_branch_pull_request_review;
     responses: { 200: Schemas.protected_branch_pull_request_review };
   };
   export type patch_Repos_update__pull__request__review__protection = {
@@ -44629,7 +44095,6 @@ export namespace Endpoints {
         bypass_pull_request_allowances: Partial<{ users: Array<string>; teams: Array<string>; apps: Array<string> }>;
       }>;
     };
-    response: Schemas.protected_branch_pull_request_review;
     responses: { 200: Schemas.protected_branch_pull_request_review; 422: Schemas.validation_error };
   };
   export type delete_Repos_delete__pull__request__review__protection = {
@@ -44639,7 +44104,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_get__commit__signature__protection = {
@@ -44649,7 +44113,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.protected_branch_admin_enforced;
     responses: { 200: Schemas.protected_branch_admin_enforced; 404: Schemas.basic_error };
   };
   export type post_Repos_create__commit__signature__protection = {
@@ -44659,7 +44122,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.protected_branch_admin_enforced;
     responses: { 200: Schemas.protected_branch_admin_enforced; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__commit__signature__protection = {
@@ -44669,7 +44131,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_get__status__checks__protection = {
@@ -44679,7 +44140,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.status_check_policy;
     responses: { 200: Schemas.status_check_policy; 404: Schemas.basic_error };
   };
   export type patch_Repos_update__status__check__protection = {
@@ -44695,7 +44155,6 @@ export namespace Endpoints {
         checks: Array<{ context: string; app_id?: number | undefined }>;
       }>;
     };
-    response: Schemas.status_check_policy;
     responses: { 200: Schemas.status_check_policy; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Repos_remove__status__check__protection = {
@@ -44705,7 +44164,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_get__all__status__check__contexts = {
@@ -44715,7 +44173,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Array<string>;
     responses: { 200: Array<string>; 404: Schemas.basic_error };
   };
   export type post_Repos_add__status__check__contexts = {
@@ -44727,7 +44184,6 @@ export namespace Endpoints {
 
       body: { contexts: Array<string> } | Array<string>;
     };
-    response: Array<string>;
     responses: {
       200: Array<string>;
       403: Schemas.basic_error;
@@ -44744,7 +44200,6 @@ export namespace Endpoints {
 
       body: { contexts: Array<string> } | Array<string>;
     };
-    response: Array<string>;
     responses: { 200: Array<string>; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Repos_remove__status__check__contexts = {
@@ -44756,7 +44211,6 @@ export namespace Endpoints {
 
       body: { contexts: Array<string> } | Array<string>;
     };
-    response: Array<string>;
     responses: { 200: Array<string>; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_get__access__restrictions = {
@@ -44766,7 +44220,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Schemas.branch_restriction_policy;
     responses: { 200: Schemas.branch_restriction_policy; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__access__restrictions = {
@@ -44776,7 +44229,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_get__apps__with__access__to__protected__branch = {
@@ -44786,7 +44238,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Array<Schemas.integration>;
     responses: { 200: Array<Schemas.integration>; 404: Schemas.basic_error };
   };
   export type post_Repos_add__app__access__restrictions = {
@@ -44798,7 +44249,6 @@ export namespace Endpoints {
 
       body: { apps: Array<string> };
     };
-    response: Array<Schemas.integration>;
     responses: { 200: Array<Schemas.integration>; 422: Schemas.validation_error };
   };
   export type put_Repos_set__app__access__restrictions = {
@@ -44810,7 +44260,6 @@ export namespace Endpoints {
 
       body: { apps: Array<string> };
     };
-    response: Array<Schemas.integration>;
     responses: { 200: Array<Schemas.integration>; 422: Schemas.validation_error };
   };
   export type delete_Repos_remove__app__access__restrictions = {
@@ -44822,7 +44271,6 @@ export namespace Endpoints {
 
       body: { apps: Array<string> };
     };
-    response: Array<Schemas.integration>;
     responses: { 200: Array<Schemas.integration>; 422: Schemas.validation_error };
   };
   export type get_Repos_get__teams__with__access__to__protected__branch = {
@@ -44832,7 +44280,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 404: Schemas.basic_error };
   };
   export type post_Repos_add__team__access__restrictions = {
@@ -44844,7 +44291,6 @@ export namespace Endpoints {
 
       body: { teams: Array<string> } | Array<string>;
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 422: Schemas.validation_error };
   };
   export type put_Repos_set__team__access__restrictions = {
@@ -44856,7 +44302,6 @@ export namespace Endpoints {
 
       body: { teams: Array<string> } | Array<string>;
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 422: Schemas.validation_error };
   };
   export type delete_Repos_remove__team__access__restrictions = {
@@ -44868,7 +44313,6 @@ export namespace Endpoints {
 
       body: { teams: Array<string> } | Array<string>;
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 422: Schemas.validation_error };
   };
   export type get_Repos_get__users__with__access__to__protected__branch = {
@@ -44878,7 +44322,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; branch: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 404: Schemas.basic_error };
   };
   export type post_Repos_add__user__access__restrictions = {
@@ -44890,7 +44333,6 @@ export namespace Endpoints {
 
       body: { users: Array<string> };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 422: Schemas.validation_error };
   };
   export type put_Repos_set__user__access__restrictions = {
@@ -44902,7 +44344,6 @@ export namespace Endpoints {
 
       body: { users: Array<string> };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 422: Schemas.validation_error };
   };
   export type delete_Repos_remove__user__access__restrictions = {
@@ -44914,7 +44355,6 @@ export namespace Endpoints {
 
       body: { users: Array<string> };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 422: Schemas.validation_error };
   };
   export type post_Repos_rename__branch = {
@@ -44926,7 +44366,6 @@ export namespace Endpoints {
 
       body: { new_name: string };
     };
-    response: Schemas.branch_with_protection;
     responses: {
       201: Schemas.branch_with_protection;
       403: Schemas.basic_error;
@@ -44945,7 +44384,6 @@ export namespace Endpoints {
         | ({ status: "completed" } & Record<string, any>)
         | Partial<{ status: "queued" | "in_progress" } & Record<string, any>>;
     };
-    response: Schemas.check_run;
     responses: { 201: Schemas.check_run };
   };
   export type get_Checks_get = {
@@ -44955,7 +44393,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; check_run_id: number };
     };
-    response: Schemas.check_run;
     responses: { 200: Schemas.check_run };
   };
   export type patch_Checks_update = {
@@ -44969,7 +44406,6 @@ export namespace Endpoints {
         | ({ status?: "completed" | undefined } & Record<string, any>)
         | Partial<{ status: "queued" | "in_progress" } & Record<string, any>>;
     };
-    response: Schemas.check_run;
     responses: { 200: Schemas.check_run };
   };
   export type get_Checks_list__annotations = {
@@ -44980,9 +44416,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; check_run_id: number };
     };
-    response: Array<Schemas.check_annotation>;
     responses: { 200: Array<Schemas.check_annotation> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Checks_rerequest__run = {
     method: "POST";
@@ -44991,7 +44426,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; check_run_id: number };
     };
-    response: Schemas.empty_object;
     responses: {
       201: Schemas.empty_object;
       403: Schemas.basic_error;
@@ -45008,7 +44442,6 @@ export namespace Endpoints {
 
       body: { head_sha: string };
     };
-    response: Schemas.check_suite;
     responses: { 200: Schemas.check_suite; 201: Schemas.check_suite };
   };
   export type patch_Checks_set__suites__preferences = {
@@ -45020,7 +44453,6 @@ export namespace Endpoints {
 
       body: Partial<{ auto_trigger_checks: Array<{ app_id: number; setting: boolean }> }>;
     };
-    response: Schemas.check_suite_preference;
     responses: { 200: Schemas.check_suite_preference };
   };
   export type get_Checks_get__suite = {
@@ -45030,7 +44462,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; check_suite_id: number };
     };
-    response: Schemas.check_suite;
     responses: { 200: Schemas.check_suite };
   };
   export type get_Checks_list__for__suite = {
@@ -45047,9 +44478,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; check_suite_id: number };
     };
-    response: { total_count: number; check_runs: Array<Schemas.check_run> };
     responses: { 200: { total_count: number; check_runs: Array<Schemas.check_run> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Checks_rerequest__suite = {
     method: "POST";
@@ -45058,7 +44488,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; check_suite_id: number };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type get_Code__scanning_list__alerts__for__repo = {
@@ -45082,7 +44511,6 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.code_scanning_alert_items>;
     responses: {
       200: Array<Schemas.code_scanning_alert_items>;
       304: unknown;
@@ -45098,7 +44526,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Schemas.code_scanning_alert;
     responses: {
       200: Schemas.code_scanning_alert;
       304: unknown;
@@ -45121,10 +44548,9 @@ export namespace Endpoints {
         create_request?: Schemas.code_scanning_alert_create_request | undefined;
       };
     };
-    response: Schemas.code_scanning_alert;
     responses: {
       200: Schemas.code_scanning_alert;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -45137,7 +44563,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Schemas.code_scanning_autofix;
     responses: {
       200: Schemas.code_scanning_autofix;
       400: Schemas.basic_error;
@@ -45153,7 +44578,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Schemas.code_scanning_autofix;
     responses: {
       200: Schemas.code_scanning_autofix;
       202: Schemas.code_scanning_autofix;
@@ -45173,7 +44597,6 @@ export namespace Endpoints {
 
       body: Schemas.code_scanning_autofix_commits;
     };
-    response: Schemas.code_scanning_autofix_commits_response;
     responses: {
       201: Schemas.code_scanning_autofix_commits_response;
       400: Schemas.basic_error;
@@ -45191,7 +44614,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number; ref: string; pr: number }>;
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Array<Schemas.code_scanning_alert_instance>;
     responses: {
       200: Array<Schemas.code_scanning_alert_instance>;
       403: Schemas.basic_error;
@@ -45217,7 +44639,6 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.code_scanning_analysis>;
     responses: {
       200: Array<Schemas.code_scanning_analysis>;
       403: Schemas.basic_error;
@@ -45232,9 +44653,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; analysis_id: number };
     };
-    response: Schemas.code_scanning_analysis;
     responses: {
-      200: Schemas.code_scanning_analysis;
+      200: Record<string, unknown>;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.basic_error;
@@ -45249,10 +44669,9 @@ export namespace Endpoints {
       query: Partial<{ confirm_delete: string | null }>;
       path: { owner: string; repo: string; analysis_id: number };
     };
-    response: Schemas.code_scanning_analysis_deletion;
     responses: {
       200: Schemas.code_scanning_analysis_deletion;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -45265,7 +44684,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.code_scanning_codeql_database>;
     responses: {
       200: Array<Schemas.code_scanning_codeql_database>;
       403: Schemas.basic_error;
@@ -45280,7 +44698,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; language: string };
     };
-    response: Schemas.code_scanning_codeql_database;
     responses: {
       200: Schemas.code_scanning_codeql_database;
       302: unknown;
@@ -45296,7 +44713,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; language: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -45313,7 +44729,6 @@ export namespace Endpoints {
 
       body: unknown | unknown | unknown;
     };
-    response: Schemas.code_scanning_variant_analysis;
     responses: {
       201: Schemas.code_scanning_variant_analysis;
       404: Schemas.basic_error;
@@ -45328,7 +44743,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; codeql_variant_analysis_id: number };
     };
-    response: Schemas.code_scanning_variant_analysis;
     responses: {
       200: Schemas.code_scanning_variant_analysis;
       404: Schemas.basic_error;
@@ -45342,7 +44756,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; codeql_variant_analysis_id: number; repo_owner: string; repo_name: string };
     };
-    response: Schemas.code_scanning_variant_analysis_repo_task;
     responses: {
       200: Schemas.code_scanning_variant_analysis_repo_task;
       404: Schemas.basic_error;
@@ -45356,7 +44769,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.code_scanning_default_setup;
     responses: {
       200: Schemas.code_scanning_default_setup;
       403: Schemas.basic_error;
@@ -45373,7 +44785,6 @@ export namespace Endpoints {
 
       body: Schemas.code_scanning_default_setup_update;
     };
-    response: Schemas.empty_object;
     responses: {
       200: Schemas.empty_object;
       202: Schemas.code_scanning_default_setup_update_response;
@@ -45401,7 +44812,6 @@ export namespace Endpoints {
         validate?: boolean | undefined;
       };
     };
-    response: Schemas.code_scanning_sarifs_receipt;
     responses: {
       202: Schemas.code_scanning_sarifs_receipt;
       400: unknown;
@@ -45418,7 +44828,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; sarif_id: string };
     };
-    response: Schemas.code_scanning_sarifs_status;
     responses: {
       200: Schemas.code_scanning_sarifs_status;
       403: Schemas.basic_error;
@@ -45433,7 +44842,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.code_security_configuration_for_repository;
     responses: {
       200: Schemas.code_security_configuration_for_repository;
       204: unknown;
@@ -45450,7 +44858,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.codeowners_errors;
     responses: { 200: Schemas.codeowners_errors; 404: unknown };
   };
   export type get_Codespaces_list__in__repository__for__authenticated__user = {
@@ -45461,7 +44868,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; codespaces: Array<Schemas.codespace> };
     responses: {
       200: { total_count: number; codespaces: Array<Schemas.codespace> };
       401: Schemas.basic_error;
@@ -45491,11 +44897,10 @@ export namespace Endpoints {
         retention_period_minutes: number;
       }> | null;
     };
-    response: Schemas.codespace;
     responses: {
       201: Schemas.codespace;
       202: Schemas.codespace;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -45510,16 +44915,12 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: {
-      total_count: number;
-      devcontainers: Array<{ path: string; name?: string | undefined; display_name?: string | undefined }>;
-    };
     responses: {
       200: {
         total_count: number;
         devcontainers: Array<{ path: string; name?: string | undefined; display_name?: string | undefined }>;
       };
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -45534,7 +44935,6 @@ export namespace Endpoints {
       query: Partial<{ location: string; client_ip: string; ref: string }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; machines: Array<Schemas.codespace_machine> };
     responses: {
       200: { total_count: number; machines: Array<Schemas.codespace_machine> };
       304: unknown;
@@ -45552,10 +44952,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string; client_ip: string }>;
       path: { owner: string; repo: string };
     };
-    response: Partial<{
-      billable_owner: Schemas.simple_user;
-      defaults: { location: string; devcontainer_path: string | null };
-    }>;
     responses: {
       200: Partial<{
         billable_owner: Schemas.simple_user;
@@ -45574,7 +44970,6 @@ export namespace Endpoints {
       query: { ref: string; devcontainer_path: string };
       path: { owner: string; repo: string };
     };
-    response: Schemas.codespaces_permissions_check_for_devcontainer;
     responses: {
       200: Schemas.codespaces_permissions_check_for_devcontainer;
       401: Schemas.basic_error;
@@ -45592,9 +44987,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.repo_codespaces_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.repo_codespaces_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Codespaces_get__repo__public__key = {
     method: "GET";
@@ -45603,7 +44997,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.codespaces_public_key;
     responses: { 200: Schemas.codespaces_public_key };
   };
   export type get_Codespaces_get__repo__secret = {
@@ -45613,7 +45006,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: Schemas.repo_codespaces_secret;
     responses: { 200: Schemas.repo_codespaces_secret };
   };
   export type put_Codespaces_create__or__update__repo__secret = {
@@ -45625,7 +45017,6 @@ export namespace Endpoints {
 
       body: Partial<{ encrypted_value: string; key_id: string }>;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Codespaces_delete__repo__secret = {
@@ -45635,7 +45026,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__collaborators = {
@@ -45651,9 +45041,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.collaborator>;
     responses: { 200: Array<Schemas.collaborator>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_check__collaborator = {
     method: "GET";
@@ -45662,7 +45051,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown };
   };
   export type put_Repos_add__collaborator = {
@@ -45674,7 +45062,6 @@ export namespace Endpoints {
 
       body: Partial<{ permission: string }>;
     };
-    response: Schemas.repository_invitation;
     responses: {
       201: Schemas.repository_invitation;
       204: unknown;
@@ -45689,7 +45076,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; username: string };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_get__collaborator__permission__level = {
@@ -45699,7 +45085,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; username: string };
     };
-    response: Schemas.repository_collaborator_permission;
     responses: { 200: Schemas.repository_collaborator_permission; 404: Schemas.basic_error };
   };
   export type get_Repos_list__commit__comments__for__repo = {
@@ -45710,9 +45095,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.commit_comment>;
     responses: { 200: Array<Schemas.commit_comment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__commit__comment = {
     method: "GET";
@@ -45721,7 +45105,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Schemas.commit_comment;
     responses: { 200: Schemas.commit_comment; 404: Schemas.basic_error };
   };
   export type patch_Repos_update__commit__comment = {
@@ -45733,7 +45116,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.commit_comment;
     responses: { 200: Schemas.commit_comment; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__commit__comment = {
@@ -45743,7 +45125,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Reactions_list__for__commit__comment = {
@@ -45758,9 +45139,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__commit__comment = {
     method: "POST";
@@ -45771,7 +45151,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction; 422: Schemas.validation_error };
   };
   export type delete_Reactions_delete__for__commit__comment = {
@@ -45781,7 +45160,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__commits = {
@@ -45801,15 +45179,14 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.commit>;
     responses: {
       200: Array<Schemas.commit>;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
       500: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_list__branches__for__head__commit = {
     method: "GET";
@@ -45818,7 +45195,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; commit_sha: string };
     };
-    response: Array<Schemas.branch_short>;
     responses: { 200: Array<Schemas.branch_short>; 409: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_list__comments__for__commit = {
@@ -45829,9 +45205,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; commit_sha: string };
     };
-    response: Array<Schemas.commit_comment>;
     responses: { 200: Array<Schemas.commit_comment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__commit__comment = {
     method: "POST";
@@ -45842,9 +45217,8 @@ export namespace Endpoints {
 
       body: { body: string; path?: string | undefined; position?: number | undefined; line?: number | undefined };
     };
-    response: Schemas.commit_comment;
     responses: { 201: Schemas.commit_comment; 403: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_list__pull__requests__associated__with__commit = {
     method: "GET";
@@ -45854,9 +45228,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; commit_sha: string };
     };
-    response: Array<Schemas.pull_request_simple>;
     responses: { 200: Array<Schemas.pull_request_simple>; 409: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__commit = {
     method: "GET";
@@ -45866,7 +45239,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { owner: string; repo: string; ref: string };
     };
-    response: Schemas.commit;
     responses: {
       200: Schemas.commit;
       404: Schemas.basic_error;
@@ -45891,9 +45263,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; ref: string };
     };
-    response: { total_count: number; check_runs: Array<Schemas.check_run> };
     responses: { 200: { total_count: number; check_runs: Array<Schemas.check_run> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Checks_list__suites__for__ref = {
     method: "GET";
@@ -45903,9 +45274,8 @@ export namespace Endpoints {
       query: Partial<{ app_id: number; check_name: string; per_page: number; page: number }>;
       path: { owner: string; repo: string; ref: string };
     };
-    response: { total_count: number; check_suites: Array<Schemas.check_suite> };
     responses: { 200: { total_count: number; check_suites: Array<Schemas.check_suite> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__combined__status__for__ref = {
     method: "GET";
@@ -45915,7 +45285,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; ref: string };
     };
-    response: Schemas.combined_commit_status;
     responses: { 200: Schemas.combined_commit_status; 404: Schemas.basic_error };
   };
   export type get_Repos_list__commit__statuses__for__ref = {
@@ -45926,9 +45295,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; ref: string };
     };
-    response: Array<Schemas.status>;
     responses: { 200: Array<Schemas.status>; 301: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__community__profile__metrics = {
     method: "GET";
@@ -45937,7 +45305,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.community_profile;
     responses: { 200: Schemas.community_profile };
   };
   export type get_Repos_compare__commits = {
@@ -45948,7 +45315,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { owner: string; repo: string; basehead: string };
     };
-    response: Schemas.commit_comparison;
     responses: {
       200: Schemas.commit_comparison;
       404: Schemas.basic_error;
@@ -45964,7 +45330,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string }>;
       path: { owner: string; repo: string; path: string };
     };
-    response: Schemas.content_directory | Schemas.content_file | Schemas.content_symlink | Schemas.content_submodule;
     responses: {
       200: Schemas.content_directory | Schemas.content_file | Schemas.content_symlink | Schemas.content_submodule;
       302: unknown;
@@ -45989,7 +45354,6 @@ export namespace Endpoints {
         author?: { name: string; email: string; date?: string | undefined } | undefined;
       };
     };
-    response: Schemas.file_commit;
     responses: {
       200: Schemas.file_commit;
       201: Schemas.file_commit;
@@ -46013,7 +45377,6 @@ export namespace Endpoints {
         author?: Partial<{ name: string; email: string }> | undefined;
       };
     };
-    response: Schemas.file_commit;
     responses: {
       200: Schemas.file_commit;
       404: Schemas.basic_error;
@@ -46030,9 +45393,8 @@ export namespace Endpoints {
       query: Partial<{ anon: string; per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.contributor>;
     responses: { 200: Array<Schemas.contributor>; 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Dependabot_list__alerts__for__repo = {
     method: "GET";
@@ -46059,11 +45421,10 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.dependabot_alert>;
     responses: {
       200: Array<Schemas.dependabot_alert>;
       304: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
@@ -46076,7 +45437,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Schemas.dependabot_alert;
     responses: { 200: Schemas.dependabot_alert; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type patch_Dependabot_update__alert = {
@@ -46092,10 +45452,9 @@ export namespace Endpoints {
         dismissed_comment?: string | undefined;
       };
     };
-    response: Schemas.dependabot_alert;
     responses: {
       200: Schemas.dependabot_alert;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -46110,9 +45469,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.dependabot_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.dependabot_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Dependabot_get__repo__public__key = {
     method: "GET";
@@ -46121,7 +45479,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.dependabot_public_key;
     responses: { 200: Schemas.dependabot_public_key };
   };
   export type get_Dependabot_get__repo__secret = {
@@ -46131,7 +45488,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: Schemas.dependabot_secret;
     responses: { 200: Schemas.dependabot_secret };
   };
   export type put_Dependabot_create__or__update__repo__secret = {
@@ -46143,7 +45499,6 @@ export namespace Endpoints {
 
       body: Partial<{ encrypted_value: string; key_id: string }>;
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Dependabot_delete__repo__secret = {
@@ -46153,7 +45508,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Dependency__graph_diff__range = {
@@ -46164,9 +45518,8 @@ export namespace Endpoints {
       query: Partial<{ name: string }>;
       path: { owner: string; repo: string; basehead: string };
     };
-    response: Schemas.dependency_graph_diff;
     responses: { 200: Schemas.dependency_graph_diff; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Dependency__graph_export__sbom = {
     method: "GET";
@@ -46175,9 +45528,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.dependency_graph_spdx_sbom;
     responses: { 200: Schemas.dependency_graph_spdx_sbom; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Dependency__graph_create__repository__snapshot = {
     method: "POST";
@@ -46188,7 +45540,6 @@ export namespace Endpoints {
 
       body: Schemas.snapshot;
     };
-    response: { id: number; created_at: string; result: string; message: string };
     responses: { 201: { id: number; created_at: string; result: string; message: string } };
   };
   export type get_Repos_list__deployments = {
@@ -46206,9 +45557,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.deployment>;
     responses: { 200: Array<Schemas.deployment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__deployment = {
     method: "POST";
@@ -46229,7 +45579,6 @@ export namespace Endpoints {
         production_environment?: boolean | undefined;
       };
     };
-    response: Schemas.deployment;
     responses: {
       201: Schemas.deployment;
       202: Partial<{ message: string }>;
@@ -46244,7 +45593,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; deployment_id: number };
     };
-    response: Schemas.deployment;
     responses: { 200: Schemas.deployment; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__deployment = {
@@ -46254,7 +45602,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; deployment_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type get_Repos_list__deployment__statuses = {
@@ -46265,9 +45612,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; deployment_id: number };
     };
-    response: Array<Schemas.deployment_status>;
     responses: { 200: Array<Schemas.deployment_status>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__deployment__status = {
     method: "POST";
@@ -46286,9 +45632,8 @@ export namespace Endpoints {
         auto_inactive?: boolean | undefined;
       };
     };
-    response: Schemas.deployment_status;
     responses: { 201: Schemas.deployment_status; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__deployment__status = {
     method: "GET";
@@ -46297,7 +45642,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; deployment_id: number; status_id: number };
     };
-    response: Schemas.deployment_status;
     responses: { 200: Schemas.deployment_status; 404: Schemas.basic_error };
   };
   export type post_Repos_create__dispatch__event = {
@@ -46309,7 +45653,6 @@ export namespace Endpoints {
 
       body: { event_type: string; client_payload?: Record<string, unknown> | undefined };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_get__all__environments = {
@@ -46320,7 +45663,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Partial<{ total_count: number; environments: Array<Schemas.environment> }>;
     responses: { 200: Partial<{ total_count: number; environments: Array<Schemas.environment> }> };
   };
   export type get_Repos_get__environment = {
@@ -46330,7 +45672,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: Schemas.environment;
     responses: { 200: Schemas.environment };
   };
   export type put_Repos_create__or__update__environment = {
@@ -46347,7 +45688,6 @@ export namespace Endpoints {
         deployment_branch_policy: Schemas.deployment_branch_policy_settings;
       }> | null;
     };
-    response: Schemas.environment;
     responses: { 200: Schemas.environment; 422: Schemas.basic_error };
   };
   export type delete_Repos_delete__an__environment = {
@@ -46357,7 +45697,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__deployment__branch__policies = {
@@ -46368,7 +45707,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: { total_count: number; branch_policies: Array<Schemas.deployment_branch_policy> };
     responses: { 200: { total_count: number; branch_policies: Array<Schemas.deployment_branch_policy> } };
   };
   export type post_Repos_create__deployment__branch__policy = {
@@ -46380,7 +45718,6 @@ export namespace Endpoints {
 
       body: Schemas.deployment_branch_policy_name_pattern_with_type;
     };
-    response: Schemas.deployment_branch_policy;
     responses: { 200: Schemas.deployment_branch_policy; 303: unknown; 404: unknown };
   };
   export type get_Repos_get__deployment__branch__policy = {
@@ -46390,7 +45727,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; branch_policy_id: number };
     };
-    response: Schemas.deployment_branch_policy;
     responses: { 200: Schemas.deployment_branch_policy };
   };
   export type put_Repos_update__deployment__branch__policy = {
@@ -46402,7 +45738,6 @@ export namespace Endpoints {
 
       body: Schemas.deployment_branch_policy_name_pattern;
     };
-    response: Schemas.deployment_branch_policy;
     responses: { 200: Schemas.deployment_branch_policy };
   };
   export type delete_Repos_delete__deployment__branch__policy = {
@@ -46412,7 +45747,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; branch_policy_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_get__all__deployment__protection__rules = {
@@ -46422,10 +45756,6 @@ export namespace Endpoints {
     parameters: {
       path: { environment_name: string; repo: string; owner: string };
     };
-    response: Partial<{
-      total_count: number;
-      custom_deployment_protection_rules: Array<Schemas.deployment_protection_rule>;
-    }>;
     responses: {
       200: Partial<{
         total_count: number;
@@ -46442,7 +45772,6 @@ export namespace Endpoints {
 
       body: Partial<{ integration_id: number }>;
     };
-    response: Schemas.deployment_protection_rule;
     responses: { 201: Schemas.deployment_protection_rule };
   };
   export type get_Repos_list__custom__deployment__rule__integrations = {
@@ -46453,10 +45782,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { environment_name: string; repo: string; owner: string };
     };
-    response: Partial<{
-      total_count: number;
-      available_custom_deployment_protection_rule_integrations: Array<Schemas.custom_deployment_rule_app>;
-    }>;
     responses: {
       200: Partial<{
         total_count: number;
@@ -46471,7 +45796,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; protection_rule_id: number };
     };
-    response: Schemas.deployment_protection_rule;
     responses: { 200: Schemas.deployment_protection_rule };
   };
   export type delete_Repos_disable__deployment__protection__rule = {
@@ -46481,7 +45805,6 @@ export namespace Endpoints {
     parameters: {
       path: { environment_name: string; repo: string; owner: string; protection_rule_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__environment__secrets = {
@@ -46492,9 +45815,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: { total_count: number; secrets: Array<Schemas.actions_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.actions_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Actions_get__environment__public__key = {
     method: "GET";
@@ -46503,7 +45825,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: Schemas.actions_public_key;
     responses: { 200: Schemas.actions_public_key };
   };
   export type get_Actions_get__environment__secret = {
@@ -46513,7 +45834,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; secret_name: string };
     };
-    response: Schemas.actions_secret;
     responses: { 200: Schemas.actions_secret };
   };
   export type put_Actions_create__or__update__environment__secret = {
@@ -46525,7 +45845,6 @@ export namespace Endpoints {
 
       body: { encrypted_value: string; key_id: string };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown };
   };
   export type delete_Actions_delete__environment__secret = {
@@ -46535,7 +45854,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Actions_list__environment__variables = {
@@ -46546,9 +45864,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; environment_name: string };
     };
-    response: { total_count: number; variables: Array<Schemas.actions_variable> };
     responses: { 200: { total_count: number; variables: Array<Schemas.actions_variable> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Actions_create__environment__variable = {
     method: "POST";
@@ -46559,7 +45876,6 @@ export namespace Endpoints {
 
       body: { name: string; value: string };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object };
   };
   export type get_Actions_get__environment__variable = {
@@ -46569,7 +45885,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; environment_name: string; name: string };
     };
-    response: Schemas.actions_variable;
     responses: { 200: Schemas.actions_variable };
   };
   export type patch_Actions_update__environment__variable = {
@@ -46581,7 +45896,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; value: string }>;
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Actions_delete__environment__variable = {
@@ -46591,7 +45905,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; name: string; environment_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Activity_list__repo__events = {
@@ -46602,7 +45915,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Repos_list__forks = {
@@ -46613,9 +45925,8 @@ export namespace Endpoints {
       query: Partial<{ sort: "newest" | "oldest" | "stargazers" | "watchers"; per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.minimal_repository>;
-    responses: { 200: Array<Schemas.minimal_repository>; 400: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responses: { 200: Array<Schemas.minimal_repository>; 400: Schemas.scim_error };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__fork = {
     method: "POST";
@@ -46626,10 +45937,9 @@ export namespace Endpoints {
 
       body: Partial<{ organization: string; name: string; default_branch_only: boolean }> | null;
     };
-    response: Schemas.full_repository;
     responses: {
       202: Schemas.full_repository;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -46644,7 +45954,6 @@ export namespace Endpoints {
 
       body: { content: string; encoding?: string | undefined };
     };
-    response: Schemas.short_blob;
     responses: {
       201: Schemas.short_blob;
       403: Schemas.basic_error;
@@ -46652,7 +45961,7 @@ export namespace Endpoints {
       409: Schemas.basic_error;
       422: Schemas.validation_error | Schemas.repository_rule_violation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Git_get__blob = {
     method: "GET";
@@ -46661,7 +45970,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; file_sha: string };
     };
-    response: Schemas.blob;
     responses: {
       200: Schemas.blob;
       403: Schemas.basic_error;
@@ -46686,14 +45994,13 @@ export namespace Endpoints {
         signature?: string | undefined;
       };
     };
-    response: Schemas.git_commit;
     responses: {
       201: Schemas.git_commit;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Git_get__commit = {
     method: "GET";
@@ -46702,7 +46009,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; commit_sha: string };
     };
-    response: Schemas.git_commit;
     responses: { 200: Schemas.git_commit; 404: Schemas.basic_error; 409: Schemas.basic_error };
   };
   export type get_Git_list__matching__refs = {
@@ -46712,9 +46018,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ref: string };
     };
-    response: Array<Schemas.git_ref>;
     responses: { 200: Array<Schemas.git_ref>; 409: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Git_get__ref = {
     method: "GET";
@@ -46723,7 +46028,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ref: string };
     };
-    response: Schemas.git_ref;
     responses: { 200: Schemas.git_ref; 404: Schemas.basic_error; 409: Schemas.basic_error };
   };
   export type post_Git_create__ref = {
@@ -46735,9 +46039,8 @@ export namespace Endpoints {
 
       body: { ref: string; sha: string };
     };
-    response: Schemas.git_ref;
     responses: { 201: Schemas.git_ref; 409: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type patch_Git_update__ref = {
     method: "PATCH";
@@ -46748,7 +46051,6 @@ export namespace Endpoints {
 
       body: { sha: string; force?: boolean | undefined };
     };
-    response: Schemas.git_ref;
     responses: { 200: Schemas.git_ref; 409: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Git_delete__ref = {
@@ -46758,7 +46060,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ref: string };
     };
-    response: unknown;
     responses: { 204: unknown; 409: Schemas.basic_error; 422: unknown };
   };
   export type post_Git_create__tag = {
@@ -46776,9 +46077,8 @@ export namespace Endpoints {
         tagger?: { name: string; email: string; date?: string | undefined } | undefined;
       };
     };
-    response: Schemas.git_tag;
     responses: { 201: Schemas.git_tag; 409: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Git_get__tag = {
     method: "GET";
@@ -46787,7 +46087,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; tag_sha: string };
     };
-    response: Schemas.git_tag;
     responses: { 200: Schemas.git_tag; 404: Schemas.basic_error; 409: Schemas.basic_error };
   };
   export type post_Git_create__tree = {
@@ -46810,7 +46109,6 @@ export namespace Endpoints {
         base_tree?: string | undefined;
       };
     };
-    response: Schemas.git_tree;
     responses: {
       201: Schemas.git_tree;
       403: Schemas.basic_error;
@@ -46818,7 +46116,7 @@ export namespace Endpoints {
       409: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Git_get__tree = {
     method: "GET";
@@ -46828,7 +46126,6 @@ export namespace Endpoints {
       query: Partial<{ recursive: string }>;
       path: { owner: string; repo: string; tree_sha: string };
     };
-    response: Schemas.git_tree;
     responses: {
       200: Schemas.git_tree;
       404: Schemas.basic_error;
@@ -46844,9 +46141,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.hook>;
     responses: { 200: Array<Schemas.hook>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__webhook = {
     method: "POST";
@@ -46867,9 +46163,8 @@ export namespace Endpoints {
         active: boolean;
       }> | null;
     };
-    response: Schemas.hook;
     responses: { 201: Schemas.hook; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__webhook = {
     method: "GET";
@@ -46878,7 +46173,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: Schemas.hook;
     responses: { 200: Schemas.hook; 404: Schemas.basic_error };
   };
   export type patch_Repos_update__webhook = {
@@ -46896,7 +46190,6 @@ export namespace Endpoints {
         active: boolean;
       }>;
     };
-    response: Schemas.hook;
     responses: { 200: Schemas.hook; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Repos_delete__webhook = {
@@ -46906,7 +46199,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_get__webhook__config__for__repo = {
@@ -46916,7 +46208,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type patch_Repos_update__webhook__config__for__repo = {
@@ -46933,7 +46224,6 @@ export namespace Endpoints {
         insecure_ssl: Schemas.webhook_config_insecure_ssl;
       }>;
     };
-    response: Schemas.webhook_config;
     responses: { 200: Schemas.webhook_config };
   };
   export type get_Repos_list__webhook__deliveries = {
@@ -46944,8 +46234,7 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; cursor: string }>;
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: Array<Schemas.hook_delivery_item>;
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type get_Repos_get__webhook__delivery = {
     method: "GET";
@@ -46954,8 +46243,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number; delivery_id: number };
     };
-    response: Schemas.hook_delivery;
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type post_Repos_redeliver__webhook__delivery = {
     method: "POST";
@@ -46964,8 +46252,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number; delivery_id: number };
     };
-    response: Record<string, unknown>;
-    responses: { 202: Record<string, unknown>; 400: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
   };
   export type post_Repos_ping__webhook = {
     method: "POST";
@@ -46974,7 +46261,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type post_Repos_test__push__webhook = {
@@ -46984,7 +46270,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Apps_get__repo__installation = {
@@ -46994,7 +46279,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.installation;
     responses: { 200: Schemas.installation; 301: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Interactions_get__restrictions__for__repo = {
@@ -47004,7 +46288,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.interaction_limit_response | Partial<{}>;
     responses: { 200: Schemas.interaction_limit_response | Partial<{}> };
   };
   export type put_Interactions_set__restrictions__for__repo = {
@@ -47016,7 +46299,6 @@ export namespace Endpoints {
 
       body: Schemas.interaction_limit;
     };
-    response: Schemas.interaction_limit_response;
     responses: { 200: Schemas.interaction_limit_response; 409: unknown };
   };
   export type delete_Interactions_remove__restrictions__for__repo = {
@@ -47026,7 +46308,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown; 409: unknown };
   };
   export type get_Repos_list__invitations = {
@@ -47037,9 +46318,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.repository_invitation>;
     responses: { 200: Array<Schemas.repository_invitation> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type patch_Repos_update__invitation = {
     method: "PATCH";
@@ -47050,7 +46330,6 @@ export namespace Endpoints {
 
       body: Partial<{ permissions: "read" | "write" | "maintain" | "triage" | "admin" }>;
     };
-    response: Schemas.repository_invitation;
     responses: { 200: Schemas.repository_invitation };
   };
   export type delete_Repos_delete__invitation = {
@@ -47060,7 +46339,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; invitation_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Issues_list__for__repo = {
@@ -47084,14 +46362,13 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.issue>;
     responses: {
       200: Array<Schemas.issue>;
       301: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_create = {
     method: "POST";
@@ -47112,17 +46389,16 @@ export namespace Endpoints {
         type?: (string | null) | undefined;
       };
     };
-    response: Schemas.issue;
     responses: {
       201: Schemas.issue;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       410: Schemas.basic_error;
       422: Schemas.validation_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Issues_list__comments__for__repo = {
     method: "GET";
@@ -47138,9 +46414,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.issue_comment>;
     responses: { 200: Array<Schemas.issue_comment>; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_get__comment = {
     method: "GET";
@@ -47149,7 +46424,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Schemas.issue_comment;
     responses: { 200: Schemas.issue_comment; 404: Schemas.basic_error };
   };
   export type patch_Issues_update__comment = {
@@ -47161,7 +46435,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.issue_comment;
     responses: { 200: Schemas.issue_comment; 422: Schemas.validation_error };
   };
   export type delete_Issues_delete__comment = {
@@ -47171,7 +46444,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Reactions_list__for__issue__comment = {
@@ -47186,9 +46458,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__issue__comment = {
     method: "POST";
@@ -47199,7 +46470,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction; 422: Schemas.validation_error };
   };
   export type delete_Reactions_delete__for__issue__comment = {
@@ -47209,7 +46479,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Issues_list__events__for__repo = {
@@ -47220,9 +46489,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.issue_event>;
     responses: { 200: Array<Schemas.issue_event>; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_get__event = {
     method: "GET";
@@ -47231,7 +46499,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; event_id: number };
     };
-    response: Schemas.issue_event;
     responses: {
       200: Schemas.issue_event;
       403: Schemas.basic_error;
@@ -47246,7 +46513,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Schemas.issue;
     responses: {
       200: Schemas.issue;
       301: Schemas.basic_error;
@@ -47274,7 +46540,6 @@ export namespace Endpoints {
         type: string | null;
       }>;
     };
-    response: Schemas.issue;
     responses: {
       200: Schemas.issue;
       301: Schemas.basic_error;
@@ -47294,7 +46559,6 @@ export namespace Endpoints {
 
       body: Partial<{ assignees: Array<string> }>;
     };
-    response: Schemas.issue;
     responses: { 201: Schemas.issue };
   };
   export type delete_Issues_remove__assignees = {
@@ -47306,7 +46570,6 @@ export namespace Endpoints {
 
       body: Partial<{ assignees: Array<string> }>;
     };
-    response: Schemas.issue;
     responses: { 200: Schemas.issue };
   };
   export type get_Issues_check__user__can__be__assigned__to__issue = {
@@ -47316,7 +46579,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number; assignee: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Issues_list__comments = {
@@ -47327,9 +46589,8 @@ export namespace Endpoints {
       query: Partial<{ since: string; per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.issue_comment>;
     responses: { 200: Array<Schemas.issue_comment>; 404: Schemas.basic_error; 410: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_create__comment = {
     method: "POST";
@@ -47340,7 +46601,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.issue_comment;
     responses: {
       201: Schemas.issue_comment;
       403: Schemas.basic_error;
@@ -47348,7 +46608,7 @@ export namespace Endpoints {
       410: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Issues_list__dependencies__blocked__by = {
     method: "GET";
@@ -47358,14 +46618,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.issue>;
     responses: {
       200: Array<Schemas.issue>;
       301: Schemas.basic_error;
       404: Schemas.basic_error;
       410: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_add__blocked__by__dependency = {
     method: "POST";
@@ -47376,7 +46635,6 @@ export namespace Endpoints {
 
       body: { issue_id: number };
     };
-    response: Schemas.issue;
     responses: {
       201: Schemas.issue;
       301: Schemas.basic_error;
@@ -47385,7 +46643,7 @@ export namespace Endpoints {
       410: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type delete_Issues_remove__dependency__blocked__by = {
     method: "DELETE";
@@ -47394,11 +46652,10 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number; issue_id: number };
     };
-    response: Schemas.issue;
     responses: {
       200: Schemas.issue;
       301: Schemas.basic_error;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -47413,14 +46670,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.issue>;
     responses: {
       200: Array<Schemas.issue>;
       301: Schemas.basic_error;
       404: Schemas.basic_error;
       410: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_list__events = {
     method: "GET";
@@ -47430,9 +46686,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.issue_event_for_issue>;
     responses: { 200: Array<Schemas.issue_event_for_issue>; 410: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Issues_list__labels__on__issue = {
     method: "GET";
@@ -47442,14 +46697,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.label>;
     responses: {
       200: Array<Schemas.label>;
       301: Schemas.basic_error;
       404: Schemas.basic_error;
       410: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_add__labels = {
     method: "POST";
@@ -47465,7 +46719,6 @@ export namespace Endpoints {
         | Array<{ name: string }>
         | string;
     };
-    response: Array<Schemas.label>;
     responses: {
       200: Array<Schemas.label>;
       301: Schemas.basic_error;
@@ -47488,7 +46741,6 @@ export namespace Endpoints {
         | Array<{ name: string }>
         | string;
     };
-    response: Array<Schemas.label>;
     responses: {
       200: Array<Schemas.label>;
       301: Schemas.basic_error;
@@ -47504,7 +46756,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: unknown;
     responses: { 204: unknown; 301: Schemas.basic_error; 404: Schemas.basic_error; 410: Schemas.basic_error };
   };
   export type delete_Issues_remove__label = {
@@ -47514,7 +46765,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number; name: string };
     };
-    response: Array<Schemas.label>;
     responses: {
       200: Array<Schemas.label>;
       301: Schemas.basic_error;
@@ -47531,7 +46781,6 @@ export namespace Endpoints {
 
       body: Partial<{ lock_reason: "off-topic" | "too heated" | "resolved" | "spam" }> | null;
     };
-    response: unknown;
     responses: {
       204: unknown;
       403: Schemas.basic_error;
@@ -47547,7 +46796,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Reactions_list__for__issue = {
@@ -47562,9 +46810,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction>; 404: Schemas.basic_error; 410: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__issue = {
     method: "POST";
@@ -47575,7 +46822,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction; 422: Schemas.validation_error };
   };
   export type delete_Reactions_delete__for__issue = {
@@ -47585,7 +46831,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; issue_number: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Issues_remove__sub__issue = {
@@ -47597,9 +46842,8 @@ export namespace Endpoints {
 
       body: { sub_issue_id: number };
     };
-    response: Schemas.issue;
-    responses: { 200: Schemas.issue; 400: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { location: string };
+    responses: { 200: Schemas.issue; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responseHeaders: { 200: { Location: string } };
   };
   export type get_Issues_list__sub__issues = {
     method: "GET";
@@ -47609,9 +46853,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.issue>;
     responses: { 200: Array<Schemas.issue>; 404: Schemas.basic_error; 410: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_add__sub__issue = {
     method: "POST";
@@ -47622,7 +46865,6 @@ export namespace Endpoints {
 
       body: { sub_issue_id: number; replace_parent?: boolean | undefined };
     };
-    response: Schemas.issue;
     responses: {
       201: Schemas.issue;
       403: Schemas.basic_error;
@@ -47630,7 +46872,7 @@ export namespace Endpoints {
       410: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type patch_Issues_reprioritize__sub__issue = {
     method: "PATCH";
@@ -47641,7 +46883,6 @@ export namespace Endpoints {
 
       body: { sub_issue_id: number; after_id?: number | undefined; before_id?: number | undefined };
     };
-    response: Schemas.issue;
     responses: {
       200: Schemas.issue;
       403: Schemas.basic_error;
@@ -47658,9 +46899,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; issue_number: number };
     };
-    response: Array<Schemas.timeline_issue_events>;
     responses: { 200: Array<Schemas.timeline_issue_events>; 404: Schemas.basic_error; 410: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_list__deploy__keys = {
     method: "GET";
@@ -47670,9 +46910,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.deploy_key>;
     responses: { 200: Array<Schemas.deploy_key> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__deploy__key = {
     method: "POST";
@@ -47683,9 +46922,8 @@ export namespace Endpoints {
 
       body: { title?: string | undefined; key: string; read_only?: boolean | undefined };
     };
-    response: Schemas.deploy_key;
     responses: { 201: Schemas.deploy_key; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__deploy__key = {
     method: "GET";
@@ -47694,7 +46932,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; key_id: number };
     };
-    response: Schemas.deploy_key;
     responses: { 200: Schemas.deploy_key; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__deploy__key = {
@@ -47704,7 +46941,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; key_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Issues_list__labels__for__repo = {
@@ -47715,9 +46951,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.label>;
     responses: { 200: Array<Schemas.label>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_create__label = {
     method: "POST";
@@ -47728,9 +46963,8 @@ export namespace Endpoints {
 
       body: { name: string; color?: string | undefined; description?: string | undefined };
     };
-    response: Schemas.label;
     responses: { 201: Schemas.label; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Issues_get__label = {
     method: "GET";
@@ -47739,7 +46973,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; name: string };
     };
-    response: Schemas.label;
     responses: { 200: Schemas.label; 404: Schemas.basic_error };
   };
   export type patch_Issues_update__label = {
@@ -47751,7 +46984,6 @@ export namespace Endpoints {
 
       body: Partial<{ new_name: string; color: string; description: string }>;
     };
-    response: Schemas.label;
     responses: { 200: Schemas.label };
   };
   export type delete_Issues_delete__label = {
@@ -47761,7 +46993,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__languages = {
@@ -47771,7 +47002,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.language;
     responses: { 200: Schemas.language };
   };
   export type get_Licenses_get__for__repo = {
@@ -47782,7 +47012,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.license_content;
     responses: { 200: Schemas.license_content; 404: Schemas.basic_error };
   };
   export type post_Repos_merge__upstream = {
@@ -47794,7 +47023,6 @@ export namespace Endpoints {
 
       body: { branch: string };
     };
-    response: Schemas.merged_upstream;
     responses: { 200: Schemas.merged_upstream; 409: unknown; 422: unknown };
   };
   export type post_Repos_merge = {
@@ -47806,7 +47034,6 @@ export namespace Endpoints {
 
       body: { base: string; head: string; commit_message?: string | undefined };
     };
-    response: Schemas.commit;
     responses: {
       201: Schemas.commit;
       204: unknown;
@@ -47830,9 +47057,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.milestone>;
     responses: { 200: Array<Schemas.milestone>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Issues_create__milestone = {
     method: "POST";
@@ -47848,9 +47074,8 @@ export namespace Endpoints {
         due_on?: string | undefined;
       };
     };
-    response: Schemas.milestone;
     responses: { 201: Schemas.milestone; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Issues_get__milestone = {
     method: "GET";
@@ -47859,7 +47084,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; milestone_number: number };
     };
-    response: Schemas.milestone;
     responses: { 200: Schemas.milestone; 404: Schemas.basic_error };
   };
   export type patch_Issues_update__milestone = {
@@ -47871,7 +47095,6 @@ export namespace Endpoints {
 
       body: Partial<{ title: string; state: "open" | "closed"; description: string; due_on: string }>;
     };
-    response: Schemas.milestone;
     responses: { 200: Schemas.milestone };
   };
   export type delete_Issues_delete__milestone = {
@@ -47881,7 +47104,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; milestone_number: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Issues_list__labels__for__milestone = {
@@ -47892,9 +47114,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; milestone_number: number };
     };
-    response: Array<Schemas.label>;
     responses: { 200: Array<Schemas.label> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_list__repo__notifications__for__authenticated__user = {
     method: "GET";
@@ -47911,9 +47132,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.thread>;
     responses: { 200: Array<Schemas.thread> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Activity_mark__repo__notifications__as__read = {
     method: "PUT";
@@ -47924,7 +47144,6 @@ export namespace Endpoints {
 
       body: Partial<{ last_read_at: string }>;
     };
-    response: Partial<{ message: string; url: string }>;
     responses: { 202: Partial<{ message: string; url: string }>; 205: unknown };
   };
   export type get_Repos_get__pages = {
@@ -47934,7 +47153,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.page;
     responses: { 200: Schemas.page; 404: Schemas.basic_error };
   };
   export type post_Repos_create__pages__site = {
@@ -47946,7 +47164,6 @@ export namespace Endpoints {
 
       body: (unknown | unknown) | null;
     };
-    response: Schemas.page;
     responses: { 201: Schemas.page; 409: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type put_Repos_update__information__about__pages__site = {
@@ -47958,8 +47175,7 @@ export namespace Endpoints {
 
       body: unknown | unknown | unknown | unknown | unknown;
     };
-    response: unknown;
-    responses: { 204: unknown; 400: Schemas.basic_error; 409: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: { 204: unknown; 400: Schemas.scim_error; 409: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Repos_delete__pages__site = {
     method: "DELETE";
@@ -47968,7 +47184,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 409: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_list__pages__builds = {
@@ -47979,9 +47194,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.page_build>;
     responses: { 200: Array<Schemas.page_build> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_request__pages__build = {
     method: "POST";
@@ -47990,7 +47204,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.page_build_status;
     responses: { 201: Schemas.page_build_status };
   };
   export type get_Repos_get__latest__pages__build = {
@@ -48000,7 +47213,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.page_build;
     responses: { 200: Schemas.page_build };
   };
   export type get_Repos_get__pages__build = {
@@ -48010,7 +47222,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; build_id: number };
     };
-    response: Schemas.page_build;
     responses: { 200: Schemas.page_build };
   };
   export type post_Repos_create__pages__deployment = {
@@ -48028,10 +47239,9 @@ export namespace Endpoints {
         oidc_token: string;
       };
     };
-    response: Schemas.page_deployment;
     responses: {
       200: Schemas.page_deployment;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
@@ -48043,7 +47253,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pages_deployment_id: number | string };
     };
-    response: Schemas.pages_deployment_status;
     responses: { 200: Schemas.pages_deployment_status; 404: Schemas.basic_error };
   };
   export type post_Repos_cancel__pages__deployment = {
@@ -48053,7 +47262,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pages_deployment_id: number | string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Repos_get__pages__health__check = {
@@ -48063,7 +47271,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.pages_health_check;
     responses: {
       200: Schemas.pages_health_check;
       202: Schemas.empty_object;
@@ -48079,8 +47286,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: { enabled: boolean };
-    responses: { 200: { enabled: boolean }; 422: Schemas.basic_error };
+    responses: { 200: { enabled: boolean }; 422: Schemas.scim_error };
   };
   export type put_Repos_enable__private__vulnerability__reporting = {
     method: "PUT";
@@ -48089,8 +47295,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
-    responses: { 204: unknown; 422: Schemas.basic_error };
+    responses: { 204: unknown; 422: Schemas.scim_error };
   };
   export type delete_Repos_disable__private__vulnerability__reporting = {
     method: "DELETE";
@@ -48099,8 +47304,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
-    responses: { 204: unknown; 422: Schemas.basic_error };
+    responses: { 204: unknown; 422: Schemas.scim_error };
   };
   export type get_Repos_get__custom__properties__values = {
     method: "GET";
@@ -48109,7 +47313,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.custom_property_value>;
     responses: { 200: Array<Schemas.custom_property_value>; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type patch_Repos_create__or__update__custom__properties__values = {
@@ -48121,7 +47324,6 @@ export namespace Endpoints {
 
       body: { properties: Array<Schemas.custom_property_value> };
     };
-    response: unknown;
     responses: { 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Pulls_list = {
@@ -48140,9 +47342,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.pull_request_simple>;
     responses: { 200: Array<Schemas.pull_request_simple>; 304: unknown; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Pulls_create = {
     method: "POST";
@@ -48162,9 +47363,8 @@ export namespace Endpoints {
         issue?: number | undefined;
       };
     };
-    response: Schemas.pull_request;
     responses: { 201: Schemas.pull_request; 403: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Pulls_list__review__comments__for__repo = {
     method: "GET";
@@ -48180,9 +47380,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.pull_request_review_comment>;
     responses: { 200: Array<Schemas.pull_request_review_comment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Pulls_get__review__comment = {
     method: "GET";
@@ -48191,7 +47390,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Schemas.pull_request_review_comment;
     responses: { 200: Schemas.pull_request_review_comment; 404: Schemas.basic_error };
   };
   export type patch_Pulls_update__review__comment = {
@@ -48203,7 +47401,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.pull_request_review_comment;
     responses: { 200: Schemas.pull_request_review_comment };
   };
   export type delete_Pulls_delete__review__comment = {
@@ -48213,7 +47410,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error };
   };
   export type get_Reactions_list__for__pull__request__review__comment = {
@@ -48228,9 +47424,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; comment_id: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__pull__request__review__comment = {
     method: "POST";
@@ -48241,7 +47436,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "-1" | "laugh" | "confused" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction; 422: Schemas.validation_error };
   };
   export type delete_Reactions_delete__for__pull__request__comment = {
@@ -48251,7 +47445,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; comment_id: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Pulls_get = {
@@ -48261,7 +47454,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Schemas.pull_request;
     responses: {
       200: Schemas.pull_request;
       304: unknown;
@@ -48286,7 +47478,6 @@ export namespace Endpoints {
         maintainer_can_modify: boolean;
       }>;
     };
-    response: Schemas.pull_request;
     responses: { 200: Schemas.pull_request; 403: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type post_Codespaces_create__with__pr__for__authenticated__user = {
@@ -48309,7 +47500,6 @@ export namespace Endpoints {
         retention_period_minutes: number;
       }> | null;
     };
-    response: Schemas.codespace;
     responses: {
       201: Schemas.codespace;
       202: Schemas.codespace;
@@ -48333,9 +47523,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Array<Schemas.pull_request_review_comment>;
     responses: { 200: Array<Schemas.pull_request_review_comment> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Pulls_create__review__comment = {
     method: "POST";
@@ -48357,9 +47546,8 @@ export namespace Endpoints {
         subject_type?: ("line" | "file") | undefined;
       };
     };
-    response: Schemas.pull_request_review_comment;
     responses: { 201: Schemas.pull_request_review_comment; 403: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type post_Pulls_create__reply__for__review__comment = {
     method: "POST";
@@ -48370,9 +47558,8 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.pull_request_review_comment;
     responses: { 201: Schemas.pull_request_review_comment; 404: Schemas.basic_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Pulls_list__commits = {
     method: "GET";
@@ -48382,9 +47569,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Array<Schemas.commit>;
     responses: { 200: Array<Schemas.commit> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Pulls_list__files = {
     method: "GET";
@@ -48394,14 +47580,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Array<Schemas.diff_entry>;
     responses: {
       200: Array<Schemas.diff_entry>;
       422: Schemas.validation_error;
       500: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Pulls_check__if__merged = {
     method: "GET";
@@ -48410,7 +47595,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown };
   };
   export type put_Pulls_merge = {
@@ -48427,7 +47611,6 @@ export namespace Endpoints {
         merge_method: "merge" | "squash" | "rebase";
       }> | null;
     };
-    response: Schemas.pull_request_merge_result;
     responses: {
       200: Schemas.pull_request_merge_result;
       403: Schemas.basic_error;
@@ -48444,9 +47627,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Schemas.pull_request_review_request;
     responses: { 200: Schemas.pull_request_review_request };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Pulls_request__reviewers = {
     method: "POST";
@@ -48457,7 +47639,6 @@ export namespace Endpoints {
 
       body: unknown | unknown;
     };
-    response: Schemas.pull_request_simple;
     responses: { 201: Schemas.pull_request_simple; 403: Schemas.basic_error; 422: unknown };
   };
   export type delete_Pulls_remove__requested__reviewers = {
@@ -48469,7 +47650,6 @@ export namespace Endpoints {
 
       body: { reviewers: Array<string>; team_reviewers?: Array<string> | undefined };
     };
-    response: Schemas.pull_request_simple;
     responses: { 200: Schemas.pull_request_simple; 422: Schemas.validation_error };
   };
   export type get_Pulls_list__reviews = {
@@ -48480,9 +47660,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; pull_number: number };
     };
-    response: Array<Schemas.pull_request_review>;
     responses: { 200: Array<Schemas.pull_request_review> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Pulls_create__review = {
     method: "POST";
@@ -48506,7 +47685,6 @@ export namespace Endpoints {
         }>;
       }>;
     };
-    response: Schemas.pull_request_review;
     responses: { 200: Schemas.pull_request_review; 403: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type get_Pulls_get__review = {
@@ -48516,7 +47694,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pull_number: number; review_id: number };
     };
-    response: Schemas.pull_request_review;
     responses: { 200: Schemas.pull_request_review; 404: Schemas.basic_error };
   };
   export type put_Pulls_update__review = {
@@ -48528,7 +47705,6 @@ export namespace Endpoints {
 
       body: { body: string };
     };
-    response: Schemas.pull_request_review;
     responses: { 200: Schemas.pull_request_review; 422: Schemas.validation_error_simple };
   };
   export type delete_Pulls_delete__pending__review = {
@@ -48538,7 +47714,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; pull_number: number; review_id: number };
     };
-    response: Schemas.pull_request_review;
     responses: { 200: Schemas.pull_request_review; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type get_Pulls_list__comments__for__review = {
@@ -48549,9 +47724,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; pull_number: number; review_id: number };
     };
-    response: Array<Schemas.review_comment>;
     responses: { 200: Array<Schemas.review_comment>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Pulls_dismiss__review = {
     method: "PUT";
@@ -48562,7 +47736,6 @@ export namespace Endpoints {
 
       body: { message: string; event?: "DISMISS" | undefined };
     };
-    response: Schemas.pull_request_review;
     responses: { 200: Schemas.pull_request_review; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type post_Pulls_submit__review = {
@@ -48574,7 +47747,6 @@ export namespace Endpoints {
 
       body: { body?: string | undefined; event: "APPROVE" | "REQUEST_CHANGES" | "COMMENT" };
     };
-    response: Schemas.pull_request_review;
     responses: {
       200: Schemas.pull_request_review;
       403: Schemas.basic_error;
@@ -48591,7 +47763,6 @@ export namespace Endpoints {
 
       body: Partial<{ expected_head_sha: string }> | null;
     };
-    response: Partial<{ message: string; url: string }>;
     responses: {
       202: Partial<{ message: string; url: string }>;
       403: Schemas.basic_error;
@@ -48606,7 +47777,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.content_file;
     responses: { 200: Schemas.content_file; 304: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_get__readme__in__directory = {
@@ -48617,7 +47787,6 @@ export namespace Endpoints {
       query: Partial<{ ref: string }>;
       path: { owner: string; repo: string; dir: string };
     };
-    response: Schemas.content_file;
     responses: { 200: Schemas.content_file; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Repos_list__releases = {
@@ -48628,9 +47797,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.release>;
     responses: { 200: Array<Schemas.release>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__release = {
     method: "POST";
@@ -48651,9 +47819,8 @@ export namespace Endpoints {
         make_latest?: ("true" | "false" | "legacy") | undefined;
       };
     };
-    response: Schemas.release;
     responses: { 201: Schemas.release; 404: Schemas.basic_error; 422: Schemas.validation_error };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_get__release__asset = {
     method: "GET";
@@ -48662,7 +47829,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; asset_id: number };
     };
-    response: Schemas.release_asset;
     responses: { 200: Schemas.release_asset; 302: unknown; 404: Schemas.basic_error };
   };
   export type patch_Repos_update__release__asset = {
@@ -48674,7 +47840,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; label: string; state: string }>;
     };
-    response: Schemas.release_asset;
     responses: { 200: Schemas.release_asset };
   };
   export type delete_Repos_delete__release__asset = {
@@ -48684,7 +47849,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; asset_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type post_Repos_generate__release__notes = {
@@ -48701,7 +47865,6 @@ export namespace Endpoints {
         configuration_file_path?: string | undefined;
       };
     };
-    response: Schemas.release_notes_content;
     responses: { 200: Schemas.release_notes_content; 404: Schemas.basic_error };
   };
   export type get_Repos_get__latest__release = {
@@ -48711,7 +47874,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.release;
     responses: { 200: Schemas.release };
   };
   export type get_Repos_get__release__by__tag = {
@@ -48721,7 +47883,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; tag: string };
     };
-    response: Schemas.release;
     responses: { 200: Schemas.release; 404: Schemas.basic_error };
   };
   export type get_Repos_get__release = {
@@ -48731,7 +47892,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; release_id: number };
     };
-    response: Schemas.release;
     responses: { 200: Schemas.release; 401: unknown };
   };
   export type patch_Repos_update__release = {
@@ -48752,7 +47912,6 @@ export namespace Endpoints {
         discussion_category_name: string;
       }>;
     };
-    response: Schemas.release;
     responses: { 200: Schemas.release; 404: Schemas.basic_error };
   };
   export type delete_Repos_delete__release = {
@@ -48762,7 +47921,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; release_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__release__assets = {
@@ -48773,9 +47931,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; release_id: number };
     };
-    response: Array<Schemas.release_asset>;
     responses: { 200: Array<Schemas.release_asset> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_upload__release__asset = {
     method: "POST";
@@ -48787,7 +47944,6 @@ export namespace Endpoints {
 
       body: string;
     };
-    response: Schemas.release_asset;
     responses: { 201: Schemas.release_asset; 422: unknown };
   };
   export type get_Reactions_list__for__release = {
@@ -48802,9 +47958,8 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string; release_id: number };
     };
-    response: Array<Schemas.reaction>;
     responses: { 200: Array<Schemas.reaction>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Reactions_create__for__release = {
     method: "POST";
@@ -48815,7 +47970,6 @@ export namespace Endpoints {
 
       body: { content: "+1" | "laugh" | "heart" | "hooray" | "rocket" | "eyes" };
     };
-    response: Schemas.reaction;
     responses: { 200: Schemas.reaction; 201: Schemas.reaction; 422: Schemas.validation_error };
   };
   export type delete_Reactions_delete__for__release = {
@@ -48825,7 +47979,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; release_id: number; reaction_id: number };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_get__branch__rules = {
@@ -48836,7 +47989,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; branch: string };
     };
-    response: Array<Schemas.repository_rule_detailed>;
     responses: { 200: Array<Schemas.repository_rule_detailed> };
   };
   export type get_Repos_get__repo__rulesets = {
@@ -48847,7 +47999,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number; includes_parents: boolean; targets: string }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.repository_ruleset>;
     responses: { 200: Array<Schemas.repository_ruleset>; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type post_Repos_create__repo__ruleset = {
@@ -48866,7 +48017,6 @@ export namespace Endpoints {
         rules?: Array<Schemas.repository_rule> | undefined;
       };
     };
-    response: Schemas.repository_ruleset;
     responses: { 201: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__repo__rule__suites = {
@@ -48884,7 +48034,6 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.rule_suites;
     responses: { 200: Schemas.rule_suites; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__repo__rule__suite = {
@@ -48894,7 +48043,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; rule_suite_id: number };
     };
-    response: Schemas.rule_suite;
     responses: { 200: Schemas.rule_suite; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__repo__ruleset = {
@@ -48905,7 +48053,6 @@ export namespace Endpoints {
       query: Partial<{ includes_parents: boolean }>;
       path: { owner: string; repo: string; ruleset_id: number };
     };
-    response: Schemas.repository_ruleset;
     responses: { 200: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type put_Repos_update__repo__ruleset = {
@@ -48924,7 +48071,6 @@ export namespace Endpoints {
         rules: Array<Schemas.repository_rule>;
       }>;
     };
-    response: Schemas.repository_ruleset;
     responses: { 200: Schemas.repository_ruleset; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type delete_Repos_delete__repo__ruleset = {
@@ -48934,7 +48080,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ruleset_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__repo__ruleset__history = {
@@ -48945,7 +48090,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string; ruleset_id: number };
     };
-    response: Array<Schemas.ruleset_version>;
     responses: { 200: Array<Schemas.ruleset_version>; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Repos_get__repo__ruleset__version = {
@@ -48955,7 +48099,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ruleset_id: number; version_id: number };
     };
-    response: Schemas.ruleset_version_with_state;
     responses: { 200: Schemas.ruleset_version_with_state; 404: Schemas.basic_error; 500: Schemas.basic_error };
   };
   export type get_Secret__scanning_list__alerts__for__repo = {
@@ -48980,7 +48123,6 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.secret_scanning_alert>;
     responses: {
       200: Array<Schemas.secret_scanning_alert>;
       404: unknown;
@@ -48995,7 +48137,6 @@ export namespace Endpoints {
       query: Partial<{ hide_secret: boolean }>;
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Schemas.secret_scanning_alert;
     responses: {
       200: Schemas.secret_scanning_alert;
       304: unknown;
@@ -49016,7 +48157,6 @@ export namespace Endpoints {
         resolution_comment?: Schemas.secret_scanning_alert_resolution_comment | undefined;
       };
     };
-    response: Schemas.secret_scanning_alert;
     responses: {
       200: Schemas.secret_scanning_alert;
       400: unknown;
@@ -49033,13 +48173,12 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { owner: string; repo: string; alert_number: number };
     };
-    response: Array<Schemas.secret_scanning_location>;
     responses: {
       200: Array<Schemas.secret_scanning_location>;
       404: unknown;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Secret__scanning_create__push__protection__bypass = {
     method: "POST";
@@ -49053,7 +48192,6 @@ export namespace Endpoints {
         placeholder_id: Schemas.secret_scanning_push_protection_bypass_placeholder_id;
       };
     };
-    response: Schemas.secret_scanning_push_protection_bypass;
     responses: {
       200: Schemas.secret_scanning_push_protection_bypass;
       403: unknown;
@@ -49069,7 +48207,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.secret_scanning_scan_history;
     responses: {
       200: Schemas.secret_scanning_scan_history;
       404: unknown;
@@ -49091,8 +48228,7 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.repository_advisory>;
-    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.basic_error; 404: Schemas.basic_error };
+    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.scim_error; 404: Schemas.basic_error };
   };
   export type post_Security__advisories_create__repository__advisory = {
     method: "POST";
@@ -49103,7 +48239,6 @@ export namespace Endpoints {
 
       body: Schemas.repository_advisory_create;
     };
-    response: Schemas.repository_advisory;
     responses: {
       201: Schemas.repository_advisory;
       403: Schemas.basic_error;
@@ -49120,7 +48255,6 @@ export namespace Endpoints {
 
       body: Schemas.private_vulnerability_report_create;
     };
-    response: Schemas.repository_advisory;
     responses: {
       201: Schemas.repository_advisory;
       403: Schemas.basic_error;
@@ -49135,7 +48269,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ghsa_id: string };
     };
-    response: Schemas.repository_advisory;
     responses: { 200: Schemas.repository_advisory; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type patch_Security__advisories_update__repository__advisory = {
@@ -49147,7 +48280,6 @@ export namespace Endpoints {
 
       body: Schemas.repository_advisory_update;
     };
-    response: Schemas.repository_advisory;
     responses: {
       200: Schemas.repository_advisory;
       403: Schemas.basic_error;
@@ -49162,10 +48294,9 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ghsa_id: string };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -49178,10 +48309,9 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ghsa_id: string };
     };
-    response: Schemas.full_repository;
     responses: {
       202: Schemas.full_repository;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -49195,9 +48325,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.simple_user> | Array<Schemas.stargazer>;
     responses: { 200: Array<Schemas.simple_user> | Array<Schemas.stargazer>; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__code__frequency__stats = {
     method: "GET";
@@ -49206,7 +48335,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.code_frequency_stat>;
     responses: { 200: Array<Schemas.code_frequency_stat>; 202: Record<string, unknown>; 204: unknown; 422: unknown };
   };
   export type get_Repos_get__commit__activity__stats = {
@@ -49216,7 +48344,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.commit_activity>;
     responses: { 200: Array<Schemas.commit_activity>; 202: Record<string, unknown>; 204: unknown };
   };
   export type get_Repos_get__contributors__stats = {
@@ -49226,7 +48353,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.contributor_activity>;
     responses: { 200: Array<Schemas.contributor_activity>; 202: Record<string, unknown>; 204: unknown };
   };
   export type get_Repos_get__participation__stats = {
@@ -49236,7 +48362,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.participation_stats;
     responses: { 200: Schemas.participation_stats; 404: Schemas.basic_error };
   };
   export type get_Repos_get__punch__card__stats = {
@@ -49246,7 +48371,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.code_frequency_stat>;
     responses: { 200: Array<Schemas.code_frequency_stat>; 204: unknown };
   };
   export type post_Repos_create__commit__status = {
@@ -49263,9 +48387,8 @@ export namespace Endpoints {
         context?: string | undefined;
       };
     };
-    response: Schemas.status;
     responses: { 201: Schemas.status };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Activity_list__watchers__for__repo = {
     method: "GET";
@@ -49275,9 +48398,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_get__repo__subscription = {
     method: "GET";
@@ -49286,7 +48408,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Schemas.repository_subscription;
     responses: { 200: Schemas.repository_subscription; 403: Schemas.basic_error; 404: unknown };
   };
   export type put_Activity_set__repo__subscription = {
@@ -49298,7 +48419,6 @@ export namespace Endpoints {
 
       body: Partial<{ subscribed: boolean; ignored: boolean }>;
     };
-    response: Schemas.repository_subscription;
     responses: { 200: Schemas.repository_subscription };
   };
   export type delete_Activity_delete__repo__subscription = {
@@ -49308,7 +48428,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_list__tags = {
@@ -49319,9 +48438,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.tag>;
     responses: { 200: Array<Schemas.tag> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_download__tarball__archive = {
     method: "GET";
@@ -49330,8 +48448,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ref: string };
     };
-    response: unknown;
     responses: { 302: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type get_Repos_list__teams = {
     method: "GET";
@@ -49341,9 +48459,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.team>;
     responses: { 200: Array<Schemas.team>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_get__all__topics = {
     method: "GET";
@@ -49353,7 +48470,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.topic;
     responses: { 200: Schemas.topic; 404: Schemas.basic_error };
   };
   export type put_Repos_replace__all__topics = {
@@ -49365,7 +48481,6 @@ export namespace Endpoints {
 
       body: { names: Array<string> };
     };
-    response: Schemas.topic;
     responses: { 200: Schemas.topic; 404: Schemas.basic_error; 422: Schemas.validation_error_simple };
   };
   export type get_Repos_get__clones = {
@@ -49376,7 +48491,6 @@ export namespace Endpoints {
       query: Partial<{ per: "day" | "week" }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.clone_traffic;
     responses: { 200: Schemas.clone_traffic; 403: Schemas.basic_error };
   };
   export type get_Repos_get__top__paths = {
@@ -49386,7 +48500,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.content_traffic>;
     responses: { 200: Array<Schemas.content_traffic>; 403: Schemas.basic_error };
   };
   export type get_Repos_get__top__referrers = {
@@ -49396,7 +48509,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: Array<Schemas.referrer_traffic>;
     responses: { 200: Array<Schemas.referrer_traffic>; 403: Schemas.basic_error };
   };
   export type get_Repos_get__views = {
@@ -49407,7 +48519,6 @@ export namespace Endpoints {
       query: Partial<{ per: "day" | "week" }>;
       path: { owner: string; repo: string };
     };
-    response: Schemas.view_traffic;
     responses: { 200: Schemas.view_traffic; 403: Schemas.basic_error };
   };
   export type post_Repos_transfer = {
@@ -49419,7 +48530,6 @@ export namespace Endpoints {
 
       body: { new_owner: string; new_name?: string | undefined; team_ids?: Array<number> | undefined };
     };
-    response: Schemas.minimal_repository;
     responses: { 202: Schemas.minimal_repository };
   };
   export type get_Repos_check__vulnerability__alerts = {
@@ -49429,7 +48539,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown };
   };
   export type put_Repos_enable__vulnerability__alerts = {
@@ -49439,7 +48548,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type delete_Repos_disable__vulnerability__alerts = {
@@ -49449,7 +48557,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Repos_download__zipball__archive = {
@@ -49459,8 +48566,8 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; ref: string };
     };
-    response: unknown;
     responses: { 302: unknown };
+    responseHeaders: { 302: { Location: string } };
   };
   export type post_Repos_create__using__template = {
     method: "POST";
@@ -49477,9 +48584,8 @@ export namespace Endpoints {
         private?: boolean | undefined;
       };
     };
-    response: Schemas.full_repository;
     responses: { 201: Schemas.full_repository };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_list__public = {
     method: "GET";
@@ -49488,9 +48594,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: number }>;
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository>; 304: unknown; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Search_code = {
     method: "GET";
@@ -49505,7 +48610,6 @@ export namespace Endpoints {
         page?: number | undefined;
       };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.code_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.code_search_result_item> };
       304: unknown;
@@ -49527,7 +48631,6 @@ export namespace Endpoints {
         page?: number | undefined;
       };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.commit_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.commit_search_result_item> };
       304: unknown;
@@ -49547,7 +48650,6 @@ export namespace Endpoints {
         page?: number | undefined;
       };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.label_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.label_search_result_item> };
       304: unknown;
@@ -49569,7 +48671,6 @@ export namespace Endpoints {
         page?: number | undefined;
       };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.repo_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.repo_search_result_item> };
       304: unknown;
@@ -49584,7 +48685,6 @@ export namespace Endpoints {
     parameters: {
       query: { q: string; per_page?: number | undefined; page?: number | undefined };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.topic_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.topic_search_result_item> };
       304: unknown;
@@ -49603,7 +48703,6 @@ export namespace Endpoints {
         page?: number | undefined;
       };
     };
-    response: { total_count: number; incomplete_results: boolean; items: Array<Schemas.user_search_result_item> };
     responses: {
       200: { total_count: number; incomplete_results: boolean; items: Array<Schemas.user_search_result_item> };
       304: unknown;
@@ -49616,7 +48715,6 @@ export namespace Endpoints {
     path: "/user";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.private_user | Schemas.public_user;
     responses: {
       200: Schemas.private_user | Schemas.public_user;
       304: unknown;
@@ -49640,7 +48738,6 @@ export namespace Endpoints {
         bio: string;
       }>;
     };
-    response: Schemas.private_user;
     responses: {
       200: Schemas.private_user;
       304: unknown;
@@ -49657,7 +48754,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.simple_user>;
     responses: {
       200: Array<Schemas.simple_user>;
       304: unknown;
@@ -49673,7 +48769,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -49689,7 +48784,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -49706,7 +48800,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -49722,7 +48815,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number; repository_id: number }>;
     };
-    response: { total_count: number; codespaces: Array<Schemas.codespace> };
     responses: {
       200: { total_count: number; codespaces: Array<Schemas.codespace> };
       304: unknown;
@@ -49762,7 +48854,6 @@ export namespace Endpoints {
             idle_timeout_minutes?: number | undefined;
           };
     };
-    response: Schemas.codespace;
     responses: {
       201: Schemas.codespace;
       202: Schemas.codespace;
@@ -49779,16 +48870,14 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: { total_count: number; secrets: Array<Schemas.codespaces_secret> };
     responses: { 200: { total_count: number; secrets: Array<Schemas.codespaces_secret> } };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Codespaces_get__public__key__for__authenticated__user = {
     method: "GET";
     path: "/user/codespaces/secrets/public-key";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.codespaces_user_public_key;
     responses: { 200: Schemas.codespaces_user_public_key };
   };
   export type get_Codespaces_get__secret__for__authenticated__user = {
@@ -49798,7 +48887,6 @@ export namespace Endpoints {
     parameters: {
       path: { secret_name: string };
     };
-    response: Schemas.codespaces_secret;
     responses: { 200: Schemas.codespaces_secret };
   };
   export type put_Codespaces_create__or__update__secret__for__authenticated__user = {
@@ -49814,7 +48902,6 @@ export namespace Endpoints {
         selected_repository_ids?: Array<number | string> | undefined;
       };
     };
-    response: Schemas.empty_object;
     responses: { 201: Schemas.empty_object; 204: unknown; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type delete_Codespaces_delete__secret__for__authenticated__user = {
@@ -49824,7 +48911,6 @@ export namespace Endpoints {
     parameters: {
       path: { secret_name: string };
     };
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Codespaces_list__repositories__for__secret__for__authenticated__user = {
@@ -49834,7 +48920,6 @@ export namespace Endpoints {
     parameters: {
       path: { secret_name: string };
     };
-    response: { total_count: number; repositories: Array<Schemas.minimal_repository> };
     responses: {
       200: { total_count: number; repositories: Array<Schemas.minimal_repository> };
       401: Schemas.basic_error;
@@ -49852,7 +48937,6 @@ export namespace Endpoints {
 
       body: { selected_repository_ids: Array<number> };
     };
-    response: unknown;
     responses: {
       204: unknown;
       401: Schemas.basic_error;
@@ -49868,7 +48952,6 @@ export namespace Endpoints {
     parameters: {
       path: { secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       401: Schemas.basic_error;
@@ -49884,7 +48967,6 @@ export namespace Endpoints {
     parameters: {
       path: { secret_name: string; repository_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       401: Schemas.basic_error;
@@ -49900,7 +48982,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: Schemas.codespace;
     responses: {
       200: Schemas.codespace;
       304: unknown;
@@ -49919,7 +49000,6 @@ export namespace Endpoints {
 
       body: Partial<{ machine: string; display_name: string; recent_folders: Array<string> }>;
     };
-    response: Schemas.codespace;
     responses: { 200: Schemas.codespace; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type delete_Codespaces_delete__for__authenticated__user = {
@@ -49929,7 +49009,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: Record<string, unknown>;
     responses: {
       202: Record<string, unknown>;
       304: unknown;
@@ -49946,7 +49025,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: Schemas.codespace_export_details;
     responses: {
       202: Schemas.codespace_export_details;
       401: Schemas.basic_error;
@@ -49963,7 +49041,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string; export_id: string };
     };
-    response: Schemas.codespace_export_details;
     responses: { 200: Schemas.codespace_export_details; 404: Schemas.basic_error };
   };
   export type get_Codespaces_codespace__machines__for__authenticated__user = {
@@ -49973,7 +49050,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: { total_count: number; machines: Array<Schemas.codespace_machine> };
     responses: {
       200: { total_count: number; machines: Array<Schemas.codespace_machine> };
       304: unknown;
@@ -49992,7 +49068,6 @@ export namespace Endpoints {
 
       body: Partial<{ name: string; private: boolean }>;
     };
-    response: Schemas.codespace_with_full_repository;
     responses: {
       201: Schemas.codespace_with_full_repository;
       401: Schemas.basic_error;
@@ -50008,11 +49083,10 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: Schemas.codespace;
     responses: {
       200: Schemas.codespace;
       304: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       401: Schemas.basic_error;
       402: Schemas.basic_error;
       403: Schemas.basic_error;
@@ -50028,7 +49102,6 @@ export namespace Endpoints {
     parameters: {
       path: { codespace_name: string };
     };
-    response: Schemas.codespace;
     responses: {
       200: Schemas.codespace;
       401: Schemas.basic_error;
@@ -50042,7 +49115,6 @@ export namespace Endpoints {
     path: "/user/docker/conflicts";
     requestFormat: "json";
     parameters: never;
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package> };
   };
   export type patch_Users_set__primary__email__visibility__for__authenticated__user = {
@@ -50052,7 +49124,6 @@ export namespace Endpoints {
     parameters: {
       body: { visibility: "public" | "private" };
     };
-    response: Array<Schemas.email>;
     responses: {
       200: Array<Schemas.email>;
       304: unknown;
@@ -50069,7 +49140,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.email>;
     responses: {
       200: Array<Schemas.email>;
       304: unknown;
@@ -50077,7 +49147,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Users_add__email__for__authenticated__user = {
     method: "POST";
@@ -50086,7 +49156,6 @@ export namespace Endpoints {
     parameters: {
       body: { emails: Array<string> } | Array<string> | string;
     };
-    response: Array<Schemas.email>;
     responses: {
       201: Array<Schemas.email>;
       304: unknown;
@@ -50103,7 +49172,6 @@ export namespace Endpoints {
     parameters: {
       body: { emails: Array<string> } | Array<string> | string;
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50120,9 +49188,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_list__followed__by__authenticated__user = {
     method: "GET";
@@ -50131,9 +49198,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_check__person__is__followed__by__authenticated = {
     method: "GET";
@@ -50142,7 +49208,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50158,7 +49223,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50175,7 +49239,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50191,7 +49254,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.gpg_key>;
     responses: {
       200: Array<Schemas.gpg_key>;
       304: unknown;
@@ -50199,7 +49261,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Users_create__gpg__key__for__authenticated__user = {
     method: "POST";
@@ -50208,7 +49270,6 @@ export namespace Endpoints {
     parameters: {
       body: { name?: string | undefined; armored_public_key: string };
     };
-    response: Schemas.gpg_key;
     responses: {
       201: Schemas.gpg_key;
       304: unknown;
@@ -50225,7 +49286,6 @@ export namespace Endpoints {
     parameters: {
       path: { gpg_key_id: number };
     };
-    response: Schemas.gpg_key;
     responses: {
       200: Schemas.gpg_key;
       304: unknown;
@@ -50241,7 +49301,6 @@ export namespace Endpoints {
     parameters: {
       path: { gpg_key_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50258,14 +49317,13 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: { total_count: number; installations: Array<Schemas.installation> };
     responses: {
       200: { total_count: number; installations: Array<Schemas.installation> };
       304: unknown;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_list__installation__repos__for__authenticated__user = {
     method: "GET";
@@ -50275,18 +49333,13 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { installation_id: number };
     };
-    response: {
-      total_count: number;
-      repository_selection?: string | undefined;
-      repositories: Array<Schemas.repository>;
-    };
     responses: {
       200: { total_count: number; repository_selection?: string | undefined; repositories: Array<Schemas.repository> };
       304: unknown;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type put_Apps_add__repo__to__installation__for__authenticated__user = {
     method: "PUT";
@@ -50295,7 +49348,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type delete_Apps_remove__repo__from__installation__for__authenticated__user = {
@@ -50305,7 +49357,6 @@ export namespace Endpoints {
     parameters: {
       path: { installation_id: number; repository_id: number };
     };
-    response: unknown;
     responses: { 204: unknown; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error; 422: unknown };
   };
   export type get_Interactions_get__restrictions__for__authenticated__user = {
@@ -50313,7 +49364,6 @@ export namespace Endpoints {
     path: "/user/interaction-limits";
     requestFormat: "json";
     parameters: never;
-    response: Schemas.interaction_limit_response | Partial<{}>;
     responses: { 200: Schemas.interaction_limit_response | Partial<{}>; 204: unknown };
   };
   export type put_Interactions_set__restrictions__for__authenticated__user = {
@@ -50323,7 +49373,6 @@ export namespace Endpoints {
     parameters: {
       body: Schemas.interaction_limit;
     };
-    response: Schemas.interaction_limit_response;
     responses: { 200: Schemas.interaction_limit_response; 422: Schemas.validation_error };
   };
   export type delete_Interactions_remove__restrictions__for__authenticated__user = {
@@ -50331,7 +49380,6 @@ export namespace Endpoints {
     path: "/user/interaction-limits";
     requestFormat: "json";
     parameters: never;
-    response: unknown;
     responses: { 204: unknown };
   };
   export type get_Issues_list__for__authenticated__user = {
@@ -50350,9 +49398,8 @@ export namespace Endpoints {
         page: number;
       }>;
     };
-    response: Array<Schemas.issue>;
     responses: { 200: Array<Schemas.issue>; 304: unknown; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_list__public__ssh__keys__for__authenticated__user = {
     method: "GET";
@@ -50361,7 +49408,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.key>;
     responses: {
       200: Array<Schemas.key>;
       304: unknown;
@@ -50369,7 +49415,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Users_create__public__ssh__key__for__authenticated__user = {
     method: "POST";
@@ -50378,7 +49424,6 @@ export namespace Endpoints {
     parameters: {
       body: { title?: string | undefined; key: string };
     };
-    response: Schemas.key;
     responses: {
       201: Schemas.key;
       304: unknown;
@@ -50395,7 +49440,6 @@ export namespace Endpoints {
     parameters: {
       path: { key_id: number };
     };
-    response: Schemas.key;
     responses: {
       200: Schemas.key;
       304: unknown;
@@ -50411,7 +49455,6 @@ export namespace Endpoints {
     parameters: {
       path: { key_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50427,14 +49470,13 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.user_marketplace_purchase>;
     responses: {
       200: Array<Schemas.user_marketplace_purchase>;
       304: unknown;
       401: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Apps_list__subscriptions__for__authenticated__user__stubbed = {
     method: "GET";
@@ -50443,9 +49485,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.user_marketplace_purchase>;
     responses: { 200: Array<Schemas.user_marketplace_purchase>; 304: unknown; 401: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__memberships__for__authenticated__user = {
     method: "GET";
@@ -50454,7 +49495,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ state: "active" | "pending"; per_page: number; page: number }>;
     };
-    response: Array<Schemas.org_membership>;
     responses: {
       200: Array<Schemas.org_membership>;
       304: unknown;
@@ -50462,7 +49502,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_get__membership__for__authenticated__user = {
     method: "GET";
@@ -50471,7 +49511,6 @@ export namespace Endpoints {
     parameters: {
       path: { org: string };
     };
-    response: Schemas.org_membership;
     responses: { 200: Schemas.org_membership; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type patch_Orgs_update__membership__for__authenticated__user = {
@@ -50483,7 +49522,6 @@ export namespace Endpoints {
 
       body: { state: "active" };
     };
-    response: Schemas.org_membership;
     responses: {
       200: Schemas.org_membership;
       403: Schemas.basic_error;
@@ -50498,9 +49536,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.migration>;
     responses: { 200: Array<Schemas.migration>; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Migrations_start__for__authenticated__user = {
     method: "POST";
@@ -50519,7 +49556,6 @@ export namespace Endpoints {
         repositories: Array<string>;
       };
     };
-    response: Schemas.migration;
     responses: {
       201: Schemas.migration;
       304: unknown;
@@ -50536,7 +49572,6 @@ export namespace Endpoints {
       query: Partial<{ exclude: Array<string> }>;
       path: { migration_id: number };
     };
-    response: Schemas.migration;
     responses: {
       200: Schemas.migration;
       304: unknown;
@@ -50552,7 +49587,6 @@ export namespace Endpoints {
     parameters: {
       path: { migration_id: number };
     };
-    response: unknown;
     responses: { 302: unknown; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type delete_Migrations_delete__archive__for__authenticated__user = {
@@ -50562,7 +49596,6 @@ export namespace Endpoints {
     parameters: {
       path: { migration_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50578,7 +49611,6 @@ export namespace Endpoints {
     parameters: {
       path: { migration_id: number; repo_name: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50595,9 +49627,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { migration_id: number };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository>; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__for__authenticated__user = {
     method: "GET";
@@ -50606,14 +49637,13 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.organization_simple>;
     responses: {
       200: Array<Schemas.organization_simple>;
       304: unknown;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Packages_list__packages__for__authenticated__user = {
     method: "GET";
@@ -50627,7 +49657,6 @@ export namespace Endpoints {
         per_page?: number | undefined;
       };
     };
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package>; 400: unknown };
   };
   export type get_Packages_get__package__for__authenticated__user = {
@@ -50637,7 +49666,6 @@ export namespace Endpoints {
     parameters: {
       path: { package_type: "npm" | "maven" | "rubygems" | "docker" | "nuget" | "container"; package_name: string };
     };
-    response: Schemas.Schema_package;
     responses: { 200: Schemas.Schema_package };
   };
   export type delete_Packages_delete__package__for__authenticated__user = {
@@ -50647,7 +49675,6 @@ export namespace Endpoints {
     parameters: {
       path: { package_type: "npm" | "maven" | "rubygems" | "docker" | "nuget" | "container"; package_name: string };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__for__authenticated__user = {
@@ -50658,7 +49685,6 @@ export namespace Endpoints {
       query: Partial<{ token: string }>;
       path: { package_type: "npm" | "maven" | "rubygems" | "docker" | "nuget" | "container"; package_name: string };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Packages_get__all__package__versions__for__package__owned__by__authenticated__user = {
@@ -50669,7 +49695,6 @@ export namespace Endpoints {
       query: Partial<{ page: number; per_page: number; state: "active" | "deleted" }>;
       path: { package_type: "npm" | "maven" | "rubygems" | "docker" | "nuget" | "container"; package_name: string };
     };
-    response: Array<Schemas.package_version>;
     responses: {
       200: Array<Schemas.package_version>;
       401: Schemas.basic_error;
@@ -50688,7 +49713,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: Schemas.package_version;
     responses: { 200: Schemas.package_version };
   };
   export type delete_Packages_delete__package__version__for__authenticated__user = {
@@ -50702,7 +49726,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__version__for__authenticated__user = {
@@ -50716,7 +49739,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Users_list__public__emails__for__authenticated__user = {
@@ -50726,7 +49748,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.email>;
     responses: {
       200: Array<Schemas.email>;
       304: unknown;
@@ -50734,7 +49755,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Repos_list__for__authenticated__user = {
     method: "GET";
@@ -50753,7 +49774,6 @@ export namespace Endpoints {
         before: string;
       }>;
     };
-    response: Array<Schemas.repository>;
     responses: {
       200: Array<Schemas.repository>;
       304: unknown;
@@ -50761,7 +49781,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__for__authenticated__user = {
     method: "POST";
@@ -50794,17 +49814,16 @@ export namespace Endpoints {
         is_template?: boolean | undefined;
       };
     };
-    response: Schemas.full_repository;
     responses: {
       201: Schemas.full_repository;
       304: unknown;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
-    responseHeaders: { location: string };
+    responseHeaders: { 201: { Location: string } };
   };
   export type get_Repos_list__invitations__for__authenticated__user = {
     method: "GET";
@@ -50813,7 +49832,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.repository_invitation>;
     responses: {
       200: Array<Schemas.repository_invitation>;
       304: unknown;
@@ -50821,7 +49839,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type patch_Repos_accept__invitation__for__authenticated__user = {
     method: "PATCH";
@@ -50830,7 +49848,6 @@ export namespace Endpoints {
     parameters: {
       path: { invitation_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50846,7 +49863,6 @@ export namespace Endpoints {
     parameters: {
       path: { invitation_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50862,7 +49878,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.social_account>;
     responses: {
       200: Array<Schemas.social_account>;
       304: unknown;
@@ -50870,7 +49885,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Users_add__social__account__for__authenticated__user = {
     method: "POST";
@@ -50879,7 +49894,6 @@ export namespace Endpoints {
     parameters: {
       body: { account_urls: Array<string> };
     };
-    response: Array<Schemas.social_account>;
     responses: {
       201: Array<Schemas.social_account>;
       304: unknown;
@@ -50896,7 +49910,6 @@ export namespace Endpoints {
     parameters: {
       body: { account_urls: Array<string> };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50913,7 +49926,6 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.ssh_signing_key>;
     responses: {
       200: Array<Schemas.ssh_signing_key>;
       304: unknown;
@@ -50921,7 +49933,7 @@ export namespace Endpoints {
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type post_Users_create__ssh__signing__key__for__authenticated__user = {
     method: "POST";
@@ -50930,7 +49942,6 @@ export namespace Endpoints {
     parameters: {
       body: { title?: string | undefined; key: string };
     };
-    response: Schemas.ssh_signing_key;
     responses: {
       201: Schemas.ssh_signing_key;
       304: unknown;
@@ -50947,7 +49958,6 @@ export namespace Endpoints {
     parameters: {
       path: { ssh_signing_key_id: number };
     };
-    response: Schemas.ssh_signing_key;
     responses: {
       200: Schemas.ssh_signing_key;
       304: unknown;
@@ -50963,7 +49973,6 @@ export namespace Endpoints {
     parameters: {
       path: { ssh_signing_key_id: number };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -50979,9 +49988,13 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ sort: "created" | "updated"; direction: "asc" | "desc"; per_page: number; page: number }>;
     };
-    response: Array<Schemas.repository>;
-    responses: { 200: Array<Schemas.repository>; 304: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responses: {
+      200: Array<Schemas.starred_repository>;
+      304: unknown;
+      401: Schemas.basic_error;
+      403: Schemas.basic_error;
+    };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_check__repo__is__starred__by__authenticated__user = {
     method: "GET";
@@ -50990,7 +50003,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -51006,7 +50018,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -51022,7 +50033,6 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    response: unknown;
     responses: {
       204: unknown;
       304: unknown;
@@ -51038,14 +50048,13 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.minimal_repository>;
     responses: {
       200: Array<Schemas.minimal_repository>;
       304: unknown;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
     };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Teams_list__for__authenticated__user = {
     method: "GET";
@@ -51054,9 +50063,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; page: number }>;
     };
-    response: Array<Schemas.team_full>;
     responses: { 200: Array<Schemas.team_full>; 304: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_get__by__id = {
     method: "GET";
@@ -51065,7 +50073,6 @@ export namespace Endpoints {
     parameters: {
       path: { account_id: number };
     };
-    response: Schemas.private_user | Schemas.public_user;
     responses: { 200: Schemas.private_user | Schemas.public_user; 404: Schemas.basic_error };
   };
   export type get_Users_list = {
@@ -51075,9 +50082,8 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ since: number; per_page: number }>;
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user>; 304: unknown };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_get__by__username = {
     method: "GET";
@@ -51086,7 +50092,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Schemas.private_user | Schemas.public_user;
     responses: { 200: Schemas.private_user | Schemas.public_user; 404: Schemas.basic_error };
   };
   export type post_Users_list__attestations__bulk = {
@@ -51099,23 +50104,6 @@ export namespace Endpoints {
 
       body: { subject_digests: Array<string>; predicate_type?: string | undefined };
     };
-    response: Partial<{
-      attestations_subject_digests: Record<
-        string,
-        Array<
-          Partial<{
-            bundle: Partial<{
-              mediaType: string;
-              verificationMaterial: Partial<{} & Record<string, any>>;
-              dsseEnvelope: Partial<{} & Record<string, any>>;
-            }>;
-            repository_id: number;
-            bundle_url: string;
-          }>
-        > | null
-      >;
-      page_info: Partial<{ has_next: boolean; has_previous: boolean; next: string; previous: string }>;
-    }>;
     responses: {
       200: Partial<{
         attestations_subject_digests: Record<
@@ -51145,7 +50133,6 @@ export namespace Endpoints {
 
       body: { subject_digests: Array<string> } | { attestation_ids: Array<number> };
     };
-    response: unknown;
     responses: { 200: unknown; 404: Schemas.basic_error };
   };
   export type delete_Users_delete__attestations__by__subject__digest = {
@@ -51155,7 +50142,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string; subject_digest: string };
     };
-    response: unknown;
     responses: { 200: unknown; 204: unknown; 404: Schemas.basic_error };
   };
   export type delete_Users_delete__attestations__by__id = {
@@ -51165,7 +50151,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string; attestation_id: number };
     };
-    response: unknown;
     responses: { 200: unknown; 204: unknown; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Users_list__attestations = {
@@ -51176,19 +50161,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; before: string; after: string; predicate_type: string }>;
       path: { username: string; subject_digest: string };
     };
-    response: Partial<{
-      attestations: Array<
-        Partial<{
-          bundle: Partial<{
-            mediaType: string;
-            verificationMaterial: Partial<{} & Record<string, any>>;
-            dsseEnvelope: Partial<{} & Record<string, any>>;
-          }>;
-          repository_id: number;
-          bundle_url: string;
-        }>
-      >;
-    }>;
     responses: {
       200: Partial<{
         attestations: Array<
@@ -51215,7 +50187,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package>; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type get_Activity_list__events__for__authenticated__user = {
@@ -51226,7 +50197,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Activity_list__org__events__for__authenticated__user = {
@@ -51237,7 +50207,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string; org: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Activity_list__public__events__for__user = {
@@ -51248,7 +50217,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Users_list__followers__for__user = {
@@ -51259,9 +50227,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_list__following__for__user = {
     method: "GET";
@@ -51271,9 +50238,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.simple_user>;
     responses: { 200: Array<Schemas.simple_user> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_check__following__for__user = {
     method: "GET";
@@ -51282,7 +50248,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string; target_user: string };
     };
-    response: unknown;
     responses: { 204: unknown; 404: unknown };
   };
   export type get_Gists_list__for__user = {
@@ -51293,9 +50258,8 @@ export namespace Endpoints {
       query: Partial<{ since: string; per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.base_gist>;
     responses: { 200: Array<Schemas.base_gist>; 422: Schemas.validation_error };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_list__gpg__keys__for__user = {
     method: "GET";
@@ -51305,9 +50269,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.gpg_key>;
     responses: { 200: Array<Schemas.gpg_key> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_get__context__for__user = {
     method: "GET";
@@ -51317,7 +50280,6 @@ export namespace Endpoints {
       query: Partial<{ subject_type: "organization" | "repository" | "issue" | "pull_request"; subject_id: string }>;
       path: { username: string };
     };
-    response: Schemas.hovercard;
     responses: { 200: Schemas.hovercard; 404: Schemas.basic_error; 422: Schemas.validation_error };
   };
   export type get_Apps_get__user__installation = {
@@ -51327,7 +50289,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Schemas.installation;
     responses: { 200: Schemas.installation };
   };
   export type get_Users_list__public__keys__for__user = {
@@ -51338,9 +50299,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.key_simple>;
     responses: { 200: Array<Schemas.key_simple> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Orgs_list__for__user = {
     method: "GET";
@@ -51350,9 +50310,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.organization_simple>;
     responses: { 200: Array<Schemas.organization_simple> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Packages_list__packages__for__user = {
     method: "GET";
@@ -51367,7 +50326,6 @@ export namespace Endpoints {
       };
       path: { username: string };
     };
-    response: Array<Schemas.Schema_package>;
     responses: { 200: Array<Schemas.Schema_package>; 400: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error };
   };
   export type get_Packages_get__package__for__user = {
@@ -51381,7 +50339,6 @@ export namespace Endpoints {
         username: string;
       };
     };
-    response: Schemas.Schema_package;
     responses: { 200: Schemas.Schema_package };
   };
   export type delete_Packages_delete__package__for__user = {
@@ -51395,7 +50352,6 @@ export namespace Endpoints {
         username: string;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__for__user = {
@@ -51410,7 +50366,6 @@ export namespace Endpoints {
         username: string;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Packages_get__all__package__versions__for__package__owned__by__user = {
@@ -51424,7 +50379,6 @@ export namespace Endpoints {
         username: string;
       };
     };
-    response: Array<Schemas.package_version>;
     responses: {
       200: Array<Schemas.package_version>;
       401: Schemas.basic_error;
@@ -51444,7 +50398,6 @@ export namespace Endpoints {
         username: string;
       };
     };
-    response: Schemas.package_version;
     responses: { 200: Schemas.package_version };
   };
   export type delete_Packages_delete__package__version__for__user = {
@@ -51459,7 +50412,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type post_Packages_restore__package__version__for__user = {
@@ -51474,7 +50426,6 @@ export namespace Endpoints {
         package_version_id: number;
       };
     };
-    response: unknown;
     responses: { 204: unknown; 401: Schemas.basic_error; 403: Schemas.basic_error; 404: Schemas.basic_error };
   };
   export type get_Activity_list__received__events__for__user = {
@@ -51485,7 +50436,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Activity_list__received__public__events__for__user = {
@@ -51496,7 +50446,6 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.event>;
     responses: { 200: Array<Schemas.event> };
   };
   export type get_Repos_list__for__user = {
@@ -51513,9 +50462,8 @@ export namespace Endpoints {
       }>;
       path: { username: string };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Billing_get__github__actions__billing__user = {
     method: "GET";
@@ -51524,7 +50472,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Schemas.actions_billing_usage;
     responses: { 200: Schemas.actions_billing_usage };
   };
   export type get_Billing_get__github__packages__billing__user = {
@@ -51534,7 +50481,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Schemas.packages_billing_usage;
     responses: { 200: Schemas.packages_billing_usage };
   };
   export type get_Billing_get__shared__storage__billing__user = {
@@ -51544,7 +50490,6 @@ export namespace Endpoints {
     parameters: {
       path: { username: string };
     };
-    response: Schemas.combined_billing_usage;
     responses: { 200: Schemas.combined_billing_usage };
   };
   export type get_Billing_get__github__billing__usage__report__user = {
@@ -51555,10 +50500,9 @@ export namespace Endpoints {
       query: Partial<{ year: number; month: number; day: number; hour: number }>;
       path: { username: string };
     };
-    response: Schemas.billing_usage_report_user;
     responses: {
       200: Schemas.billing_usage_report_user;
-      400: Schemas.basic_error;
+      400: Schemas.scim_error;
       403: Schemas.basic_error;
       500: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -51572,9 +50516,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.social_account>;
     responses: { 200: Array<Schemas.social_account> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Users_list__ssh__signing__keys__for__user = {
     method: "GET";
@@ -51584,9 +50527,8 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.ssh_signing_key>;
     responses: { 200: Array<Schemas.ssh_signing_key> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_list__repos__starred__by__user = {
     method: "GET";
@@ -51596,9 +50538,8 @@ export namespace Endpoints {
       query: Partial<{ sort: "created" | "updated"; direction: "asc" | "desc"; per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.starred_repository> | Array<Schemas.repository>;
     responses: { 200: Array<Schemas.starred_repository> | Array<Schemas.repository> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Activity_list__repos__watched__by__user = {
     method: "GET";
@@ -51608,16 +50549,14 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; page: number }>;
       path: { username: string };
     };
-    response: Array<Schemas.minimal_repository>;
     responses: { 200: Array<Schemas.minimal_repository> };
-    responseHeaders: { link: string };
+    responseHeaders: { 200: { Link: string } };
   };
   export type get_Meta_get__all__versions = {
     method: "GET";
     path: "/versions";
     requestFormat: "json";
     parameters: never;
-    response: Array<string>;
     responses: { 200: Array<string>; 404: Schemas.basic_error };
   };
   export type get_Meta_get__zen = {
@@ -51625,7 +50564,6 @@ export namespace Endpoints {
     path: "/zen";
     requestFormat: "json";
     parameters: never;
-    response: unknown;
     responses: { 200: unknown };
   };
 
@@ -52652,7 +51590,6 @@ type RequestFormat = "json" | "form-data" | "form-url" | "binary" | "text";
 
 export type DefaultEndpoint = {
   parameters?: EndpointParameters | undefined;
-  response: unknown;
   responses?: Record<string, unknown>;
   responseHeaders?: Record<string, unknown>;
 };
@@ -52668,7 +51605,6 @@ export type Endpoint<TConfig extends DefaultEndpoint = DefaultEndpoint> = {
     hasParameters: boolean;
     areParametersRequired: boolean;
   };
-  response: TConfig["response"];
   responses?: TConfig["responses"];
   responseHeaders?: TConfig["responseHeaders"];
 };
@@ -52686,51 +51622,80 @@ export const errorStatusCodes = [
 ] as const;
 export type ErrorStatusCode = (typeof errorStatusCodes)[number];
 
-// Error handling types
+// Taken from https://github.com/unjs/fetchdts/blob/ec4eaeab5d287116171fc1efd61f4a1ad34e4609/src/fetch.ts#L3
+export interface TypedHeaders<TypedHeaderValues extends Record<string, string> | unknown>
+  extends Omit<Headers, "append" | "delete" | "get" | "getSetCookie" | "has" | "set" | "forEach"> {
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append) */
+  append: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
+    name: Name,
+    value: Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string,
+  ) => void;
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/delete) */
+  delete: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(name: Name) => void;
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/get) */
+  get: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
+    name: Name,
+  ) => (Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string) | null;
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/getSetCookie) */
+  getSetCookie: () => string[];
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/has) */
+  has: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(name: Name) => boolean;
+  /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set) */
+  set: <Name extends Extract<keyof TypedHeaderValues, string> | (string & {})>(
+    name: Name,
+    value: Lowercase<Name> extends keyof TypedHeaderValues ? TypedHeaderValues[Lowercase<Name>] : string,
+  ) => void;
+  forEach: (
+    callbackfn: (
+      value: TypedHeaderValues[keyof TypedHeaderValues] | (string & {}),
+      key: Extract<keyof TypedHeaderValues, string> | (string & {}),
+      parent: TypedHeaders<TypedHeaderValues>,
+    ) => void,
+    thisArg?: any,
+  ) => void;
+}
+
 /** @see https://developer.mozilla.org/en-US/docs/Web/API/Response */
-interface SuccessResponse<TSuccess, TStatusCode> extends Omit<Response, "ok" | "status" | "json"> {
+export interface TypedSuccessResponse<TSuccess, TStatusCode, THeaders>
+  extends Omit<Response, "ok" | "status" | "json" | "headers"> {
   ok: true;
   status: TStatusCode;
+  headers: never extends THeaders ? Headers : TypedHeaders<THeaders>;
   data: TSuccess;
   /** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/json) */
   json: () => Promise<TSuccess>;
 }
 
 /** @see https://developer.mozilla.org/en-US/docs/Web/API/Response */
-interface ErrorResponse<TData, TStatusCode> extends Omit<Response, "ok" | "status" | "json"> {
+export interface TypedErrorResponse<TData, TStatusCode, THeaders>
+  extends Omit<Response, "ok" | "status" | "json" | "headers"> {
   ok: false;
   status: TStatusCode;
+  headers: never extends THeaders ? Headers : TypedHeaders<THeaders>;
   data: TData;
   /** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/json) */
   json: () => Promise<TData>;
 }
 
-export type TypedApiResponse<
-  TSuccess,
-  TAllResponses extends Record<string | number, unknown> = {},
-> = keyof TAllResponses extends never
-  ? SuccessResponse<TSuccess, number>
-  : {
-      [K in keyof TAllResponses]: K extends string
-        ? K extends `${infer TStatusCode extends number}`
-          ? TStatusCode extends SuccessStatusCode
-            ? SuccessResponse<TSuccess, TStatusCode>
-            : ErrorResponse<TAllResponses[K], TStatusCode>
-          : never
-        : K extends number
-          ? K extends SuccessStatusCode
-            ? SuccessResponse<TSuccess, K>
-            : ErrorResponse<TAllResponses[K], K>
-          : never;
-    }[keyof TAllResponses];
+export type TypedApiResponse<TAllResponses extends Record<string | number, unknown> = {}, THeaders = {}> = {
+  [K in keyof TAllResponses]: K extends string
+    ? K extends `${infer TStatusCode extends number}`
+      ? TStatusCode extends SuccessStatusCode
+        ? TypedSuccessResponse<TAllResponses[K], TStatusCode, K extends keyof THeaders ? THeaders[K] : never>
+        : TypedErrorResponse<TAllResponses[K], TStatusCode, K extends keyof THeaders ? THeaders[K] : never>
+      : never
+    : K extends number
+      ? K extends SuccessStatusCode
+        ? TypedSuccessResponse<TAllResponses[K], K, K extends keyof THeaders ? THeaders[K] : never>
+        : TypedErrorResponse<TAllResponses[K], K, K extends keyof THeaders ? THeaders[K] : never>
+      : never;
+}[keyof TAllResponses];
 
-export type SafeApiResponse<TEndpoint> = TEndpoint extends { response: infer TSuccess; responses: infer TResponses }
+export type SafeApiResponse<TEndpoint> = TEndpoint extends { responses: infer TResponses }
   ? TResponses extends Record<string, unknown>
-    ? TypedApiResponse<TSuccess, TResponses>
-    : SuccessResponse<TSuccess, number>
-  : TEndpoint extends { response: infer TSuccess }
-    ? SuccessResponse<TSuccess, number>
-    : never;
+    ? TypedApiResponse<TResponses, TEndpoint extends { responseHeaders: infer THeaders } ? THeaders : never>
+    : never
+  : never;
 
 export type InferResponseByStatus<TEndpoint, TStatusCode> = Extract<
   SafeApiResponse<TEndpoint>,
@@ -52747,9 +51712,9 @@ type MaybeOptionalArg<T> = RequiredKeys<T> extends never ? [config?: T] : [confi
 
 // <TypedResponseError>
 export class TypedResponseError extends Error {
-  response: ErrorResponse<unknown, ErrorStatusCode>;
+  response: TypedErrorResponse<unknown, ErrorStatusCode, unknown>;
   status: number;
-  constructor(response: ErrorResponse<unknown, ErrorStatusCode>) {
+  constructor(response: TypedErrorResponse<unknown, ErrorStatusCode, unknown>) {
     super(`HTTP ${response.status}: ${response.statusText}`);
     this.name = "TypedResponseError";
     this.response = response;
@@ -52782,7 +51747,7 @@ export class ApiClient {
   get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<TEndpoint["response"]>;
+  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
 
   get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
     path: Path,
@@ -52815,7 +51780,7 @@ export class ApiClient {
       return withResponse ? typedResponse : data;
     });
 
-    return promise as Promise<TEndpoint["response"]>;
+    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
   }
   // </ApiClient.get>
 
@@ -52823,7 +51788,7 @@ export class ApiClient {
   post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<TEndpoint["response"]>;
+  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
 
   post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
     path: Path,
@@ -52856,7 +51821,7 @@ export class ApiClient {
       return withResponse ? typedResponse : data;
     });
 
-    return promise as Promise<TEndpoint["response"]>;
+    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
   }
   // </ApiClient.post>
 
@@ -52864,7 +51829,7 @@ export class ApiClient {
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<TEndpoint["response"]>;
+  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
 
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
     path: Path,
@@ -52897,7 +51862,7 @@ export class ApiClient {
       return withResponse ? typedResponse : data;
     });
 
-    return promise as Promise<TEndpoint["response"]>;
+    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
   }
   // </ApiClient.patch>
 
@@ -52905,7 +51870,7 @@ export class ApiClient {
   delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<TEndpoint["response"]>;
+  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
 
   delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
     path: Path,
@@ -52938,7 +51903,7 @@ export class ApiClient {
       return withResponse ? typedResponse : data;
     });
 
-    return promise as Promise<TEndpoint["response"]>;
+    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
   }
   // </ApiClient.delete>
 
@@ -52946,7 +51911,7 @@ export class ApiClient {
   put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<TEndpoint["response"]>;
+  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
 
   put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
     path: Path,
@@ -52979,7 +51944,7 @@ export class ApiClient {
       return withResponse ? typedResponse : data;
     });
 
-    return promise as Promise<TEndpoint["response"]>;
+    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
   }
   // </ApiClient.put>
 
