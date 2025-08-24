@@ -60,7 +60,8 @@
             "*.jsx",
             "*.json",
             "!**/src/routeTree.gen.ts",
-            "!**/src/styles/app.css"
+            "!**/src/styles/app.css",
+            "!**/codegen.ts"
         ]
     }
 }
