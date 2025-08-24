@@ -1,3 +1,6 @@
 - tanstack/db
 - vector search
 - filter active (with commits in the last 365 days)
+- fetch repo READMEs and make it searchable?
+- search by org?
+- search by keywords?

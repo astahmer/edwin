@@ -80,8 +80,8 @@ importers:
         specifier: ^3.3.1
         version: 3.3.1
       typed-openapi:
-        specifier: ^2.0.1
-        version: 2.0.1(openapi-types@12.1.3)(react@19.1.1)
+        specifier: ^2.1.1
+        version: 2.1.1(openapi-types@12.1.3)(react@19.1.1)
     devDependencies:
       '@better-auth/cli':
         specifier: ^1.3.7
@@ -92,6 +92,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.12
         version: 4.1.12(vite@7.1.3(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.4)(yaml@2.8.1))
+      '@tim-smart/openapi-gen':
+        specifier: ^0.4.13
+        version: 0.4.13
       '@types/node':
         specifier: ^24.3.0
         version: 24.3.0
@@ -1792,6 +1795,10 @@ packages:
     resolution: {integrity: sha512-VEEOxc4mvyu67O+Bl0APtYjwcNRcL9it9B4HKbNgcBTIOEalhk+ufBl4kiqc8WP1sx1+NAaiS+3CcJBhrqaSRg==}
     engines: {node: '>=12'}
 
+  '@tim-smart/openapi-gen@0.4.13':
+    resolution: {integrity: sha512-yn/4Tp6Or5JA2/VNPLKtm9ib17PZxmJGyEq+vtcmAch5qG2PAJLvuzuoAwYRBMN9GR8Cb/W5qO6eIHg0AdYL0Q==}
+    hasBin: true
+
   '@types/babel__code-frame@7.0.6':
     resolution: {integrity: sha512-Anitqkl3+KrzcW2k77lRlg/GfLZLWXBuNgbEcIOU6M92yw42vsd3xV/Z/yAHEj8m+KUjL6bWOVOFqX8PFPJ4LA==}
 
@@ -2806,8 +2813,8 @@ packages:
     resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
     engines: {node: '>=8.6.0'}
 
-  fast-uri@3.0.6:
-    resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
+  fast-uri@3.1.0:
+    resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
@@ -4270,8 +4277,8 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
-  typed-openapi@2.0.1:
-    resolution: {integrity: sha512-qO8GPkeA/MvjLCP4UA/aKQSKYpojtjn+lJDgFAiDvFkAxiAmD3aXt4BhXEr4op9Tfkfg63lMFprTxIwaCNn6+A==}
+  typed-openapi@2.1.1:
+    resolution: {integrity: sha512-dS1MPHLW6/jZVq/b6vcaW+T6tBuQvBEjUsdpCTKSk30REOW6hvo892EIRixsVZhdf9HdM+WgYZpnYY3IckHV1A==}
     hasBin: true
 
   typescript@5.9.2:
@@ -6352,6 +6359,10 @@ snapshots:
 
   '@tanstack/virtual-file-routes@1.131.2': {}
 
+  '@tim-smart/openapi-gen@0.4.13':
+    dependencies:
+      yaml: 2.8.1
+
   '@types/babel__code-frame@7.0.6': {}
 
   '@types/babel__core@7.20.5':
@@ -6559,7 +6570,7 @@ snapshots:
   ajv@8.17.1:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.0.6
+      fast-uri: 3.1.0
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -7342,7 +7353,7 @@ snapshots:
       merge2: 1.4.1
       micromatch: 4.0.8
 
-  fast-uri@3.0.6: {}
+  fast-uri@3.1.0: {}
 
   fastq@1.19.1:
     dependencies:
@@ -8881,7 +8892,7 @@ snapshots:
 
   type-fest@4.41.0: {}
 
-  typed-openapi@2.0.1(openapi-types@12.1.3)(react@19.1.1):
+  typed-openapi@2.1.1(openapi-types@12.1.3)(react@19.1.1):
     dependencies:
       '@apidevtools/swagger-parser': 10.1.1(openapi-types@12.1.3)
       '@sinclair/typebox-codegen': 0.11.1
