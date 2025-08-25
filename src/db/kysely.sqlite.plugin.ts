@@ -70,6 +70,11 @@ class SqliteDataTypeTransformer extends OperationNodeTransformer {
       // Convert Date to Unix timestamp in seconds
       return Math.floor(value.getTime() / 1000);
     }
+
+    if (typeof value === "object" && value !== null) {
+      return JSON.stringify(value);
+    }
+
     return typeof value === "boolean" ? (value ? 1 : 0) : value;
   }
 }

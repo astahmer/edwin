@@ -5,7 +5,8 @@ import type {
   InsertableGithubUserStar,
   SelectableGithubRepository,
 } from "../db/schema";
-import { GitHubClient, type GitHubRepo, type StarredGithubRepo } from "./github-client";
+import { GitHubClient } from "~/services/github-client";
+import type { GithubSchema } from "~/services/github/github";
 
 export interface SyncResult {
   totalFetched: number;
@@ -70,7 +71,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       );
 
     const upsertStarsChunk = (
-      starredReposBatch: ReadonlyArray<StarredGithubRepo>,
+      starredReposBatch: ReadonlyArray<GithubSchema.starred_repository>,
       userId: string
     ) =>
       Effect.gen(function* () {
@@ -88,10 +89,8 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           });
         }
 
-        const upsertedRepos = yield* db.batchUpsertRepos(reposToUpsert);
+        yield* db.batchUpsertRepos(reposToUpsert);
         yield* db.batchUpsertUserStars(userStarsToUpsert);
-
-        return upsertedRepos;
       });
 
     const createExistingStarsStream = (userId: string) =>
@@ -156,7 +155,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
   }),
 }) {}
 
-const mapGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository => ({
+const mapGithubRepoToEntity = (ghRepo: GithubSchema.repository): SelectableGithubRepository => ({
   id: ghRepo.id,
   name: ghRepo.name,
   owner: ghRepo.owner.login,
@@ -164,12 +163,18 @@ const mapGithubRepoToEntity = (ghRepo: GitHubRepo): SelectableGithubRepository =
   description: ghRepo.description || null,
   stargazers_count: ghRepo.stargazers_count,
   language: ghRepo.language,
+  created_at: ghRepo.created_at ? new Date(ghRepo.created_at) : null,
+  updated_at: ghRepo.updated_at ? new Date(ghRepo.updated_at) : null,
+  pushed_at: ghRepo.pushed_at ? new Date(ghRepo.pushed_at) : null,
+  archived: ghRepo.archived,
+  topics: ghRepo.topics ?? [],
+  private: ghRepo.private,
+  //
+  raw: ghRepo,
   last_fetched_at: new Date(),
-  created_at: new Date(),
-  updated_at: new Date(),
 });
 
-const fetchedStarredRepoToMsg = (starredRepo: StarredGithubRepo) =>
+const fetchedStarredRepoToMsg = (starredRepo: GithubSchema.starred_repository) =>
   ({
     id: starredRepo.repo.id,
     name: starredRepo.repo.name,
@@ -178,5 +183,5 @@ const fetchedStarredRepoToMsg = (starredRepo: StarredGithubRepo) =>
     description: starredRepo.repo.description,
     stars: starredRepo.repo.stargazers_count,
     language: starredRepo.repo.language,
-    starred_at: starredRepo.starred_at,
+    starred_at: new Date(starredRepo.starred_at).getTime(),
   }) as StarredRepoMessage;

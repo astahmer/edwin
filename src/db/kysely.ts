@@ -1,7 +1,7 @@
 import BetterSqlite3 from "better-sqlite3";
 import { Effect } from "effect";
 import { Kysely, SqliteDialect } from "kysely";
-import { EnvConfig } from "../env.config.js";
+import { EnvConfig } from "../env.config.ts";
 import {
   DatabaseGetUserError,
   DatabaseGetUserStarsError,
@@ -9,7 +9,8 @@ import {
   DatabaseUpsertRepoError,
   DatabaseUpsertUserError,
   DatabaseUpsertUserStarError,
-} from "../errors";
+} from "../errors.ts";
+import { SqliteDataTypePlugin } from "./kysely.sqlite.plugin.ts";
 import type {
   InsertableGithubRepository,
   InsertableGithubUser,
@@ -19,8 +20,7 @@ import type {
   SelectableGithubUser,
   SelectableGithubUserStar,
   SelectableUser,
-} from "./schema";
-import { SqliteDataTypePlugin } from "~/db/kysely.sqlite.plugin.js";
+} from "./schema.ts";
 
 export interface Database {
   user: SelectableUser;
@@ -47,26 +47,26 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
           try: () => kysely.selectFrom("user").selectAll().where("id", "=", id).executeTakeFirst(),
           catch: (error) => new DatabaseGetUserError({ userId: id, cause: error }),
         }),
-      upsertUser: (user: InsertableUser) =>
+      upsertUser: (input: InsertableUser) =>
         Effect.tryPromise({
           try: async () => {
-            const userValues = {
-              ...user,
-              email_verified: user.email_verified ?? false,
-              role: user.role ?? "user",
-              banned: user.banned ?? false,
-              created_at: user.created_at || new Date(),
-              updated_at: user.updated_at || new Date(),
+            const insertable = {
+              ...input,
+              email_verified: input.email_verified ?? false,
+              role: input.role ?? "user",
+              banned: input.banned ?? false,
+              created_at: input.created_at || new Date(),
+              updated_at: input.updated_at || new Date(),
             } satisfies InsertableUser;
 
             await kysely
               .insertInto("user")
-              .values(userValues)
+              .values(insertable)
               .onConflict((oc) =>
                 oc.column("id").doUpdateSet({
-                  name: userValues.name,
-                  email: userValues.email,
-                  image: userValues.image,
+                  name: insertable.name,
+                  email: insertable.email,
+                  image: insertable.image,
                   updated_at: new Date(),
                 })
               )
@@ -74,27 +74,27 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             return await kysely
               .selectFrom("user")
               .selectAll()
-              .where("id", "=", user.id)
+              .where("id", "=", input.id)
               .executeTakeFirstOrThrow();
           },
-          catch: (error) => new DatabaseUpsertUserError({ userId: user.id, cause: error }),
+          catch: (error) => new DatabaseUpsertUserError({ userId: input.id, cause: error }),
         }),
-      upsertGithubUser: (githubUser: InsertableGithubUser) =>
+      upsertGithubUser: (input: InsertableGithubUser) =>
         Effect.tryPromise({
           try: async () => {
-            const githubUserValues = {
-              ...githubUser,
-              created_at: githubUser.created_at || new Date(),
-              updated_at: githubUser.updated_at || new Date(),
-            };
+            const insertable = {
+              ...input,
+              created_at: input.created_at || new Date(),
+              updated_at: input.updated_at || new Date(),
+            } satisfies InsertableGithubUser;
 
             await kysely
               .insertInto("github_user")
-              .values(githubUserValues)
+              .values(insertable)
               .onConflict((oc) =>
                 oc.column("user_id").doUpdateSet({
-                  login: githubUserValues.login,
-                  access_token: githubUserValues.access_token,
+                  login: insertable.login,
+                  access_token: insertable.access_token,
                   updated_at: new Date(),
                 })
               )
@@ -102,11 +102,10 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             return await kysely
               .selectFrom("github_user")
               .selectAll()
-              .where("user_id", "=", githubUser.user_id)
+              .where("user_id", "=", input.user_id)
               .executeTakeFirstOrThrow();
           },
-          catch: (error) =>
-            new DatabaseUpsertUserError({ userId: githubUser.user_id, cause: error }),
+          catch: (error) => new DatabaseUpsertUserError({ userId: input.user_id, cause: error }),
         }),
       getGithubUser: (userId: string) =>
         Effect.tryPromise({
@@ -118,153 +117,65 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
               .executeTakeFirst(),
           catch: (error) => new DatabaseGetUserError({ userId, cause: error }),
         }),
-      upsertRepo: (repo: InsertableGithubRepository) =>
+      batchUpsertRepos: (inputList: InsertableGithubRepository[]) =>
         Effect.tryPromise({
           try: async () => {
-            const repoValues = {
+            if (inputList.length === 0) return [];
+
+            const now = new Date();
+            const insertableList = inputList.map((repo) => ({
               ...repo,
               id: repo.id, // Ensure id is present as number
-              created_at: repo.created_at || new Date(),
-              updated_at: repo.updated_at || new Date(),
-              last_fetched_at: repo.last_fetched_at || new Date(),
-              stars: repo.stars ?? 0,
-            } satisfies InsertableGithubRepository;
+              created_at: repo.created_at || now,
+              updated_at: repo.updated_at || now,
+              pushed_at: repo.pushed_at || now,
+              last_fetched_at: repo.last_fetched_at || now,
+              raw: repo.raw,
+            })) satisfies InsertableGithubRepository[];
 
-            await kysely
-              .insertInto("github_repository")
-              .values(repoValues)
-              .onConflict((oc) =>
-                oc.column("id").doUpdateSet({
-                  name: repoValues.name,
-                  owner: repoValues.owner,
-                  full_name: repoValues.full_name,
-                  description: repoValues.description,
-                  stars: repoValues.stars,
-                  language: repoValues.language,
-                  last_fetched_at: new Date(),
-                  updated_at: new Date(),
-                })
-              )
-              .execute();
-            return await kysely
-              .selectFrom("github_repository")
-              .selectAll()
-              .where("id", "=", repoValues.id)
-              .executeTakeFirstOrThrow();
-          },
-          catch: (error) => new DatabaseUpsertRepoError({ repoId: repo.id || 0, cause: error }),
-        }),
-      upsertUserStar: (userStar: InsertableGithubUserStar) =>
-        Effect.tryPromise({
-          try: async () => {
-            const userStarValues = {
-              ...userStar,
-              last_checked_at: userStar.last_checked_at || new Date(),
-            } satisfies InsertableGithubUserStar;
-
-            await kysely
-              .insertInto("github_user_star")
-              .values(userStarValues)
-              .onConflict((oc) =>
-                oc.columns(["user_id", "repo_id"]).doUpdateSet({
-                  last_checked_at: new Date(),
-                })
-              )
-              .execute();
-            return await kysely
-              .selectFrom("github_user_star")
-              .selectAll()
-              .where("user_id", "=", userStar.user_id)
-              .where("repo_id", "=", userStar.repo_id)
-              .executeTakeFirstOrThrow();
-          },
-          catch: (error) =>
-            new DatabaseUpsertUserStarError({
-              userId: userStar.user_id,
-              repoId: userStar.repo_id,
-              cause: error,
-            }),
-        }),
-      batchUpsertRepos: (repos: InsertableGithubRepository[]) =>
-        Effect.tryPromise({
-          try: async () => {
-            if (repos.length === 0) return [];
-
-            const repoValues = repos.map((repo) => ({
-              ...repo,
-              id: repo.id, // Ensure id is present as number
-              created_at: repo.created_at || new Date(),
-              updated_at: repo.updated_at || new Date(),
-              last_fetched_at: repo.last_fetched_at || new Date(),
-              stars: repo.stars ?? 0,
-            }));
-
-            // Use transaction for batch operation
             return await kysely.transaction().execute(async (trx) => {
-              const results = [];
-              for (const repoValue of repoValues) {
-                await trx
-                  .insertInto("github_repository")
-                  .values(repoValue)
-                  .onConflict((oc) =>
-                    oc.column("id").doUpdateSet({
-                      name: repoValue.name,
-                      owner: repoValue.owner,
-                      full_name: repoValue.full_name,
-                      description: repoValue.description,
-                      stars: repoValue.stars,
-                      language: repoValue.language,
-                      last_fetched_at: new Date(),
-                      updated_at: new Date(),
-                    })
-                  )
-                  .execute();
-
-                const result = await trx
-                  .selectFrom("github_repository")
-                  .selectAll()
-                  .where("id", "=", repoValue.id)
-                  .executeTakeFirstOrThrow();
-                results.push(result);
-              }
-              return results;
+              await trx
+                .insertInto("github_repository")
+                .values(insertableList)
+                .onConflict((oc) =>
+                  oc.column("id").doUpdateSet((eb) => ({
+                    name: eb.ref("excluded.name"),
+                    description: eb.ref("excluded.description"),
+                    full_name: eb.ref("excluded.full_name"),
+                    stargazers_count: eb.ref("excluded.stargazers_count"),
+                    pushed_at: eb.ref("excluded.pushed_at"),
+                    archived: eb.ref("excluded.archived"),
+                    last_fetched_at: new Date(),
+                    topics: eb.ref("excluded.topics"),
+                    raw: eb.ref("excluded.raw"),
+                    updated_at: eb.ref("excluded.updated_at"),
+                  }))
+                )
+                .execute();
             });
           },
           catch: (error) => new DatabaseUpsertRepoError({ repoId: 0, cause: error }),
         }),
-      batchUpsertUserStars: (userStars: InsertableGithubUserStar[]) =>
+      batchUpsertUserStars: (inputList: InsertableGithubUserStar[]) =>
         Effect.tryPromise({
           try: async () => {
-            if (userStars.length === 0) return [];
+            if (inputList.length === 0) return [];
 
-            const userStarValues = userStars.map((userStar) => ({
+            const insertableList = inputList.map((userStar) => ({
               ...userStar,
               last_checked_at: userStar.last_checked_at || new Date(),
             }));
 
-            // Use transaction for batch operation
             return await kysely.transaction().execute(async (trx) => {
-              const results = [];
-              for (const userStarValue of userStarValues) {
-                await trx
-                  .insertInto("github_user_star")
-                  .values(userStarValue)
-                  .onConflict((oc) =>
-                    oc.columns(["user_id", "repo_id"]).doUpdateSet({
-                      last_checked_at: new Date(),
-                    })
-                  )
-                  .execute();
-
-                const result = await trx
-                  .selectFrom("github_user_star")
-                  .selectAll()
-                  .where("user_id", "=", userStarValue.user_id)
-                  .where("repo_id", "=", userStarValue.repo_id)
-                  .executeTakeFirstOrThrow();
-                results.push(result);
-              }
-              return results;
+              await trx
+                .insertInto("github_user_star")
+                .values(insertableList)
+                .onConflict((oc) =>
+                  oc.columns(["user_id", "repo_id"]).doUpdateSet({
+                    last_checked_at: new Date(),
+                  })
+                )
+                .execute();
             });
           },
           catch: (error) =>
@@ -310,7 +221,7 @@ export class DatabaseService extends Effect.Service<DatabaseService>()("Database
             // Apply sorting
             switch (sortBy) {
               case "stars":
-                query = query.orderBy("github_repository.stars", sortOrder);
+                query = query.orderBy("github_repository.stargazers_count", sortOrder);
                 break;
               case "name":
                 query = query.orderBy("github_repository.name", sortOrder);
