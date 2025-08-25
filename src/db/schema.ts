@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import * as sqlite from "drizzle-orm/sqlite-core";
+import type { Schemas as Github } from "../services/github/github.openapi.codegen.ts";
 
 const timestamp = () => sqlite.integer({ mode: "timestamp" });
 const timestampWithDefault = () =>
@@ -83,7 +84,7 @@ export const githubUser = sqlite.sqliteTable("github_user", {
   //
   created_at: timestampWithDefault().notNull(),
   updated_at: timestampWithDefault().notNull(),
-  raw: json().$type(),
+  raw: json().$type().$type<Github.public_user>(),
 });
 
 export const githubRepository = sqlite.sqliteTable(
@@ -95,16 +96,17 @@ export const githubRepository = sqlite.sqliteTable(
     full_name: sqlite.text().notNull(),
     description: sqlite.text(),
     private: boolean().notNull(),
-    stargazers_count: sqlite.integer().notNull().default(0),
-    language: sqlite.text().notNull(),
-    topics: sqlite.text().notNull(),
-    created_at: timestampWithDefault().notNull(),
-    updated_at: timestampWithDefault().notNull(),
-    pushed_at: timestampWithDefault().notNull(),
+    stargazers_count: sqlite.integer().notNull(),
+    language: sqlite.text(),
+    topics: json().$type<string[]>().notNull(),
+    created_at: timestamp(),
+    updated_at: timestamp(),
+    pushed_at: timestamp(),
     archived: boolean().notNull(),
     //
     last_fetched_at: timestamp(),
-    raw: json().$type(),
+    // raw: json().$type<Github.repository>(),
+    raw: json().$type<Github.repository>(),
   },
   (self) => [
     sqlite.index("idx_github_repository_name").on(self.name),
@@ -130,9 +132,7 @@ export const githubUserStar = sqlite.sqliteTable(
     //
     last_checked_at: timestampWithDefault().notNull(),
   },
-  (t) => ({
-    pk: sqlite.primaryKey({ columns: [t.user_id, t.repo_id] }),
-  })
+  (t) => [sqlite.primaryKey({ columns: [t.user_id, t.repo_id] })]
 );
 
 export type SelectableUser = typeof user.$inferSelect;

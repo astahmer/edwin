@@ -13,7 +13,8 @@
     "format:fix": "biome format --write src/",
     "check": "biome check src/",
     "check:fix": "biome check --write src/",
-    "ghgen": "pnpm typed-openapi https://raw.githubusercontent.com/github/rest-api-description/refs/heads/main/descriptions/api.github.com/api.github.com.json -o src/github.openapi.codegen.ts"
+    "db": "pnpm drizzle-kit",
+    "ghgen": "pnpm typed-openapi https://raw.githubusercontent.com/github/rest-api-description/refs/heads/main/descriptions/api.github.com/api.github.com.json -o src/services/github/github.openapi.codegen.ts --default-fetcher"
   },
   "dependencies": {
     "@effect/cli": "^0.69.1",
@@ -38,7 +39,7 @@
     "react-dom": "^19.1.1",
     "redaxios": "^0.5.1",
     "tailwind-merge": "^3.3.1",
-    "typed-openapi": "^2.1.1"
+    "typed-openapi": "^2.2.0"
   },
   "devDependencies": {
     "@better-auth/cli": "^1.3.7",

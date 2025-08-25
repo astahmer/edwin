@@ -958,6 +958,7 @@ export namespace Schemas {
     author_association: author_association;
     reactions?: reaction_rollup | undefined;
     sub_issues_summary?: sub_issues_summary | undefined;
+    parent_issue_url?: (string | null) | undefined;
     issue_dependencies_summary?: issue_dependencies_summary | undefined;
     issue_field_values?: Array<issue_field_value> | undefined;
   };
@@ -4903,6 +4904,7 @@ export namespace Schemas {
     author_association: author_association;
     reactions?: reaction_rollup | undefined;
     sub_issues_summary?: sub_issues_summary | undefined;
+    parent_issue_url?: (string | null) | undefined;
     issue_dependencies_summary?: issue_dependencies_summary | undefined;
     issue_field_values?: Array<issue_field_value> | undefined;
   } | null;
@@ -37993,7 +37995,11 @@ export namespace Endpoints {
     parameters: {
       query: Partial<{ per_page: number; cursor: string }>;
     };
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Array<Schemas.hook_delivery_item>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type get_Apps_get__webhook__delivery = {
     method: "GET";
@@ -38002,7 +38008,11 @@ export namespace Endpoints {
     parameters: {
       path: { delivery_id: number };
     };
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Schemas.hook_delivery;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type post_Apps_redeliver__webhook__delivery = {
     method: "POST";
@@ -38011,7 +38021,11 @@ export namespace Endpoints {
     parameters: {
       path: { delivery_id: number };
     };
-    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      202: Record<string, unknown>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type get_Apps_list__installation__requests__for__authenticated__app = {
     method: "GET";
@@ -38298,7 +38312,7 @@ export namespace Endpoints {
     };
     responses: {
       201: Schemas.code_security_configuration;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
     };
@@ -38374,7 +38388,7 @@ export namespace Endpoints {
     };
     responses: {
       204: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -39085,7 +39099,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.billing_usage_report;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       500: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -40361,7 +40375,7 @@ export namespace Endpoints {
     };
     responses: {
       204: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -40427,7 +40441,7 @@ export namespace Endpoints {
     };
     responses: {
       204: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -40742,7 +40756,7 @@ export namespace Endpoints {
     responses: {
       200: Array<Schemas.dependabot_alert_with_repository>;
       304: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
@@ -40978,7 +40992,11 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; cursor: string }>;
       path: { org: string; hook_id: number };
     };
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Array<Schemas.hook_delivery_item>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type get_Orgs_get__webhook__delivery = {
     method: "GET";
@@ -40987,7 +41005,11 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number; delivery_id: number };
     };
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Schemas.hook_delivery;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type post_Orgs_redeliver__webhook__delivery = {
     method: "POST";
@@ -40996,7 +41018,11 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; hook_id: number; delivery_id: number };
     };
-    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      202: Record<string, unknown>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type post_Orgs_ping__webhook = {
     method: "POST";
@@ -41944,7 +41970,7 @@ export namespace Endpoints {
     };
     responses: {
       200: { total_count: number; configurations: Array<Schemas.org_private_registry_configuration> };
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       404: Schemas.basic_error;
     };
     responseHeaders: { 200: { Link: string } };
@@ -42047,7 +42073,7 @@ export namespace Endpoints {
     parameters: {
       path: { org: string; secret_name: string };
     };
-    responses: { 204: unknown; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responses: { 204: unknown; 400: Schemas.basic_error | Schemas.scim_error; 404: Schemas.basic_error };
   };
   export type get_Orgs_get__all__custom__properties = {
     method: "GET";
@@ -42392,7 +42418,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Partial<{ pattern_config_version: string }>;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -42414,7 +42440,11 @@ export namespace Endpoints {
       }>;
       path: { org: string };
     };
-    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responses: {
+      200: Array<Schemas.repository_advisory>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      404: Schemas.basic_error;
+    };
   };
   export type get_Billing_get__github__actions__billing__org = {
     method: "GET";
@@ -43079,7 +43109,11 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    responses: { 200: Schemas.oidc_custom_sub_repo; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responses: {
+      200: Schemas.oidc_custom_sub_repo;
+      400: Schemas.basic_error | Schemas.scim_error;
+      404: Schemas.basic_error;
+    };
   };
   export type put_Actions_set__custom__oidc__sub__claim__for__repo = {
     method: "PUT";
@@ -43092,7 +43126,7 @@ export namespace Endpoints {
     };
     responses: {
       201: Schemas.empty_object;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
     };
@@ -44550,7 +44584,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.code_scanning_alert;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -44654,7 +44688,7 @@ export namespace Endpoints {
       path: { owner: string; repo: string; analysis_id: number };
     };
     responses: {
-      200: Record<string, unknown>;
+      200: Schemas.code_scanning_analysis | Record<string, unknown>;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.basic_error;
@@ -44671,7 +44705,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.code_scanning_analysis_deletion;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -44900,7 +44934,7 @@ export namespace Endpoints {
     responses: {
       201: Schemas.codespace;
       202: Schemas.codespace;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -44920,7 +44954,7 @@ export namespace Endpoints {
         total_count: number;
         devcontainers: Array<{ path: string; name?: string | undefined; display_name?: string | undefined }>;
       };
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -45181,7 +45215,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Array<Schemas.commit>;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
       500: Schemas.basic_error;
@@ -45424,7 +45458,7 @@ export namespace Endpoints {
     responses: {
       200: Array<Schemas.dependabot_alert>;
       304: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error_simple;
@@ -45454,7 +45488,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.dependabot_alert;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       409: Schemas.basic_error;
@@ -45925,7 +45959,7 @@ export namespace Endpoints {
       query: Partial<{ sort: "newest" | "oldest" | "stargazers" | "watchers"; per_page: number; page: number }>;
       path: { owner: string; repo: string };
     };
-    responses: { 200: Array<Schemas.minimal_repository>; 400: Schemas.scim_error };
+    responses: { 200: Array<Schemas.minimal_repository>; 400: Schemas.basic_error | Schemas.scim_error };
     responseHeaders: { 200: { Link: string } };
   };
   export type post_Repos_create__fork = {
@@ -45939,7 +45973,7 @@ export namespace Endpoints {
     };
     responses: {
       202: Schemas.full_repository;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -46234,7 +46268,11 @@ export namespace Endpoints {
       query: Partial<{ per_page: number; cursor: string }>;
       path: { owner: string; repo: string; hook_id: number };
     };
-    responses: { 200: Array<Schemas.hook_delivery_item>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Array<Schemas.hook_delivery_item>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type get_Repos_get__webhook__delivery = {
     method: "GET";
@@ -46243,7 +46281,11 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number; delivery_id: number };
     };
-    responses: { 200: Schemas.hook_delivery; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      200: Schemas.hook_delivery;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type post_Repos_redeliver__webhook__delivery = {
     method: "POST";
@@ -46252,7 +46294,11 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string; hook_id: number; delivery_id: number };
     };
-    responses: { 202: Record<string, unknown>; 400: Schemas.scim_error; 422: Schemas.validation_error };
+    responses: {
+      202: Record<string, unknown>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      422: Schemas.validation_error;
+    };
   };
   export type post_Repos_ping__webhook = {
     method: "POST";
@@ -46391,7 +46437,7 @@ export namespace Endpoints {
     };
     responses: {
       201: Schemas.issue;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       410: Schemas.basic_error;
@@ -46655,7 +46701,7 @@ export namespace Endpoints {
     responses: {
       200: Schemas.issue;
       301: Schemas.basic_error;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -46842,7 +46888,7 @@ export namespace Endpoints {
 
       body: { sub_issue_id: number };
     };
-    responses: { 200: Schemas.issue; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responses: { 200: Schemas.issue; 400: Schemas.basic_error | Schemas.scim_error; 404: Schemas.basic_error };
     responseHeaders: { 200: { Location: string } };
   };
   export type get_Issues_list__sub__issues = {
@@ -47175,7 +47221,12 @@ export namespace Endpoints {
 
       body: unknown | unknown | unknown | unknown | unknown;
     };
-    responses: { 204: unknown; 400: Schemas.scim_error; 409: Schemas.basic_error; 422: Schemas.validation_error };
+    responses: {
+      204: unknown;
+      400: Schemas.basic_error | Schemas.scim_error;
+      409: Schemas.basic_error;
+      422: Schemas.validation_error;
+    };
   };
   export type delete_Repos_delete__pages__site = {
     method: "DELETE";
@@ -47241,7 +47292,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.page_deployment;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
     };
@@ -47286,7 +47337,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    responses: { 200: { enabled: boolean }; 422: Schemas.scim_error };
+    responses: { 200: { enabled: boolean }; 422: Schemas.basic_error | Schemas.scim_error };
   };
   export type put_Repos_enable__private__vulnerability__reporting = {
     method: "PUT";
@@ -47295,7 +47346,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    responses: { 204: unknown; 422: Schemas.scim_error };
+    responses: { 204: unknown; 422: Schemas.basic_error | Schemas.scim_error };
   };
   export type delete_Repos_disable__private__vulnerability__reporting = {
     method: "DELETE";
@@ -47304,7 +47355,7 @@ export namespace Endpoints {
     parameters: {
       path: { owner: string; repo: string };
     };
-    responses: { 204: unknown; 422: Schemas.scim_error };
+    responses: { 204: unknown; 422: Schemas.basic_error | Schemas.scim_error };
   };
   export type get_Repos_get__custom__properties__values = {
     method: "GET";
@@ -48228,7 +48279,11 @@ export namespace Endpoints {
       }>;
       path: { owner: string; repo: string };
     };
-    responses: { 200: Array<Schemas.repository_advisory>; 400: Schemas.scim_error; 404: Schemas.basic_error };
+    responses: {
+      200: Array<Schemas.repository_advisory>;
+      400: Schemas.basic_error | Schemas.scim_error;
+      404: Schemas.basic_error;
+    };
   };
   export type post_Security__advisories_create__repository__advisory = {
     method: "POST";
@@ -48296,7 +48351,7 @@ export namespace Endpoints {
     };
     responses: {
       202: Record<string, unknown>;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -48311,7 +48366,7 @@ export namespace Endpoints {
     };
     responses: {
       202: Schemas.full_repository;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
       422: Schemas.validation_error;
@@ -49086,7 +49141,7 @@ export namespace Endpoints {
     responses: {
       200: Schemas.codespace;
       304: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       401: Schemas.basic_error;
       402: Schemas.basic_error;
       403: Schemas.basic_error;
@@ -49817,7 +49872,7 @@ export namespace Endpoints {
     responses: {
       201: Schemas.full_repository;
       304: unknown;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
       404: Schemas.basic_error;
@@ -49989,7 +50044,7 @@ export namespace Endpoints {
       query: Partial<{ sort: "created" | "updated"; direction: "asc" | "desc"; per_page: number; page: number }>;
     };
     responses: {
-      200: Array<Schemas.starred_repository>;
+      200: Array<Schemas.repository> | Array<Schemas.starred_repository>;
       304: unknown;
       401: Schemas.basic_error;
       403: Schemas.basic_error;
@@ -50502,7 +50557,7 @@ export namespace Endpoints {
     };
     responses: {
       200: Schemas.billing_usage_report_user;
-      400: Schemas.scim_error;
+      400: Schemas.basic_error | Schemas.scim_error;
       403: Schemas.basic_error;
       500: Schemas.basic_error;
       503: Partial<{ code: string; message: string; documentation_url: string }>;
@@ -51609,7 +51664,21 @@ export type Endpoint<TConfig extends DefaultEndpoint = DefaultEndpoint> = {
   responseHeaders?: TConfig["responseHeaders"];
 };
 
-export type Fetcher = (method: Method, url: string, parameters?: EndpointParameters | undefined) => Promise<Response>;
+export interface Fetcher {
+  decodePathParams?: (path: string, pathParams: Record<string, string>) => string;
+  encodeSearchParams?: (searchParams: Record<string, unknown> | undefined) => URLSearchParams;
+  //
+  fetch: (input: {
+    method: Method;
+    url: URL;
+    urlSearchParams?: URLSearchParams | undefined;
+    parameters?: EndpointParameters | undefined;
+    path: string;
+    overrides?: RequestInit;
+    throwOnStatusError?: boolean;
+  }) => Promise<Response>;
+  parseResponseData?: (response: Response) => Promise<unknown>;
+}
 
 export const successStatusCodes = [
   200, 201, 202, 203, 204, 205, 206, 207, 208, 226, 300, 301, 302, 303, 304, 305, 306, 307, 308,
@@ -51707,6 +51776,7 @@ type RequiredKeys<T> = {
 }[keyof T];
 
 type MaybeOptionalArg<T> = RequiredKeys<T> extends never ? [config?: T] : [config: T];
+type NotNever<T> = [T] extends [never] ? false : true;
 
 // </ApiClientTypes>
 
@@ -51722,6 +51792,7 @@ export class TypedResponseError extends Error {
   }
 }
 // </TypedResponseError>
+
 // <ApiClient>
 export class ApiClient {
   baseUrl: string = "";
@@ -51735,216 +51806,212 @@ export class ApiClient {
     return this;
   }
 
-  parseResponse = async <T,>(response: Response): Promise<T> => {
-    const contentType = response.headers.get("content-type");
-    if (contentType?.includes("application/json")) {
-      return response.json();
+  /**
+   * Replace path parameters in URL
+   * Supports both OpenAPI format {param} and Express format :param
+   */
+  defaultDecodePathParams = (url: string, params: Record<string, string>): string => {
+    return url
+      .replace(/{(\w+)}/g, (_, key: string) => params[key] || `{${key}}`)
+      .replace(/:([a-zA-Z0-9_]+)/g, (_, key: string) => params[key] || `:${key}`);
+  };
+
+  /** Uses URLSearchParams, skips null/undefined values */
+  defaultEncodeSearchParams = (queryParams: Record<string, unknown> | undefined): URLSearchParams | undefined => {
+    if (!queryParams) return;
+
+    const searchParams = new URLSearchParams();
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (value != null) {
+        // Skip null/undefined values
+        if (Array.isArray(value)) {
+          value.forEach((val) => val != null && searchParams.append(key, String(val)));
+        } else {
+          searchParams.append(key, String(value));
+        }
+      }
+    });
+
+    return searchParams;
+  };
+
+  defaultParseResponseData = async (response: Response): Promise<unknown> => {
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType.startsWith("text/")) {
+      return await response.text();
     }
-    return response.text() as unknown as T;
+
+    if (contentType === "application/octet-stream") {
+      return await response.arrayBuffer();
+    }
+
+    if (
+      contentType.includes("application/json") ||
+      (contentType.includes("application/") && contentType.includes("json")) ||
+      contentType === "*/*"
+    ) {
+      try {
+        return await response.json();
+      } catch {
+        return undefined;
+      }
+    }
+
+    return;
   };
 
   // <ApiClient.get>
   get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
 
   get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse: true; throwOnStatusError?: boolean }>
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
+  get<Path extends keyof GetEndpoints, _TEndpoint extends GetEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<any>
   ): Promise<any> {
-    const requestParams = params[0];
-    const withResponse = requestParams?.withResponse;
-    const { withResponse: _, throwOnStatusError = withResponse ? false : true, ...fetchParams } = requestParams || {};
-
-    const promise = this.fetcher(
-      "get",
-      this.baseUrl + path,
-      Object.keys(fetchParams).length ? requestParams : undefined,
-    ).then(async (response) => {
-      const data = await this.parseResponse(response);
-      const typedResponse = Object.assign(response, {
-        data: data,
-        json: () => Promise.resolve(data),
-      }) as SafeApiResponse<TEndpoint>;
-
-      if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
-        throw new TypedResponseError(typedResponse as never);
-      }
-
-      return withResponse ? typedResponse : data;
-    });
-
-    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    return this.request("get", path, ...params);
   }
   // </ApiClient.get>
 
   // <ApiClient.post>
   post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
 
   post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse: true; throwOnStatusError?: boolean }>
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
+  post<Path extends keyof PostEndpoints, _TEndpoint extends PostEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<any>
   ): Promise<any> {
-    const requestParams = params[0];
-    const withResponse = requestParams?.withResponse;
-    const { withResponse: _, throwOnStatusError = withResponse ? false : true, ...fetchParams } = requestParams || {};
-
-    const promise = this.fetcher(
-      "post",
-      this.baseUrl + path,
-      Object.keys(fetchParams).length ? requestParams : undefined,
-    ).then(async (response) => {
-      const data = await this.parseResponse(response);
-      const typedResponse = Object.assign(response, {
-        data: data,
-        json: () => Promise.resolve(data),
-      }) as SafeApiResponse<TEndpoint>;
-
-      if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
-        throw new TypedResponseError(typedResponse as never);
-      }
-
-      return withResponse ? typedResponse : data;
-    });
-
-    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    return this.request("post", path, ...params);
   }
   // </ApiClient.post>
 
   // <ApiClient.patch>
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
 
   patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse: true; throwOnStatusError?: boolean }>
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
+  patch<Path extends keyof PatchEndpoints, _TEndpoint extends PatchEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<any>
   ): Promise<any> {
-    const requestParams = params[0];
-    const withResponse = requestParams?.withResponse;
-    const { withResponse: _, throwOnStatusError = withResponse ? false : true, ...fetchParams } = requestParams || {};
-
-    const promise = this.fetcher(
-      "patch",
-      this.baseUrl + path,
-      Object.keys(fetchParams).length ? requestParams : undefined,
-    ).then(async (response) => {
-      const data = await this.parseResponse(response);
-      const typedResponse = Object.assign(response, {
-        data: data,
-        json: () => Promise.resolve(data),
-      }) as SafeApiResponse<TEndpoint>;
-
-      if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
-        throw new TypedResponseError(typedResponse as never);
-      }
-
-      return withResponse ? typedResponse : data;
-    });
-
-    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    return this.request("patch", path, ...params);
   }
   // </ApiClient.patch>
 
   // <ApiClient.delete>
   delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
 
   delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse: true; throwOnStatusError?: boolean }>
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
+  delete<Path extends keyof DeleteEndpoints, _TEndpoint extends DeleteEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<any>
   ): Promise<any> {
-    const requestParams = params[0];
-    const withResponse = requestParams?.withResponse;
-    const { withResponse: _, throwOnStatusError = withResponse ? false : true, ...fetchParams } = requestParams || {};
-
-    const promise = this.fetcher(
-      "delete",
-      this.baseUrl + path,
-      Object.keys(fetchParams).length ? requestParams : undefined,
-    ).then(async (response) => {
-      const data = await this.parseResponse(response);
-      const typedResponse = Object.assign(response, {
-        data: data,
-        json: () => Promise.resolve(data),
-      }) as SafeApiResponse<TEndpoint>;
-
-      if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
-        throw new TypedResponseError(typedResponse as never);
-      }
-
-      return withResponse ? typedResponse : data;
-    });
-
-    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    return this.request("delete", path, ...params);
   }
   // </ApiClient.delete>
 
   // <ApiClient.put>
   put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse?: false; throwOnStatusError?: boolean }>
-  ): Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
 
   put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
     path: Path,
-    ...params: MaybeOptionalArg<TEndpoint["parameters"] & { withResponse: true; throwOnStatusError?: boolean }>
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
   ): Promise<SafeApiResponse<TEndpoint>>;
 
-  put<Path extends keyof PutEndpoints, TEndpoint extends PutEndpoints[Path]>(
+  put<Path extends keyof PutEndpoints, _TEndpoint extends PutEndpoints[Path]>(
     path: Path,
     ...params: MaybeOptionalArg<any>
   ): Promise<any> {
-    const requestParams = params[0];
-    const withResponse = requestParams?.withResponse;
-    const { withResponse: _, throwOnStatusError = withResponse ? false : true, ...fetchParams } = requestParams || {};
-
-    const promise = this.fetcher(
-      "put",
-      this.baseUrl + path,
-      Object.keys(fetchParams).length ? requestParams : undefined,
-    ).then(async (response) => {
-      const data = await this.parseResponse(response);
-      const typedResponse = Object.assign(response, {
-        data: data,
-        json: () => Promise.resolve(data),
-      }) as SafeApiResponse<TEndpoint>;
-
-      if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
-        throw new TypedResponseError(typedResponse as never);
-      }
-
-      return withResponse ? typedResponse : data;
-    });
-
-    return promise as Promise<InferResponseByStatus<TEndpoint, SuccessStatusCode>["data"]>;
+    return this.request("put", path, ...params);
   }
   // </ApiClient.put>
 
@@ -51959,11 +52026,83 @@ export class ApiClient {
   >(
     method: TMethod,
     path: TPath,
-    ...params: MaybeOptionalArg<TEndpoint extends { parameters: infer Params } ? Params : never>
-  ): Promise<SafeApiResponse<TEndpoint>> {
-    return this.fetcher(method, this.baseUrl + (path as string), params[0] as EndpointParameters) as Promise<
-      SafeApiResponse<TEndpoint>
-    >;
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: false; throwOnStatusError?: boolean }
+    >
+  ): Promise<Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"]>;
+
+  request<
+    TMethod extends keyof EndpointByMethod,
+    TPath extends keyof EndpointByMethod[TMethod],
+    TEndpoint extends EndpointByMethod[TMethod][TPath],
+  >(
+    method: TMethod,
+    path: TPath,
+    ...params: MaybeOptionalArg<
+      TEndpoint extends { parameters: infer UParams }
+        ? NotNever<UParams> extends true
+          ? UParams & { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+          : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+        : { overrides?: RequestInit; withResponse?: true; throwOnStatusError?: boolean }
+    >
+  ): Promise<SafeApiResponse<TEndpoint>>;
+
+  request<
+    TMethod extends keyof EndpointByMethod,
+    TPath extends keyof EndpointByMethod[TMethod],
+    TEndpoint extends EndpointByMethod[TMethod][TPath],
+  >(method: TMethod, path: TPath, ...params: MaybeOptionalArg<any>): Promise<any> {
+    const requestParams = params[0];
+    const withResponse = requestParams?.withResponse;
+    const {
+      withResponse: _,
+      throwOnStatusError = withResponse ? false : true,
+      overrides,
+      ...fetchParams
+    } = requestParams || {};
+
+    const parametersToSend: EndpointParameters = {};
+    if (requestParams?.body !== undefined) (parametersToSend as any).body = requestParams.body;
+    if (requestParams?.query !== undefined) (parametersToSend as any).query = requestParams.query;
+    if (requestParams?.header !== undefined) (parametersToSend as any).header = requestParams.header;
+    if (requestParams?.path !== undefined) (parametersToSend as any).path = requestParams.path;
+
+    const resolvedPath = (this.fetcher.decodePathParams ?? this.defaultDecodePathParams)(
+      this.baseUrl + (path as string),
+      (parametersToSend.path ?? {}) as Record<string, string>,
+    );
+    const url = new URL(resolvedPath);
+    const urlSearchParams = (this.fetcher.encodeSearchParams ?? this.defaultEncodeSearchParams)(parametersToSend.query);
+
+    const promise = this.fetcher
+      .fetch({
+        method: method,
+        path: path as string,
+        url,
+        urlSearchParams,
+        parameters: Object.keys(fetchParams).length ? fetchParams : undefined,
+        overrides,
+        throwOnStatusError,
+      })
+      .then(async (response) => {
+        const data = await (this.fetcher.parseResponseData ?? this.defaultParseResponseData)(response);
+        const typedResponse = Object.assign(response, {
+          data: data,
+          json: () => Promise.resolve(data),
+        }) as SafeApiResponse<TEndpoint>;
+
+        if (throwOnStatusError && errorStatusCodes.includes(response.status as never)) {
+          throw new TypedResponseError(typedResponse as never);
+        }
+
+        return withResponse ? typedResponse : data;
+      });
+
+    return promise as Extract<InferResponseByStatus<TEndpoint, SuccessStatusCode>, { data: {} }>["data"];
   }
   // </ApiClient.request>
 }
