@@ -40,35 +40,45 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       accessToken: string;
       since?: Date;
       initialPage?: number;
-    }) =>
-      Stream.paginateEffect(input.initialPage ?? 1, (page) =>
-        Effect.gen(function* () {
-          const starsResponse = yield* githubClient.getMyStars({
-            accessToken: input.accessToken,
-            page,
-          });
-          const stars = starsResponse.json;
+    }) => {
+      // Create a stream that generates page numbers to fetch concurrently
+      const createPageNumberStream = (startPage: number) =>
+        Stream.iterate(startPage, (page) => page + 1);
 
-          // Filter by cursor if provided
-          const since = input.since;
-          const filteredStars = since
-            ? stars.filter((star) => new Date(star.starred_at) > since)
-            : stars;
+      return createPageNumberStream(input.initialPage ?? 1).pipe(
+        // Fetch up to 5 pages concurrently
+        Stream.mapEffect(
+          (page) =>
+            Effect.gen(function* () {
+              const starsResponse = yield* githubClient.getMyStars({
+                accessToken: input.accessToken,
+                page,
+              });
+              const stars = starsResponse.json;
 
-          // Stop if no results or hit pagination limit
-          if (stars.length === 1 || (input.since && filteredStars.length === 0)) {
-            return [
-              { stars: filteredStars, total: starsResponse.pagination?.total },
-              Option.none(),
-            ];
-          }
+              // Filter by cursor if provided
+              const since = input.since;
+              const filteredStars = since
+                ? stars.filter((star) => new Date(star.starred_at) > since)
+                : stars;
 
-          return [
-            { stars: filteredStars, total: starsResponse.pagination?.total },
-            stars.length < 100 ? Option.none() : Option.some(page + 1),
-          ];
-        })
+              return {
+                page,
+                stars: filteredStars,
+                total: starsResponse.pagination?.total,
+                hasMorePages: stars.length === 100, // GitHub returns 100 items per page max
+                isEmpty: stars.length === 0,
+                filteredEmpty: input.since && filteredStars.length === 0,
+              };
+            }),
+          { concurrency: 20 }
+        ),
+        // Stop fetching when we hit an empty page or filtered results are empty
+        Stream.takeWhile((result) => !result.isEmpty && !result.filteredEmpty),
+        // Also take one more page if it's not empty to ensure we get all data
+        Stream.takeUntil((result) => !result.hasMorePages)
       );
+    };
 
     const upsertStarsChunk = (
       starredReposBatch: ReadonlyArray<GithubSchema.starred_repository>,
@@ -138,11 +148,14 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
               since: mostRecentStarredAt,
               initialPage: 1,
             }).pipe(
-              Stream.tap((page) => upsertStarsChunk(page.stars, userId)),
-              Stream.flatMap((page) =>
+              Stream.tap((pageResult) => upsertStarsChunk(pageResult.stars, userId)),
+              Stream.flatMap((pageResult) =>
                 Stream.merge(
-                  Stream.fromIterable(page.stars.map(fetchedStarredRepoToMsg)),
-                  Stream.when(Stream.make(page.total as number), () => page.total != null)
+                  Stream.fromIterable(pageResult.stars.map(fetchedStarredRepoToMsg)),
+                  Stream.when(
+                    Stream.make(pageResult.total as number),
+                    () => pageResult.total != null
+                  )
                 )
               )
             );
