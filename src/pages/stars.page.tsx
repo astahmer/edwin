@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { ConnectionState } from "~/components/use-sse";
 import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
@@ -15,6 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Calendar } from "~/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 export function StarsPage() {
   const stream = useStarredReposStream("/api/stars/stream");
@@ -91,7 +95,7 @@ const YourStarredRepositories = (props: {
               {/* Middle column - Range filters */}
               <div className="space-y-4">
                 <StarRangeFilter />
-                <DateRangeFilter />
+                <DateRangePickerWithPresets />
               </div>
 
               {/* Right column - Sort and language */}
@@ -561,7 +565,7 @@ function StarRangeFilter() {
   );
 }
 
-function DateRangeFilter() {
+function DateRangePickerWithPresets() {
   const minDate = useSearch({
     from: "/stars",
     select: (search) => (search.minDate ? new Date(search.minDate) : undefined),
@@ -571,39 +575,157 @@ function DateRangeFilter() {
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
   const navigate = useNavigate({ from: "/stars" });
+  const [isOpen, setIsOpen] = useState(false);
+
+  const dateRange = {
+    from: minDate,
+    to: maxDate,
+  };
+
+  const setDateRange = (range: { from?: Date; to?: Date }) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        minDate: range.from ? range.from.toISOString().split("T")[0] : undefined,
+        maxDate: range.to ? range.to.toISOString().split("T")[0] : undefined,
+      }),
+    });
+  };
+
+  const presets = [
+    {
+      label: "Today",
+      range: {
+        from: new Date(),
+        to: new Date(),
+      },
+    },
+    {
+      label: "Yesterday", 
+      range: {
+        from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        to: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      },
+    },
+    {
+      label: "Last 7 days",
+      range: {
+        from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        to: new Date(),
+      },
+    },
+    {
+      label: "Last 30 days",
+      range: {
+        from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        to: new Date(),
+      },
+    },
+    {
+      label: "Last 3 months",
+      range: {
+        from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+        to: new Date(),
+      },
+    },
+    {
+      label: "Last 6 months",
+      range: {
+        from: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+        to: new Date(),
+      },
+    },
+    {
+      label: "Last year",
+      range: {
+        from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+        to: new Date(),
+      },
+    },
+    {
+      label: "All time",
+      range: {
+        from: undefined,
+        to: undefined,
+      },
+    },
+  ];
+
+  const formatDisplayValue = () => {
+    if (!dateRange.from && !dateRange.to) {
+      return "Select date range";
+    }
+    if (dateRange.from && !dateRange.to) {
+      return `From ${format(dateRange.from, "MMM d, yyyy")}`;
+    }
+    if (!dateRange.from && dateRange.to) {
+      return `Until ${format(dateRange.to, "MMM d, yyyy")}`;
+    }
+    if (dateRange.from && dateRange.to) {
+      if (dateRange.from.getTime() === dateRange.to.getTime()) {
+        return format(dateRange.from, "MMM d, yyyy");
+      }
+      return `${format(dateRange.from, "MMM d, yyyy")} - ${format(dateRange.to, "MMM d, yyyy")}`;
+    }
+    return "Select date range";
+  };
 
   return (
     <div>
-      <div className="flex space-y-2 flex-col">
-        <div className="flex-1">
-          <Label htmlFor="minDate" className="text-sm font-medium text-gray-400 mb-1">
-            From
-          </Label>
-          <Input
-            type="date"
-            id="minDate"
-            value={minDate ? minDate.toISOString().split("T")[0] : ""}
-            onChange={(e) =>
-              navigate({ search: (prev) => ({ ...prev, minDate: e.target.value || undefined }) })
-            }
-            className="w-full text-sm"
-          />
-        </div>
-        <div className="flex-1">
-          <Label htmlFor="maxDate" className="text-sm font-medium text-gray-400 mb-1">
-            To
-          </Label>
-          <Input
-            type="date"
-            id="maxDate"
-            value={maxDate ? maxDate.toISOString().split("T")[0] : ""}
-            onChange={(e) =>
-              navigate({ search: (prev) => ({ ...prev, maxDate: e.target.value || undefined }) })
-            }
-            className="w-full text-sm"
-          />
-        </div>
-      </div>
+      <Label className="block text-sm font-medium text-gray-700 mb-1">
+        Date range
+      </Label>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {formatDisplayValue()}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="flex">
+            {/* Presets sidebar */}
+            <div className="border-r bg-gray-50/40 p-2">
+              <div className="space-y-1">
+                {presets.map((preset) => (
+                  <Button
+                    key={preset.label}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-sm font-normal"
+                    onClick={() => {
+                      setDateRange(preset.range);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            {/* Calendar */}
+            <div className="p-3">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  if (range) {
+                    setDateRange({
+                      from: range.from,
+                      to: range.to,
+                    });
+                  }
+                }}
+                numberOfMonths={2}
+                defaultMonth={dateRange.from}
+              />
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
