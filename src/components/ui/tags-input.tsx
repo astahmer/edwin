@@ -1,6 +1,8 @@
 import * as React from "react";
 import { X } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { Badge } from "./badge";
+import { Button } from "./button";
 
 interface TagsInputProps {
   value: string[];
@@ -41,21 +43,21 @@ export function TagsInput({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="flex min-h-10 w-full flex-wrap gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+      <div className="flex min-h-9 w-full flex-wrap gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
         {value.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800"
-          >
-            {tag}
-            <button
+          <Badge key={tag} variant="secondary" className="gap-1 pr-1.5 text-sm">
+            <span>{tag}</span>
+            <Button
               type="button"
-              className="ml-1 text-blue-600 hover:text-blue-800"
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 text-muted-foreground hover:text-foreground"
               onClick={() => removeTag(tag)}
             >
               <X className="h-3 w-3" />
-            </button>
-          </span>
+              <span className="sr-only">Remove {tag}</span>
+            </Button>
+          </Badge>
         ))}
         <input
           ref={inputRef}
@@ -65,7 +67,7 @@ export function TagsInput({
           onKeyDown={handleInputKeyDown}
           onBlur={addTag}
           placeholder={value.length === 0 ? placeholder : ""}
-          className="flex-1 border-0 bg-transparent px-0 py-1 outline-none min-w-[120px]"
+          className="flex-1 border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-muted-foreground min-w-[120px]"
         />
       </div>
     </div>
