@@ -8,6 +8,8 @@ export const Route = createFileRoute("/stars")({
   validateSearch: Schema.standardSchemaV1(
     Schema.Struct({
       search: Schema.String.pipe(Schema.optional),
+      owner: Schema.String.pipe(Schema.optional),
+      tags: Schema.String.pipe(Schema.optional), // comma-separated tags
       language: Schema.String.pipe(Schema.optional),
       minStars: Schema.String.pipe(Schema.optional),
       maxStars: Schema.String.pipe(Schema.optional),

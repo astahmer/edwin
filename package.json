@@ -35,6 +35,7 @@
     "effect": "^3.17.7",
     "kysely": "^0.28.5",
     "libsql": "^0.5.17",
+    "lucide-react": "^0.542.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "redaxios": "^0.5.1",
