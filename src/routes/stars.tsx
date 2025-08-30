@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Schema } from "effect";
 import { authClient } from "~/auth.client";
+import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import { StarsPage } from "~/pages/stars.page";
 import { requireAuthServerFn } from "~/utils/session";
 
@@ -43,5 +44,8 @@ export const Route = createFileRoute("/stars")({
       }
     }
   },
-  component: () => <StarsPage />,
+  component: () => {
+    const stream = useStarredReposStream("/api/stars/stream");
+    return <StarsPage {...stream} />;
+  },
 });

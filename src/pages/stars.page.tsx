@@ -1,13 +1,13 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { format } from "date-fns";
+import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import type { ConnectionState } from "~/components/use-sse";
-import { useStarredReposStream } from "~/components/use-starred-repos-stream";
-import type { StarredRepoMessage } from "~/services/star-sync-service";
-import { TagsInput } from "~/components/ui/tags-input";
+import { Button } from "~/components/ui/button";
+import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Button } from "~/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,14 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Calendar } from "~/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
-import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { format } from "date-fns";
+import { TagsInput } from "~/components/ui/tags-input";
+import type { ConnectionState } from "~/components/use-sse";
+import type { StarredRepoMessage } from "~/services/star-sync-service";
 
-export function StarsPage() {
-  const stream = useStarredReposStream("/api/stars/stream");
-  const { repoList, connectionStatus, error } = stream;
+export function StarsPage(props: {
+  total: number | undefined;
+  repoList: StarredRepoMessage[];
+  connectionStatus: ConnectionState;
+  error: string | null;
+}) {
+  const { repoList, connectionStatus, error } = props;
 
   // Handle authentication error redirect
   useEffect(() => {
@@ -50,7 +53,7 @@ export function StarsPage() {
   return (
     <YourStarredRepositories
       repoList={repoList}
-      total={connectionStatus === "completed" ? undefined : stream.total}
+      total={connectionStatus === "completed" ? undefined : props.total}
       connectionStatus={connectionStatus}
     />
   );
@@ -871,7 +874,6 @@ function ClearFiltersButton() {
   );
 }
 
-// RepositoryCard component with memoization
 const RepositoryCard = React.memo(function RepositoryCard({
   repo,
   selectedLanguage,

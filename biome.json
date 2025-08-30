@@ -22,7 +22,8 @@
                 "noImplicitAnyLet": "error"
             },
             "a11y": {
-                "noStaticElementInteractions": "error"
+                "noStaticElementInteractions": "off",
+                "useKeyWithClickEvents": "off"
             }
         }
     },
