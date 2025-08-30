@@ -5,6 +5,16 @@ import type { ConnectionState } from "~/components/use-sse";
 import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 import { TagsInput } from "~/components/ui/tags-input";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export function StarsPage() {
   const stream = useStarredReposStream("/api/stars/stream");
@@ -400,16 +410,16 @@ function SearchInput() {
 
   return (
     <div>
-      <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+      <Label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
         Search repositories
-      </label>
-      <input
+      </Label>
+      <Input
         type="text"
         id="search"
         value={search}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, search: e.target.value }) })}
         placeholder="Search by name or description..."
-        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        className="w-full"
       />
     </div>
   );
@@ -425,16 +435,16 @@ function OwnerFilter() {
 
   return (
     <div>
-      <label htmlFor="owner" className="block text-sm font-medium text-gray-700 mb-1">
+      <Label htmlFor="owner" className="block text-sm font-medium text-gray-700 mb-1">
         Filter by owner
-      </label>
-      <input
+      </Label>
+      <Input
         type="text"
         id="owner"
         value={owner}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, owner: e.target.value }) })}
         placeholder="Enter owner name..."
-        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        className="w-full"
       />
     </div>
   );
@@ -475,22 +485,27 @@ function LanguageFilter({ availableLanguages }: { availableLanguages: string[] }
 
   return (
     <div>
-      <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+      <Label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
         Language
-      </label>
-      <select
-        id="language"
+      </Label>
+      <Select
         value={language}
-        onChange={(e) => navigate({ search: (prev) => ({ ...prev, language: e.target.value }) })}
-        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        onValueChange={(value: string) =>
+          navigate({ search: (prev) => ({ ...prev, language: value }) })
+        }
       >
-        <option value="all">All Languages</option>
-        {availableLanguages.map((lang) => (
-          <option key={lang} value={lang}>
-            {lang}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select language" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Languages</SelectItem>
+          {availableLanguages.map((lang) => (
+            <SelectItem key={lang} value={lang}>
+              {lang}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
@@ -510,10 +525,10 @@ function StarRangeFilter() {
     <div>
       <div className="flex space-y-2 flex-col">
         <div className="flex-1">
-          <label htmlFor="minStars" className="sr-only">
+          <Label htmlFor="minStars" className="sr-only">
             Minimum stars
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             id="minStars"
             placeholder="Min stars"
@@ -521,15 +536,15 @@ function StarRangeFilter() {
             onChange={(e) =>
               navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
             }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            className="w-full text-sm"
             min="0"
           />
         </div>
         <div className="flex-1">
-          <label htmlFor="maxStars" className="sr-only">
+          <Label htmlFor="maxStars" className="sr-only">
             Maximum stars
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             id="maxStars"
             placeholder="Max stars"
@@ -537,7 +552,7 @@ function StarRangeFilter() {
             onChange={(e) =>
               navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
             }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            className="w-full text-sm"
             min="0"
           />
         </div>
@@ -561,38 +576,37 @@ function DateRangeFilter() {
     <div>
       <div className="flex space-y-2 flex-col">
         <div className="flex-1">
-          <label htmlFor="minDate" className="text-sm font-medium text-gray-400 mb-1">
+          <Label htmlFor="minDate" className="text-sm font-medium text-gray-400 mb-1">
             From
-          </label>
-          <input
+          </Label>
+          <Input
             type="date"
             id="minDate"
             value={minDate ? minDate.toISOString().split("T")[0] : ""}
             onChange={(e) =>
               navigate({ search: (prev) => ({ ...prev, minDate: e.target.value || undefined }) })
             }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            className="w-full text-sm"
           />
         </div>
         <div className="flex-1">
-          <label htmlFor="maxDate" className="text-sm font-medium text-gray-400 mb-1">
+          <Label htmlFor="maxDate" className="text-sm font-medium text-gray-400 mb-1">
             To
-          </label>
-          <input
+          </Label>
+          <Input
             type="date"
             id="maxDate"
             value={maxDate ? maxDate.toISOString().split("T")[0] : ""}
             onChange={(e) =>
               navigate({ search: (prev) => ({ ...prev, maxDate: e.target.value || undefined }) })
             }
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+            className="w-full text-sm"
           />
         </div>
       </div>
     </div>
   );
 }
-
 function SortControls() {
   const sortBy = useSearch({
     from: "/stars",
@@ -606,35 +620,39 @@ function SortControls() {
 
   return (
     <div>
-      <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+      <Label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
         Sort by
-      </label>
+      </Label>
       <div className="flex space-x-2">
-        <select
-          id="sort"
+        <Select
           value={sortBy}
-          onChange={(e) =>
+          onValueChange={(value: "stars" | "name" | "date") =>
             navigate({
-              search: (prev) => ({ ...prev, sortBy: e.target.value as "stars" | "name" | "date" }),
+              search: (prev) => ({ ...prev, sortBy: value }),
             })
           }
-          className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
-          <option value="date">Date</option>
-          <option value="stars">Stars</option>
-          <option value="name">Name</option>
-        </select>
-        <button
-          type="button"
+          <SelectTrigger className="flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="stars">Stars</SelectItem>
+            <SelectItem value="name">Name</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() =>
             navigate({
               search: (prev) => ({ ...prev, sortOrder: sortOrder === "asc" ? "desc" : "asc" }),
             })
           }
-          className="px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2"
         >
           {sortOrder === "asc" ? "↑" : "↓"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -645,8 +663,8 @@ function ClearFiltersButton() {
 
   return (
     <div className="mt-4">
-      <button
-        type="button"
+      <Button
+        variant="outline"
         onClick={() =>
           navigate({
             search: {
@@ -661,7 +679,7 @@ function ClearFiltersButton() {
             },
           })
         }
-        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="inline-flex items-center"
       >
         <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -673,7 +691,7 @@ function ClearFiltersButton() {
           <title>Clear filters</title>
         </svg>
         Clear All Filters
-      </button>
+      </Button>
     </div>
   );
 }
@@ -733,21 +751,22 @@ const RepositoryCard = React.memo(function RepositoryCard({
         )}
         <div className="mt-auto pt-2 flex items-center gap-2">
           {repo.language && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 if (repo.language) {
                   onLanguageClick(repo.language);
                 }
               }}
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+              className={`transition-colors cursor-pointer ${
                 selectedLanguage === repo.language
                   ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
                   : "bg-gray-100 text-gray-800 hover:bg-gray-200"
               }`}
             >
               {repo.language}
-            </button>
+            </Button>
           )}
           <span className="text-xs text-gray-500 ml-auto mt-4">
             Starred on{" "}
