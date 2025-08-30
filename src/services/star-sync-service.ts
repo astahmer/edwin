@@ -1,4 +1,4 @@
-import { Effect, Option, Stream } from "effect";
+import { Effect, Option, Stream, Ref } from "effect";
 import { DatabaseService } from "../db/kysely";
 import type {
   InsertableGithubRepository,
@@ -41,42 +41,74 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       since?: Date;
       initialPage?: number;
     }) => {
-      // Create a stream that generates page numbers to fetch concurrently
-      const createPageNumberStream = (startPage: number) =>
-        Stream.iterate(startPage, (page) => page + 1);
+      const updateMaxPageIfNeeded = (maxPageRef: Ref.Ref<number | null>, total: number) =>
+        Effect.gen(function* () {
+          const currentMaxPage = yield* Ref.get(maxPageRef);
+          if (currentMaxPage === null) {
+            const pageSize = 100;
+            const calculatedMaxPage = Math.ceil(total / pageSize);
+            yield* Ref.set(maxPageRef, calculatedMaxPage);
+          }
+        });
 
-      return createPageNumberStream(input.initialPage ?? 1).pipe(
-        // Fetch up to 5 pages concurrently
-        Stream.mapEffect(
-          (page) =>
+      const processStarsResponse = (
+        starsResponse: { json: GithubSchema.starred_repository[] },
+        since?: Date
+      ) => {
+        const stars = starsResponse.json;
+        const filteredStars = since
+          ? stars.filter((star) => new Date(star.starred_at) > since)
+          : stars;
+
+        return {
+          stars: filteredStars,
+          hasMorePages: stars.length === 100,
+          isEmpty: stars.length === 0,
+          filteredEmpty: since && filteredStars.length === 0,
+        };
+      };
+
+      return Stream.unwrap(
+        Effect.gen(function* () {
+          const maxPageRef = yield* Ref.make<number | null>(null);
+
+          const fetchPage = (page: number) =>
             Effect.gen(function* () {
+              const knownMaxPage = yield* Ref.get(maxPageRef);
+              if (knownMaxPage !== null && page > knownMaxPage) {
+                return null;
+              }
+
               const starsResponse = yield* githubClient.getMyStars({
                 accessToken: input.accessToken,
                 page,
               });
-              const stars = starsResponse.json;
 
-              // Filter by cursor if provided
-              const since = input.since;
-              const filteredStars = since
-                ? stars.filter((star) => new Date(star.starred_at) > since)
-                : stars;
+              if (starsResponse.pagination?.total) {
+                yield* updateMaxPageIfNeeded(maxPageRef, starsResponse.pagination.total);
+              }
+
+              const processed = processStarsResponse(starsResponse, input.since);
 
               return {
                 page,
-                stars: filteredStars,
+                stars: processed.stars,
                 total: starsResponse.pagination?.total,
-                hasMorePages: stars.length === 100, // GitHub returns 100 items per page max
-                isEmpty: stars.length === 0,
-                filteredEmpty: input.since && filteredStars.length === 0,
+                hasMorePages: processed.hasMorePages,
+                isEmpty: processed.isEmpty,
+                filteredEmpty: processed.filteredEmpty,
               };
-            }),
-          { concurrency: 20 }
-        ),
-        // Stop fetching when we hit an empty page or filtered results are empty
-        Stream.takeWhile((result) => !result.isEmpty && !result.filteredEmpty),
-        // Also take one more page if it's not empty to ensure we get all data
-        Stream.takeUntil((result) => !result.hasMorePages)
+            });
+
+          return Stream.iterate(input.initialPage ?? 1, (page) => page + 1).pipe(
+            Stream.mapEffect(fetchPage, { concurrency: 20 }),
+            Stream.filterMap((result) => (result ? Option.some(result) : Option.none())),
+            // Stop fetching when we hit an empty page or filtered results are empty
+            Stream.takeWhile((result) => !result.isEmpty && !result.filteredEmpty)
+            // Also take one more page if it's not empty to ensure we get all data
+            // Stream.takeUntil((result) => !result.hasMorePages)
+          );
+        })
       );
     };
 
