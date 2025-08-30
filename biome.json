@@ -20,6 +20,9 @@
             "suspicious": {
                 "noExplicitAny": "warn",
                 "noImplicitAnyLet": "error"
+            },
+            "a11y": {
+                "noStaticElementInteractions": "error"
             }
         }
     },

@@ -4,7 +4,7 @@ import { Chunk, Deferred, Effect, Exit, Stream } from "effect";
 import { auth } from "../../auth";
 import { DatabaseService } from "../../db/kysely";
 import { GitHubClient } from "../../services/github-client";
-import { StarSyncService } from "../../services/star-sync-service";
+import { StarSyncService, type StarredRepoMessage } from "../../services/star-sync-service";
 import { getGitHubAccessToken } from "../../utils/session";
 
 export interface SSEMessage {
@@ -112,14 +112,15 @@ const makeServerSideEventStream = Effect.fn(function* (input: {
         event: "repo",
         data: {
           id: repo.id,
-          name: repo.full_name,
+          name: repo.name,
           owner: repo.owner,
           full_name: repo.full_name,
           description: repo.description,
           stars: repo.stars,
           language: repo.language,
+          topics: repo.topics,
           starred_at: repo.starred_at,
-        },
+        } as StarredRepoMessage,
       };
 
       return message;
