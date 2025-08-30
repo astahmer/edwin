@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import type { ConnectionState } from "~/components/use-sse";
 import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
+import { TagsInput } from "~/components/ui/tags-input";
 
 export function StarsPage() {
   const stream = useStarredReposStream("/api/stars/stream");
@@ -69,12 +70,26 @@ const YourStarredRepositories = (props: {
 
           {/* Search and Filter Controls */}
           <div className="relative bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Left column - Search inputs */}
+              <div className="space-y-4">
                 <SearchInput />
+                <OwnerFilter />
+                <TagsFilter />
+              </div>
+
+              {/* Middle column - Range filters */}
+              <div className="space-y-4">
+                <StarRangeFilter />
+                <DateRangeFilter />
+              </div>
+
+              {/* Right column - Sort and language */}
+              <div className="space-y-4">
+                <SortControls />
+                <LanguageFilter availableLanguages={availableLanguages} />
                 <ClearFiltersButton />
               </div>
-              <FilterControls availableLanguages={availableLanguages} />
             </div>
             <ResultsSummary filteredRepos={filteredRepos} repoList={repoList} total={props.total} />
           </div>
@@ -157,6 +172,14 @@ const ResultsSummary = (props: {
     from: "/stars",
     select: (search) => search.search || "",
   });
+  const ownerFilter = useSearch({
+    from: "/stars",
+    select: (search) => search.owner || "",
+  });
+  const tagsFilter = useSearch({
+    from: "/stars",
+    select: (search) => (search.tags || "").split(",").filter(Boolean),
+  });
   const selectedLanguage = useSearch({
     from: "/stars",
     select: (search) => search.language || "all",
@@ -218,6 +241,8 @@ const ResultsSummary = (props: {
     <div className="mt-4 text-sm text-gray-600">
       Showing {props.filteredRepos.length} of {getRepositoryCount()} repositories
       {searchQuery && ` matching "${searchQuery}"`}
+      {ownerFilter && ` by owner "${ownerFilter}"`}
+      {tagsFilter.length > 0 && ` with tags: ${tagsFilter.join(", ")}`}
       {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
       {starsFilter && ` with ${starsFilter}`}
       {dateFilter && ` starred ${dateFilter}`}
@@ -230,6 +255,14 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
   const searchQuery = useSearch({
     from: "/stars",
     select: (search) => search.search || "",
+  });
+  const ownerFilter = useSearch({
+    from: "/stars",
+    select: (search) => search.owner || "",
+  });
+  const tagsFilter = useSearch({
+    from: "/stars",
+    select: (search) => (search.tags || "").split(",").filter(Boolean),
   });
   const selectedLanguage = useSearch({
     from: "/stars",
@@ -263,16 +296,27 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
   return useMemo(() => {
     let filtered = repoList;
 
-    // Apply search filter
+    // Apply search filter (searches in name and description)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (repo) =>
-          repo.name.toLowerCase().includes(query) ||
-          repo.full_name.toLowerCase().includes(query) ||
-          repo.owner.toLowerCase().includes(query) ||
-          repo.description?.toLowerCase().includes(query)
+          repo.name.toLowerCase().includes(query) || repo.description?.toLowerCase().includes(query)
       );
+    }
+
+    // Apply owner filter (only searches in owner field)
+    if (ownerFilter.trim()) {
+      const owner = ownerFilter.toLowerCase();
+      filtered = filtered.filter((repo) => repo.owner.toLowerCase().includes(owner));
+    }
+
+    // Apply tags filter (searches in name and description for multiple keywords)
+    if (tagsFilter.length > 0) {
+      filtered = filtered.filter((repo) => {
+        const searchText = `${repo.name} ${repo.description || ""}`.toLowerCase();
+        return tagsFilter.some((tag) => searchText.includes(tag.toLowerCase()));
+      });
     }
 
     // Apply language filter
@@ -321,6 +365,8 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
   }, [
     repoList,
     searchQuery,
+    ownerFilter,
+    tagsFilter,
     selectedLanguage,
     minStars,
     maxStars,
@@ -353,7 +399,7 @@ function SearchInput() {
   const navigate = useNavigate({ from: "/stars" });
 
   return (
-    <div className="md:col-span-2">
+    <div>
       <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
         Search repositories
       </label>
@@ -362,9 +408,58 @@ function SearchInput() {
         id="search"
         value={search}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, search: e.target.value }) })}
-        placeholder="Search by name, owner, or description..."
-        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-50"
+        placeholder="Search by name or description..."
+        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
       />
+    </div>
+  );
+}
+
+// OwnerFilter component for filtering by repository owner
+function OwnerFilter() {
+  const owner = useSearch({
+    from: "/stars",
+    select: (search) => search.owner || "",
+  });
+  const navigate = useNavigate({ from: "/stars" });
+
+  return (
+    <div>
+      <label htmlFor="owner" className="block text-sm font-medium text-gray-700 mb-1">
+        Filter by owner
+      </label>
+      <input
+        type="text"
+        id="owner"
+        value={owner}
+        onChange={(e) => navigate({ search: (prev) => ({ ...prev, owner: e.target.value }) })}
+        placeholder="Enter owner name..."
+        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      />
+    </div>
+  );
+}
+
+// TagsFilter component for searching with multiple keywords
+function TagsFilter() {
+  const tagsString = useSearch({
+    from: "/stars",
+    select: (search) => search.tags || "",
+  });
+  const tags = tagsString.split(",").filter(Boolean);
+  const navigate = useNavigate({ from: "/stars" });
+
+  const handleTagsChange = (newTags: string[]) => {
+    navigate({ search: (prev) => ({ ...prev, tags: newTags.join(",") }) });
+  };
+
+  return (
+    <div>
+      <div className="block text-sm font-medium text-gray-700 mb-1">Search tags</div>
+      <TagsInput value={tags} onChange={handleTagsChange} placeholder="Add search keywords..." />
+      <p className="text-xs text-gray-500 mt-1">
+        Add keywords to search in repository names and descriptions
+      </p>
     </div>
   );
 }
@@ -549,13 +644,15 @@ function ClearFiltersButton() {
   const navigate = useNavigate({ from: "/stars" });
 
   return (
-    <div className="md:col-span-2 mt-4">
+    <div className="mt-4">
       <button
         type="button"
         onClick={() =>
           navigate({
             search: {
               search: "",
+              owner: "",
+              tags: "",
               language: "all",
               minStars: undefined,
               maxStars: undefined,
@@ -578,20 +675,6 @@ function ClearFiltersButton() {
         Clear All Filters
       </button>
     </div>
-  );
-}
-
-// FilterControls component that combines all individual filters
-function FilterControls({ availableLanguages }: { availableLanguages: string[] }) {
-  return (
-    <>
-      <StarRangeFilter />
-      <DateRangeFilter />
-      <div className="flex flex-col gap-4">
-        <SortControls />
-        <LanguageFilter availableLanguages={availableLanguages} />
-      </div>
-    </>
   );
 }
 
