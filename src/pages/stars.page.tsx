@@ -1,6 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { useEffect, useMemo } from "react";
+import type { ConnectionState } from "~/components/use-sse";
 import { useStarredReposStream } from "~/components/use-starred-repos-stream";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 
@@ -35,6 +36,7 @@ export function StarsPage() {
     <YourStarredRepositories
       repoList={repoList}
       total={connectionStatus === "completed" ? undefined : stream.total}
+      connectionStatus={connectionStatus}
     />
   );
 }
@@ -53,8 +55,9 @@ const LoadingPage = () => {
 const YourStarredRepositories = (props: {
   repoList: StarredRepoMessage[];
   total: number | undefined;
+  connectionStatus: ConnectionState;
 }) => {
-  const { repoList } = props;
+  const { repoList, connectionStatus } = props;
   const availableLanguages = useAvailableLanguages(repoList);
   const filteredRepos = useFilteredRepos(repoList);
 
@@ -76,50 +79,72 @@ const YourStarredRepositories = (props: {
             <ResultsSummary filteredRepos={filteredRepos} repoList={repoList} total={props.total} />
           </div>
 
-          <ResultList filteredRepos={filteredRepos} repoList={repoList} />
+          <ResultList
+            filteredRepos={filteredRepos}
+            repoList={repoList}
+            connectionStatus={connectionStatus}
+          />
         </div>
       </div>
     </div>
   );
 };
 
+const LoadingRepositoriesState = () => (
+  <>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+    <h3 className="mt-2 text-sm font-medium text-gray-900">Loading starred repositories...</h3>
+    <p className="mt-1 text-sm text-gray-500">Fetching your starred repositories from GitHub</p>
+  </>
+);
+
+const NoRepositoriesState = () => (
+  <>
+    <svg
+      className="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        vectorEffect="non-scaling-stroke"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+      />
+    </svg>
+    <h3 className="mt-2 text-sm font-medium text-gray-900">No starred repositories yet</h3>
+    <p className="mt-1 text-sm text-gray-500">Start by starring some repositories on GitHub!</p>
+  </>
+);
+
 const ResultList = (props: {
   filteredRepos: StarredRepoMessage[];
   repoList: StarredRepoMessage[];
+  connectionStatus: ConnectionState;
 }) => {
-  const { filteredRepos, repoList } = props;
-  return filteredRepos.length === 0 ? (
+  const { filteredRepos, repoList, connectionStatus } = props;
+
+  if (filteredRepos.length > 0) {
+    return <RepositoryGrid repoList={filteredRepos} />;
+  }
+
+  return (
     <div className="text-center py-12">
       {repoList.length === 0 ? (
-        // No repoList at all
-        <>
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              vectorEffect="non-scaling-stroke"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-            />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No starred repositories yet</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Start by starring some repositories on GitHub!
-          </p>
-        </>
+        // Check if we're still loading or truly have no repos
+        connectionStatus === "connected" ? (
+          <LoadingRepositoriesState />
+        ) : (
+          <NoRepositoriesState />
+        )
       ) : (
-        // No repoList matching filters - use RepositoryGrid for empty state
+        // No repos matching filters - use RepositoryGrid for empty state
         <RepositoryGrid repoList={filteredRepos} />
       )}
     </div>
-  ) : (
-    <RepositoryGrid repoList={filteredRepos} />
   );
 };
 
@@ -153,35 +178,49 @@ const ResultsSummary = (props: {
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
 
+  const getRepositoryCount = () => {
+    if (props.total && props.total > props.repoList.length) {
+      return `~${props.total}`;
+    }
+    return props.repoList.length;
+  };
+
+  const getStarsFilter = () => {
+    if (minStars !== undefined && maxStars !== undefined) {
+      return `${minStars}-${maxStars} stars`;
+    }
+    if (minStars !== undefined) {
+      return `at least ${minStars} stars`;
+    }
+    if (maxStars !== undefined) {
+      return `at most ${maxStars} stars`;
+    }
+    return null;
+  };
+
+  const getDateFilter = () => {
+    if (minDate !== undefined && maxDate !== undefined) {
+      return `between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`;
+    }
+    if (minDate !== undefined) {
+      return `after ${minDate.toLocaleDateString()}`;
+    }
+    if (maxDate !== undefined) {
+      return `before ${maxDate.toLocaleDateString()}`;
+    }
+    return null;
+  };
+
+  const starsFilter = getStarsFilter();
+  const dateFilter = getDateFilter();
+
   return (
     <div className="mt-4 text-sm text-gray-600">
-      Showing {props.filteredRepos.length} of{" "}
-      {props.total
-        ? props.total > props.repoList.length
-          ? `~${props.total}`
-          : props.repoList.length
-        : props.repoList.length}{" "}
-      repositories
+      Showing {props.filteredRepos.length} of {getRepositoryCount()} repositories
       {searchQuery && ` matching "${searchQuery}"`}
       {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
-      {(minStars !== undefined || maxStars !== undefined) &&
-        ` with ${
-          minStars !== undefined && maxStars !== undefined
-            ? `${minStars}-${maxStars} stars`
-            : minStars !== undefined
-              ? `at least ${minStars} stars`
-              : `at most ${maxStars} stars`
-        }`}
-      {(minDate !== undefined || maxDate !== undefined) &&
-        ` starred ${
-          minDate !== undefined && maxDate !== undefined
-            ? `between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`
-            : minDate !== undefined
-              ? `after ${minDate.toLocaleDateString()}`
-              : maxDate !== undefined
-                ? `before ${maxDate.toLocaleDateString()}`
-                : ""
-        }`}
+      {starsFilter && ` with ${starsFilter}`}
+      {dateFilter && ` starred ${dateFilter}`}
     </div>
   );
 };

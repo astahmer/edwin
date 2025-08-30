@@ -7,7 +7,7 @@ type SSEEventHandler = (ctx: {
   setConnectionStatus: Dispatch<SetStateAction<ConnectionState>>;
 }) => void;
 
-type ConnectionState = "connecting" | "connected" | "completed" | "error";
+export type ConnectionState = "connecting" | "connected" | "completed" | "error";
 
 export function useSSE(
   url: string,

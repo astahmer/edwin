@@ -58,7 +58,5 @@ export function useStarredReposStream(url: string, enableLogging?: boolean) {
     )
   );
 
-  console.log(total);
-
   return { total, repoList, connectionStatus, error };
 }

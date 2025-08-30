@@ -102,10 +102,11 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
             });
 
           // First, fetch initial batch of 2 pages with low concurrency to prevent wasting API calls
+          const initialBatchSize = 2;
           const initialBatch = Stream.fromIterable(
-            Array.from({ length: 2 }, (_, i) => startPage + i)
+            Array.from({ length: initialBatchSize }, (_, i) => startPage + i)
           ).pipe(
-            Stream.mapEffect(fetchPage, { concurrency: 5 }),
+            Stream.mapEffect(fetchPage, { concurrency: initialBatchSize }),
             Stream.filterMap((result) => (result ? Option.some(result) : Option.none()))
           );
 
@@ -113,16 +114,16 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
           const remainingPagesStream = Stream.unwrap(
             Effect.gen(function* () {
               const maxPage = yield* Ref.get(maxPageRef);
-              const remainingStartPage = startPage + 5;
+              const remainingStartPage = startPage + initialBatchSize;
 
               // If we don't know maxPage yet or all pages are covered, return empty stream
               if (maxPage === null || remainingStartPage > maxPage) {
                 return Stream.empty;
               }
 
-              // Determine concurrency based on remaining pages
+              // Determine concurrency based on remaining pages with a maximum of 20
               const remainingPages = maxPage - remainingStartPage + 1;
-              const concurrency = remainingPages >= 20 ? 20 : 5; // Use 20 if more than 20 pages remaining
+              const concurrency = Math.min(remainingPages, 20);
 
               return Stream.iterate(remainingStartPage, (page) => page + 1).pipe(
                 Stream.takeWhile((page) => page <= maxPage),
