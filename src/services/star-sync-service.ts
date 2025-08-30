@@ -71,6 +71,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
       return Stream.unwrap(
         Effect.gen(function* () {
           const maxPageRef = yield* Ref.make<number | null>(null);
+          const startPage = input.initialPage ?? 1;
 
           const fetchPage = (page: number) =>
             Effect.gen(function* () {
@@ -100,13 +101,41 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
               };
             });
 
-          return Stream.iterate(input.initialPage ?? 1, (page) => page + 1).pipe(
-            Stream.mapEffect(fetchPage, { concurrency: 20 }),
-            Stream.filterMap((result) => (result ? Option.some(result) : Option.none())),
-            // Stop fetching when we hit an empty page or filtered results are empty
+          // First, fetch initial batch of 2 pages with low concurrency to prevent wasting API calls
+          const initialBatch = Stream.fromIterable(
+            Array.from({ length: 2 }, (_, i) => startPage + i)
+          ).pipe(
+            Stream.mapEffect(fetchPage, { concurrency: 5 }),
+            Stream.filterMap((result) => (result ? Option.some(result) : Option.none()))
+          );
+
+          // After initial batch, check if we need more pages and adjust concurrency
+          const remainingPagesStream = Stream.unwrap(
+            Effect.gen(function* () {
+              const maxPage = yield* Ref.get(maxPageRef);
+              const remainingStartPage = startPage + 5;
+
+              // If we don't know maxPage yet or all pages are covered, return empty stream
+              if (maxPage === null || remainingStartPage > maxPage) {
+                return Stream.empty;
+              }
+
+              // Determine concurrency based on remaining pages
+              const remainingPages = maxPage - remainingStartPage + 1;
+              const concurrency = remainingPages >= 20 ? 20 : 5; // Use 20 if more than 20 pages remaining
+
+              return Stream.iterate(remainingStartPage, (page) => page + 1).pipe(
+                Stream.takeWhile((page) => page <= maxPage),
+                Stream.mapEffect(fetchPage, { concurrency }),
+                Stream.filterMap((result) => (result ? Option.some(result) : Option.none()))
+              );
+            })
+          );
+
+          // Combine initial batch with remaining pages
+          return initialBatch.pipe(
+            Stream.concat(remainingPagesStream),
             Stream.takeWhile((result) => !result.isEmpty && !result.filteredEmpty)
-            // Also take one more page if it's not empty to ensure we get all data
-            // Stream.takeUntil((result) => !result.hasMorePages)
           );
         })
       );
