@@ -17,6 +17,7 @@ export const Route = createFileRoute("/stars")({
       maxDate: Schema.String.pipe(Schema.optional),
       sortBy: Schema.String.pipe(Schema.optional),
       sortOrder: Schema.String.pipe(Schema.optional),
+      filtersExpanded: Schema.Boolean.pipe(Schema.optional),
     })
   ),
   beforeLoad: async (ctx) => {

@@ -23,6 +23,7 @@ export interface StarredRepoMessage {
   description: string | null;
   stars: number;
   language: string | null;
+  topics: string[];
   starred_at: number;
 }
 

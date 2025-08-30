@@ -17,7 +17,7 @@ import {
 } from "~/components/ui/select";
 import { Calendar } from "~/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { format } from "date-fns";
 
 export function StarsPage() {
@@ -76,36 +76,76 @@ const YourStarredRepositories = (props: {
   const availableLanguages = useAvailableLanguages(repoList);
   const filteredRepos = useFilteredRepos(repoList);
 
+  const filtersExpanded = useSearch({
+    from: "/stars",
+    select: (search) => search.filtersExpanded,
+  });
+  const navigate = useNavigate({ from: "/stars" });
+
+  const setFiltersExpanded = (expanded: boolean) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        filtersExpanded: expanded ? true : undefined,
+      }),
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold mb-8">Your Starred Repositories</h1>
+          <h1 className="text-2xl font-bold mb-6">Your Starred Repositories</h1>
 
           {/* Search and Filter Controls */}
           <div className="relative bg-white rounded-lg shadow p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Left column - Search inputs */}
-              <div className="space-y-4">
-                <SearchInput />
-                <OwnerFilter />
+            {/* Always visible search with filters toggle */}
+            <div className="flex gap-3 items-center mb-4">
+              <div className="flex-1 flex gap-6 items-end">
+                <div className="flex-1">
+                  <SearchInput />
+                </div>
+                <div className="flex-1">
+                  <OwnerFilter />
+                </div>
+                <div className="w-auto">
+                  <DateRangePickerWithPresets />
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 self-end"
+              >
+                {filtersExpanded ? (
+                  <ChevronUpIcon className="h-4 w-4" />
+                ) : (
+                  <ChevronDownIcon className="h-4 w-4" />
+                )}
+                {filtersExpanded ? "Hide filters" : "Show filters"}
+              </Button>
+            </div>
+
+            {/* Collapsible filters */}
+            {filtersExpanded && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4 pt-4">
                 <TagsFilter />
-              </div>
-
-              {/* Middle column - Range filters */}
-              <div className="space-y-4">
-                <StarRangeFilter />
-                <DateRangePickerWithPresets />
-              </div>
-
-              {/* Right column - Sort and language */}
-              <div className="space-y-4">
-                <SortControls />
                 <LanguageFilter availableLanguages={availableLanguages} />
+                <StarRangeFilter />
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              <ResultsSummary
+                filteredRepos={filteredRepos}
+                repoList={repoList}
+                total={props.total}
+              />
+              <div className="flex gap-4">
                 <ClearFiltersButton />
+                <SortControls />
               </div>
             </div>
-            <ResultsSummary filteredRepos={filteredRepos} repoList={repoList} total={props.total} />
           </div>
 
           <ResultList
@@ -310,12 +350,17 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
   return useMemo(() => {
     let filtered = repoList;
 
-    // Apply search filter (searches in name and description)
+    // Apply search filter (searches in most fields)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (repo) =>
-          repo.name.toLowerCase().includes(query) || repo.description?.toLowerCase().includes(query)
+          repo.name.toLowerCase().includes(query) ||
+          repo.description?.toLowerCase().includes(query) ||
+          repo.owner.toLowerCase().includes(query) ||
+          repo.full_name.toLowerCase().includes(query) ||
+          (repo.topics ?? []).some((topic) => topic.toLowerCase().includes(query)) ||
+          repo.language?.toLowerCase().includes(query)
       );
     }
 
@@ -422,7 +467,7 @@ function SearchInput() {
         id="search"
         value={search}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, search: e.target.value }) })}
-        placeholder="Search by name or description..."
+        placeholder="Search by anything like name, description, owner, topics, langage..."
         className="w-full"
       />
     </div>
@@ -447,7 +492,7 @@ function OwnerFilter() {
         id="owner"
         value={owner}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, owner: e.target.value }) })}
-        placeholder="Enter owner name..."
+        placeholder="Enter owner (user or organization) name..."
         className="w-full"
       />
     </div>
@@ -501,10 +546,16 @@ function LanguageFilter({ availableLanguages }: { availableLanguages: string[] }
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select language" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Languages</SelectItem>
+        <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+          <SelectItem value="all" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
+            All Languages
+          </SelectItem>
           {availableLanguages.map((lang) => (
-            <SelectItem key={lang} value={lang}>
+            <SelectItem
+              key={lang}
+              value={lang}
+              className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100"
+            >
               {lang}
             </SelectItem>
           ))}
@@ -526,44 +577,97 @@ function StarRangeFilter() {
   const navigate = useNavigate({ from: "/stars" });
 
   return (
-    <div>
-      <div className="flex space-y-2 flex-col">
-        <div className="flex-1">
-          <Label htmlFor="minStars" className="sr-only">
-            Minimum stars
-          </Label>
-          <Input
-            type="number"
-            id="minStars"
-            placeholder="Min stars"
-            value={minStars || ""}
-            onChange={(e) =>
-              navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
-            }
-            className="w-full text-sm"
-            min="0"
-          />
-        </div>
-        <div className="flex-1">
-          <Label htmlFor="maxStars" className="sr-only">
-            Maximum stars
-          </Label>
-          <Input
-            type="number"
-            id="maxStars"
-            placeholder="Max stars"
-            value={maxStars || ""}
-            onChange={(e) =>
-              navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
-            }
-            className="w-full text-sm"
-            min="0"
-          />
-        </div>
+    <div className="flex flex-1 gap-4">
+      <div className="flex-1 max-w-48">
+        <Label htmlFor="minStars">Minimum stars</Label>
+        <Input
+          type="number"
+          id="minStars"
+          placeholder="Min stars"
+          value={minStars || ""}
+          onChange={(e) =>
+            navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
+          }
+          className="w-full text-sm"
+          min="0"
+        />
+      </div>
+      <div className="flex-1 max-w-48">
+        <Label htmlFor="maxStars">Maximum stars</Label>
+        <Input
+          type="number"
+          id="maxStars"
+          placeholder="Max stars"
+          value={maxStars || ""}
+          onChange={(e) =>
+            navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
+          }
+          className="w-full text-sm"
+          min="0"
+        />
       </div>
     </div>
   );
 }
+
+const presets = [
+  {
+    label: "Today",
+    range: {
+      from: new Date(),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Yesterday",
+    range: {
+      from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      to: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    },
+  },
+  {
+    label: "Last 7 days",
+    range: {
+      from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Last 30 days",
+    range: {
+      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Last 3 months",
+    range: {
+      from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Last 6 months",
+    range: {
+      from: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Last year",
+    range: {
+      from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "All time",
+    range: {
+      from: undefined,
+      to: undefined,
+    },
+  },
+];
 
 function DateRangePickerWithPresets() {
   const minDate = useSearch({
@@ -592,68 +696,10 @@ function DateRangePickerWithPresets() {
     });
   };
 
-  const presets = [
-    {
-      label: "Today",
-      range: {
-        from: new Date(),
-        to: new Date(),
-      },
-    },
-    {
-      label: "Yesterday", 
-      range: {
-        from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        to: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      },
-    },
-    {
-      label: "Last 7 days",
-      range: {
-        from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        to: new Date(),
-      },
-    },
-    {
-      label: "Last 30 days",
-      range: {
-        from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        to: new Date(),
-      },
-    },
-    {
-      label: "Last 3 months",
-      range: {
-        from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-        to: new Date(),
-      },
-    },
-    {
-      label: "Last 6 months",
-      range: {
-        from: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
-        to: new Date(),
-      },
-    },
-    {
-      label: "Last year",
-      range: {
-        from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-        to: new Date(),
-      },
-    },
-    {
-      label: "All time",
-      range: {
-        from: undefined,
-        to: undefined,
-      },
-    },
-  ];
-
   const formatDisplayValue = () => {
     if (!dateRange.from && !dateRange.to) {
-      return "Select date range";
+      // return "Select date range";
+      return "";
     }
     if (dateRange.from && !dateRange.to) {
       return `From ${format(dateRange.from, "MMM d, yyyy")}`;
@@ -667,35 +713,33 @@ function DateRangePickerWithPresets() {
       }
       return `${format(dateRange.from, "MMM d, yyyy")} - ${format(dateRange.to, "MMM d, yyyy")}`;
     }
-    return "Select date range";
+    // return "Select date range";
+    return "";
   };
 
+  const displayValue = formatDisplayValue();
+
   return (
-    <div>
-      <Label className="block text-sm font-medium text-gray-700 mb-1">
-        Date range
-      </Label>
+    <>
+      {/* <Label className="block text-sm font-medium text-gray-700 mb-1">Date range</Label> */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full justify-start text-left font-normal"
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDisplayValue()}
+          <Button variant="outline" className="justify-start text-left font-normal flex gap-2">
+            <CalendarIcon className="h-4 w-4" />
+            {displayValue}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0 bg-white text-gray-900" align="start">
           <div className="flex">
             {/* Presets sidebar */}
-            <div className="border-r bg-gray-50/40 p-2">
+            <div className="border-r bg-gray-50 p-2">
               <div className="space-y-1">
                 {presets.map((preset) => (
                   <Button
                     key={preset.label}
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-sm font-normal"
+                    className="w-full justify-start text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                     onClick={() => {
                       setDateRange(preset.range);
                       setIsOpen(false);
@@ -707,7 +751,7 @@ function DateRangePickerWithPresets() {
               </div>
             </div>
             {/* Calendar */}
-            <div className="p-3">
+            <div className="p-3 bg-white">
               <Calendar
                 mode="range"
                 selected={dateRange}
@@ -721,12 +765,13 @@ function DateRangePickerWithPresets() {
                 }}
                 numberOfMonths={2}
                 defaultMonth={dateRange.from}
+                className="text-gray-900"
               />
             </div>
           </div>
         </PopoverContent>
       </Popover>
-    </div>
+    </>
   );
 }
 function SortControls() {
@@ -741,10 +786,10 @@ function SortControls() {
   const navigate = useNavigate({ from: "/stars" });
 
   return (
-    <div>
-      <Label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="flex items-end gap-2">
+      {/* <Label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
         Sort by
-      </Label>
+      </Label> */}
       <div className="flex space-x-2">
         <Select
           value={sortBy}
@@ -754,18 +799,24 @@ function SortControls() {
             })
           }
         >
-          <SelectTrigger className="flex-1">
+          <SelectTrigger className="flex-1 h-8 rounded-md px-3 text-xs">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="date">Date</SelectItem>
-            <SelectItem value="stars">Stars</SelectItem>
-            <SelectItem value="name">Name</SelectItem>
+          <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+            <SelectItem value="date" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
+              Date
+            </SelectItem>
+            <SelectItem value="stars" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
+              Stars
+            </SelectItem>
+            <SelectItem value="name" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
+              Name
+            </SelectItem>
           </SelectContent>
         </Select>
         <Button
-          variant="outline"
           size="sm"
+          variant="outline"
           onClick={() =>
             navigate({
               search: (prev) => ({ ...prev, sortOrder: sortOrder === "asc" ? "desc" : "asc" }),
@@ -786,6 +837,7 @@ function ClearFiltersButton() {
   return (
     <div className="mt-4">
       <Button
+        size="sm"
         variant="outline"
         onClick={() =>
           navigate({
@@ -798,12 +850,13 @@ function ClearFiltersButton() {
               maxStars: undefined,
               minDate: undefined,
               maxDate: undefined,
+              filtersExpanded: undefined,
             },
           })
         }
         className="inline-flex items-center"
       >
-        <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -812,7 +865,7 @@ function ClearFiltersButton() {
           />
           <title>Clear filters</title>
         </svg>
-        Clear All Filters
+        Clear filters
       </Button>
     </div>
   );
@@ -829,7 +882,7 @@ const RepositoryCard = React.memo(function RepositoryCard({
   onLanguageClick: (language: string) => void;
 }) {
   return (
-    <div className="bg-white overflow-hidden shadow rounded-lg">
+    <div className="bg-white overflow-hidden shadow rounded-lg" onClick={() => console.log(repo)}>
       <div className="px-4 py-5 sm:p-6 flex flex-col h-full">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
@@ -904,12 +957,7 @@ const RepositoryCard = React.memo(function RepositoryCard({
   );
 });
 
-// Virtualized RepositoryGrid component for performance with large lists
-const RepositoryGrid = React.memo(function RepositoryGrid({
-  repoList,
-}: {
-  repoList: StarredRepoMessage[];
-}) {
+const RepositoryGrid = function RepositoryGrid({ repoList }: { repoList: StarredRepoMessage[] }) {
   const parentRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate({ from: "/stars" });
   const selectedLanguage = useSearch({
@@ -932,8 +980,9 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 220, // Estimated height of each row
+    estimateSize: () => 185, // Estimated height of each row
     overscan: 3, // Number of rows to render outside visible area
+    gap: 25,
   });
 
   if (repoList.length === 0) {
@@ -988,7 +1037,7 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <div className="grid gap-6 p-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 h-full">
                 {rowRepos.map((repo) => (
                   <RepositoryCard
                     key={repo.id}
@@ -1011,4 +1060,4 @@ const RepositoryGrid = React.memo(function RepositoryGrid({
       </div>
     </div>
   );
-});
+};
