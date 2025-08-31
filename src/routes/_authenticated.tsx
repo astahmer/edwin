@@ -1,12 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { authClient } from "~/auth.client";
 import { LoginPage } from "~/pages/login.page";
-import { requireAuthServerFn } from "~/utils/session";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async (ctx) => {
     if (import.meta.env.SSR) {
-      const result = await requireAuthServerFn();
+      const sessionModule = await import("../utils/session");
+      const result = await sessionModule.requireAuthServerFn();
       return { session: result };
     } else {
       // Check authentication by making a request to our session endpoint
