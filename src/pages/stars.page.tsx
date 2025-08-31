@@ -2,7 +2,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { format } from "date-fns";
 import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
@@ -134,6 +134,7 @@ const YourStarredRepositories = (props: {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
                 <TagsFilter />
                 <LanguageFilter availableLanguages={availableLanguages} />
+                <ActivityPresetFilter />
               </div>
             )}
 
@@ -257,6 +258,10 @@ const ResultsSummary = (props: {
     from: "/_authenticated/stars",
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
+  const activePreset = useSearch({
+    from: "/_authenticated/stars",
+    select: (search) => search.activePreset || "all",
+  });
 
   const getRepositoryCount = () => {
     if (props.total && props.total > props.repoList.length) {
@@ -291,8 +296,22 @@ const ResultsSummary = (props: {
     return null;
   };
 
+  const getactivePreset = () => {
+    const activityLabels = {
+      week: "active in the last week",
+      month: "active in the last month",
+      year: "active in the last year",
+      "5years": "active in the last 5 years",
+      "10years": "active in the last 10 years",
+    };
+    return activePreset !== "all"
+      ? activityLabels[activePreset as keyof typeof activityLabels]
+      : null;
+  };
+
   const starsFilter = getStarsFilter();
   const dateFilter = getDateFilter();
+  const activeFilter = getactivePreset();
 
   return (
     <div className="mt-4 text-sm text-gray-600">
@@ -303,6 +322,7 @@ const ResultsSummary = (props: {
       {selectedLanguage !== "all" && ` in ${selectedLanguage}`}
       {starsFilter && ` with ${starsFilter}`}
       {dateFilter && ` starred ${dateFilter}`}
+      {activeFilter && ` that were ${activeFilter}`}
     </div>
   );
 };
@@ -341,6 +361,10 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
     from: "/_authenticated/stars",
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
+  const activePreset = useSearch({
+    from: "/_authenticated/stars",
+    select: (search) => search.activePreset || "all",
+  });
   const sortBy = useSearch({
     from: "/_authenticated/stars",
     select: (search) => (search.sortBy as "stars" | "name" | "date") || "date",
@@ -349,6 +373,31 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
     from: "/_authenticated/stars",
     select: (search) => (search.sortOrder as "asc" | "desc") || "desc",
   });
+
+  const applyactivePreset = useCallback((repos: StarredRepoMessage[], filter: string) => {
+    if (filter === "all") return repos;
+
+    const now = Date.now();
+    return repos.filter((repo) => {
+      if (!repo.pushed_at) return false;
+
+      const pushDate = repo.pushed_at;
+      switch (filter) {
+        case "week":
+          return now - pushDate <= 7 * 24 * 60 * 60 * 1000;
+        case "month":
+          return now - pushDate <= 30 * 24 * 60 * 60 * 1000;
+        case "year":
+          return now - pushDate <= 365 * 24 * 60 * 60 * 1000;
+        case "5years":
+          return now - pushDate <= 5 * 365 * 24 * 60 * 60 * 1000;
+        case "10years":
+          return now - pushDate <= 10 * 365 * 24 * 60 * 60 * 1000;
+        default:
+          return true;
+      }
+    });
+  }, []);
 
   return useMemo(() => {
     let filtered = repoList;
@@ -406,6 +455,9 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
       });
     }
 
+    // Apply activity filter (based on last push date)
+    filtered = applyactivePreset(filtered, activePreset);
+
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
@@ -434,8 +486,10 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
     maxStars,
     minDate,
     maxDate,
+    activePreset,
     sortBy,
     sortOrder,
+    applyactivePreset,
   ]);
 }
 
@@ -780,6 +834,53 @@ function DateRangePickerWithPresets() {
     </>
   );
 }
+
+function ActivityPresetFilter() {
+  const activePreset = useSearch({
+    from: "/_authenticated/stars",
+    select: (search) => search.activePreset || "all",
+  });
+  const navigate = useNavigate({ from: "/stars" });
+
+  const activityOptions = [
+    { value: "all", label: "All repositories" },
+    { value: "week", label: "Active last week" },
+    { value: "month", label: "Active last month" },
+    { value: "year", label: "Active last year" },
+    { value: "5years", label: "Active last 5 years" },
+    { value: "10years", label: "Active last 10 years" },
+  ];
+
+  return (
+    <div>
+      <Label htmlFor="activity" className="block text-sm font-medium text-gray-700 mb-1">
+        Repository Activity
+      </Label>
+      <Select
+        value={activePreset}
+        onValueChange={(value: string) =>
+          navigate({ search: (prev) => ({ ...prev, activePreset: value }) })
+        }
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Filter by activity" />
+        </SelectTrigger>
+        <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
+          {activityOptions.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100"
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 function SortControls() {
   const sortBy = useSearch({
     from: "/_authenticated/stars",
@@ -856,6 +957,7 @@ function ClearFiltersButton() {
               maxStars: undefined,
               minDate: undefined,
               maxDate: undefined,
+              activePreset: "all",
               filtersExpanded: undefined,
             },
           })
