@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/stars")({
       maxStars: Schema.String.pipe(Schema.optional),
       minDate: Schema.String.pipe(Schema.optional),
       maxDate: Schema.String.pipe(Schema.optional),
+      activePreset: Schema.String.pipe(Schema.optional),
       sortBy: Schema.String.pipe(Schema.optional),
       sortOrder: Schema.String.pipe(Schema.optional),
       filtersExpanded: Schema.Boolean.pipe(Schema.optional),
