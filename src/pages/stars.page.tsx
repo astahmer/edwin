@@ -367,7 +367,9 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
   });
   const sortBy = useSearch({
     from: "/_authenticated/stars",
-    select: (search) => (search.sortBy as "stars" | "name" | "date") || "date",
+    select: (search) =>
+      (search.sortBy as "stars" | "name" | "starredDate" | "createdDate" | "pushedDate") ||
+      "starredDate",
   });
   const sortOrder = useSearch({
     from: "/_authenticated/stars",
@@ -468,6 +470,13 @@ function useFilteredRepos(repoList: StarredRepoMessage[]) {
         case "name":
           comparison = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
           break;
+        case "createdDate":
+          comparison = (a.created_at || 0) - (b.created_at || 0);
+          break;
+        case "pushedDate":
+          comparison = (a.pushed_at || 0) - (b.pushed_at || 0);
+          break;
+        case "starredDate":
         default:
           comparison = new Date(a.starred_at).getTime() - new Date(b.starred_at).getTime();
           break;
@@ -884,7 +893,9 @@ function ActivityPresetFilter() {
 function SortControls() {
   const sortBy = useSearch({
     from: "/_authenticated/stars",
-    select: (search) => (search.sortBy as "stars" | "name" | "date") || "date",
+    select: (search) =>
+      (search.sortBy as "stars" | "name" | "starredDate" | "createdDate" | "pushedDate") ||
+      "starredDate",
   });
   const sortOrder = useSearch({
     from: "/_authenticated/stars",
@@ -900,7 +911,7 @@ function SortControls() {
       <div className="flex space-x-2">
         <Select
           value={sortBy}
-          onValueChange={(value: "stars" | "name" | "date") =>
+          onValueChange={(value: "stars" | "name" | "starredDate" | "createdDate" | "pushedDate") =>
             navigate({
               search: (prev) => ({ ...prev, sortBy: value }),
             })
@@ -910,8 +921,23 @@ function SortControls() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
-            <SelectItem value="date" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
-              Sort by Date {sortOrder === "desc" ? "(newest first)" : "(oldest first)"}
+            <SelectItem
+              value="starredDate"
+              className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100"
+            >
+              Sort by Starred Date {sortOrder === "desc" ? "(newest first)" : "(oldest first)"}
+            </SelectItem>
+            <SelectItem
+              value="createdDate"
+              className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100"
+            >
+              Sort by Creation Date {sortOrder === "desc" ? "(newest first)" : "(oldest first)"}
+            </SelectItem>
+            <SelectItem
+              value="pushedDate"
+              className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100"
+            >
+              Sort by Last Push Date {sortOrder === "desc" ? "(newest first)" : "(oldest first)"}
             </SelectItem>
             <SelectItem value="stars" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
               Sort by Stars {sortOrder === "desc" ? "(highest first)" : "(lowest first)"}
@@ -958,6 +984,8 @@ function ClearFiltersButton() {
               minDate: undefined,
               maxDate: undefined,
               activePreset: "all",
+              sortBy: "starredDate",
+              sortOrder: "desc",
               filtersExpanded: undefined,
             },
           })

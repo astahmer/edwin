@@ -26,6 +26,7 @@ export interface StarredRepoMessage {
   topics: string[];
   starred_at: number;
   pushed_at: number | null;
+  created_at: number | null;
 }
 
 /**
@@ -195,6 +196,7 @@ export class StarSyncService extends Effect.Service<StarSyncService>()("StarSync
                   language: repo.language,
                   starred_at: repo.starred_at.getTime(),
                   pushed_at: repo.pushed_at ? repo.pushed_at.getTime() : null,
+                  created_at: repo.created_at ? repo.created_at.getTime() : null,
                 } as StarredRepoMessage;
               })
             )
@@ -263,4 +265,7 @@ const fetchedStarredRepoToMsg = (starredRepo: GithubSchema.starred_repository) =
     language: starredRepo.repo.language,
     starred_at: new Date(starredRepo.starred_at).getTime(),
     pushed_at: starredRepo.repo.pushed_at ? new Date(starredRepo.repo.pushed_at).getTime() : null,
+    created_at: starredRepo.repo.created_at
+      ? new Date(starredRepo.repo.created_at).getTime()
+      : null,
   }) as StarredRepoMessage;
