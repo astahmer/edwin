@@ -125,16 +125,15 @@ const YourStarredRepositories = (props: {
                 ) : (
                   <ChevronDownIcon className="h-4 w-4" />
                 )}
-                {filtersExpanded ? "Hide filters" : "Show filters"}
+                {filtersExpanded ? "Hide filters" : "Show more filters"}
               </Button>
             </div>
 
             {/* Collapsible filters */}
             {filtersExpanded && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
                 <TagsFilter />
                 <LanguageFilter availableLanguages={availableLanguages} />
-                <StarRangeFilter />
               </div>
             )}
 
@@ -146,6 +145,7 @@ const YourStarredRepositories = (props: {
               />
               <div className="flex gap-4">
                 <ClearFiltersButton />
+                <StarRangeFilter />
                 <SortControls />
               </div>
             </div>
@@ -580,9 +580,8 @@ function StarRangeFilter() {
   const navigate = useNavigate({ from: "/stars" });
 
   return (
-    <div className="flex flex-1 gap-4">
-      <div className="flex-1 max-w-48">
-        <Label htmlFor="minStars">Minimum stars</Label>
+    <div className="flex flex-1 gap-4 self-end">
+      <div className="flex-1 max-w-32">
         <Input
           type="number"
           id="minStars"
@@ -591,12 +590,11 @@ function StarRangeFilter() {
           onChange={(e) =>
             navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
           }
-          className="w-full text-sm"
+          className="w-full text-sm h-8"
           min="0"
         />
       </div>
-      <div className="flex-1 max-w-48">
-        <Label htmlFor="maxStars">Maximum stars</Label>
+      <div className="flex-1 max-w-32">
         <Input
           type="number"
           id="maxStars"
@@ -605,7 +603,7 @@ function StarRangeFilter() {
           onChange={(e) =>
             navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
           }
-          className="w-full text-sm"
+          className="w-full text-sm h-8"
           min="0"
         />
       </div>
@@ -614,20 +612,20 @@ function StarRangeFilter() {
 }
 
 const presets = [
-  {
-    label: "Today",
-    range: {
-      from: new Date(),
-      to: new Date(),
-    },
-  },
-  {
-    label: "Yesterday",
-    range: {
-      from: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      to: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-  },
+  // {
+  //   label: "Today",
+  //   range: {
+  //     from: new Date(),
+  //     to: new Date(),
+  //   },
+  // },
+  // {
+  //   label: "Yesterday",
+  //   range: {
+  //     from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  //     to: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  //   },
+  // },
   {
     label: "Last 7 days",
     range: {
@@ -660,6 +658,13 @@ const presets = [
     label: "Last year",
     range: {
       from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+      to: new Date(),
+    },
+  },
+  {
+    label: "Last 3 years",
+    range: {
+      from: new Date(Date.now() - 3 * 365 * 24 * 60 * 60 * 1000),
       to: new Date(),
     },
   },
@@ -735,26 +740,24 @@ function DateRangePickerWithPresets() {
         <PopoverContent className="w-auto p-0 bg-white text-gray-900" align="start">
           <div className="flex">
             {/* Presets sidebar */}
-            <div className="border-r bg-gray-50 p-2">
-              <div className="space-y-1">
-                {presets.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                    onClick={() => {
-                      setDateRange(preset.range);
-                      setIsOpen(false);
-                    }}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
+            <div className="border-r bg-gray-50 p-2 flex flex-col gap-1">
+              {presets.map((preset) => (
+                <Button
+                  key={preset.label}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-sm font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  onClick={() => {
+                    setDateRange(preset.range);
+                    setIsOpen(false);
+                  }}
+                >
+                  {preset.label}
+                </Button>
+              ))}
             </div>
             {/* Calendar */}
-            <div className="p-3 bg-white">
+            <div className="flex-1 p-3 bg-white">
               <Calendar
                 mode="range"
                 selected={dateRange}
@@ -827,7 +830,7 @@ function SortControls() {
           }
           className="px-3 py-2"
         >
-          {sortOrder === "asc" ? "↑" : "↓"}
+          {sortOrder === "asc" ? "↓" : "↑"}
         </Button>
       </div>
     </div>
