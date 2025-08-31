@@ -118,6 +118,7 @@ const makeServerSideEventStream = Effect.fn(function* (input: {
         topics: repo.topics,
         starred_at: repo.starred_at,
         pushed_at: repo.pushed_at,
+        created_at: repo.created_at,
       };
 
       const message: SSEMessage = {
