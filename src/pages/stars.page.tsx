@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { TagsInput } from "~/components/ui/tags-input";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import type { ConnectionState } from "~/components/use-sse";
 import type { StarredRepoMessage } from "~/services/star-sync-service";
 
@@ -531,7 +532,7 @@ function SearchInput() {
       <Input
         type="text"
         id="search"
-        value={search}
+        defaultValue={search}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, search: e.target.value }) })}
         placeholder="Search by anything like name, description, owner, topics, langage..."
         className="w-full"
@@ -556,7 +557,7 @@ function OwnerFilter() {
       <Input
         type="text"
         id="owner"
-        value={owner}
+        defaultValue={owner}
         onChange={(e) => navigate({ search: (prev) => ({ ...prev, owner: e.target.value }) })}
         placeholder="Enter owner (user or organization) name..."
         className="w-full"
@@ -649,7 +650,7 @@ function StarRangeFilter() {
           type="number"
           id="minStars"
           placeholder="Min stars"
-          value={minStars || ""}
+          defaultValue={minStars}
           onChange={(e) =>
             navigate({ search: (prev) => ({ ...prev, minStars: e.target.value || undefined }) })
           }
@@ -662,7 +663,7 @@ function StarRangeFilter() {
           type="number"
           id="maxStars"
           placeholder="Max stars"
-          value={maxStars || ""}
+          defaultValue={maxStars}
           onChange={(e) =>
             navigate({ search: (prev) => ({ ...prev, maxStars: e.target.value || undefined }) })
           }
@@ -1078,14 +1079,39 @@ const RepositoryCard = React.memo(function RepositoryCard({
               {repo.language}
             </Button>
           )}
-          <span className="text-xs text-gray-500 ml-auto mt-4">
-            Starred on{" "}
-            {new Date(repo.starred_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
+          <div className="text-xs text-gray-500 ml-auto mt-4 flex flex-col items-end gap-1">
+            <span>
+              Starred on{" "}
+              {new Date(repo.starred_at).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            {repo.pushed_at && (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help">
+                      Last push {formatDistanceToNow(new Date(repo.pushed_at), { addSuffix: true })}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {new Date(repo.pushed_at).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZoneName: "short",
+                      })}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
       </div>
     </div>
