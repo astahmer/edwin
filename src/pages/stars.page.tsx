@@ -810,13 +810,13 @@ function SortControls() {
           </SelectTrigger>
           <SelectContent className="bg-white text-gray-900 border border-gray-200 shadow-lg">
             <SelectItem value="date" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
-              Date
+              Sort by Date {sortOrder === "desc" ? "(newest first)" : "(oldest first)"}
             </SelectItem>
             <SelectItem value="stars" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
-              Stars
+              Sort by Stars {sortOrder === "desc" ? "(highest first)" : "(lowest first)"}
             </SelectItem>
             <SelectItem value="name" className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100">
-              Name
+              Sort by Name {sortOrder === "desc" ? "(Z-A)" : "(A-Z)"}
             </SelectItem>
           </SelectContent>
         </Select>
