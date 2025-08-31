@@ -45,7 +45,7 @@ export function TagsInput({
     <div className={cn("space-y-2", className)}>
       <div className="flex min-h-9 w-full flex-wrap gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
         {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="gap-1 pr-1.5 text-sm">
+          <Badge key={tag} variant="secondary" className="gap-1 pr-1.5 text-sm my-1">
             <span>{tag}</span>
             <Button
               type="button"
