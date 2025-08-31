@@ -10,10 +10,7 @@ export function createRouter() {
     routeTree,
     context: {
       queryClient,
-      session: {
-        data: null,
-        error: { status: 404, statusText: "Not Found" },
-      },
+      session: {} as never,
     },
     defaultPreload: "intent",
     defaultErrorComponent: DefaultCatchBoundary,
