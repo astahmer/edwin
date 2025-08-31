@@ -80,7 +80,7 @@ const YourStarredRepositories = (props: {
   const filteredRepos = useFilteredRepos(repoList);
 
   const filtersExpanded = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.filtersExpanded,
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -226,35 +226,35 @@ const ResultsSummary = (props: {
   total: number | undefined;
 }) => {
   const searchQuery = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.search || "",
   });
   const ownerFilter = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.owner || "",
   });
   const tagsFilter = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.tags || "").split(",").filter(Boolean),
   });
   const selectedLanguage = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.language || "all",
   });
   const minStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minStars ? Number.parseInt(search.minStars, 10) : undefined),
   });
   const maxStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxStars ? Number.parseInt(search.maxStars, 10) : undefined),
   });
   const minDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minDate ? new Date(search.minDate) : undefined),
   });
   const maxDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
 
@@ -310,43 +310,43 @@ const ResultsSummary = (props: {
 // Custom hook for optimized filtering and sorting of repositories
 function useFilteredRepos(repoList: StarredRepoMessage[]) {
   const searchQuery = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.search || "",
   });
   const ownerFilter = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.owner || "",
   });
   const tagsFilter = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.tags || "").split(",").filter(Boolean),
   });
   const selectedLanguage = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.language || "all",
   });
   const minStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minStars ? Number.parseInt(search.minStars, 10) : undefined),
   });
   const maxStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxStars ? Number.parseInt(search.maxStars, 10) : undefined),
   });
   const minDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minDate ? new Date(search.minDate) : undefined),
   });
   const maxDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
   const sortBy = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.sortBy as "stars" | "name" | "date") || "date",
   });
   const sortOrder = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.sortOrder as "asc" | "desc") || "desc",
   });
 
@@ -455,7 +455,7 @@ function useAvailableLanguages(repoList: StarredRepoMessage[]) {
 // SearchInput component with optimized re-renders
 function SearchInput() {
   const search = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.search || "",
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -480,7 +480,7 @@ function SearchInput() {
 // OwnerFilter component for filtering by repository owner
 function OwnerFilter() {
   const owner = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.owner || "",
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -505,7 +505,7 @@ function OwnerFilter() {
 // TagsFilter component for searching with multiple keywords
 function TagsFilter() {
   const tagsString = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.tags || "",
   });
   const tags = tagsString.split(",").filter(Boolean);
@@ -530,7 +530,7 @@ function TagsFilter() {
 
 function LanguageFilter({ availableLanguages }: { availableLanguages: string[] }) {
   const language = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.language || "all",
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -570,11 +570,11 @@ function LanguageFilter({ availableLanguages }: { availableLanguages: string[] }
 
 function StarRangeFilter() {
   const minStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minStars ? Number.parseInt(search.minStars, 10) : undefined),
   });
   const maxStars = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxStars ? Number.parseInt(search.maxStars, 10) : undefined),
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -679,11 +679,11 @@ const presets = [
 
 function DateRangePickerWithPresets() {
   const minDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.minDate ? new Date(search.minDate) : undefined),
   });
   const maxDate = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.maxDate ? new Date(search.maxDate) : undefined),
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -782,11 +782,11 @@ function DateRangePickerWithPresets() {
 }
 function SortControls() {
   const sortBy = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.sortBy as "stars" | "name" | "date") || "date",
   });
   const sortOrder = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => (search.sortOrder as "asc" | "desc") || "desc",
   });
   const navigate = useNavigate({ from: "/stars" });
@@ -966,7 +966,7 @@ const RepositoryGrid = function RepositoryGrid({ repoList }: { repoList: Starred
   const parentRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate({ from: "/stars" });
   const selectedLanguage = useSearch({
-    from: "/stars",
+    from: "/_authenticated/stars",
     select: (search) => search.language || "all",
   });
 

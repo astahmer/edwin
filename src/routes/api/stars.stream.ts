@@ -107,20 +107,22 @@ const makeServerSideEventStream = Effect.fn(function* (input: {
       }
 
       const repo = value;
+      const data: StarredRepoMessage = {
+        id: repo.id,
+        name: repo.name,
+        owner: repo.owner,
+        full_name: repo.full_name,
+        description: repo.description,
+        stars: repo.stars,
+        language: repo.language,
+        topics: repo.topics,
+        starred_at: repo.starred_at,
+      };
+
       const message: SSEMessage = {
         id: repo.id.toString(),
         event: "repo",
-        data: {
-          id: repo.id,
-          name: repo.name,
-          owner: repo.owner,
-          full_name: repo.full_name,
-          description: repo.description,
-          stars: repo.stars,
-          language: repo.language,
-          topics: repo.topics,
-          starred_at: repo.starred_at,
-        } as StarredRepoMessage,
+        data,
       };
 
       return message;
