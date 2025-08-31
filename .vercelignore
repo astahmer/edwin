@@ -1,0 +1,5 @@
+.jj
+.git
+.vscode
+node_modules
+src/services/github/github.openapi.json
