@@ -1,72 +1,103 @@
-# Welcome to TanStack.com!
+# Edwin - Setup Guide
 
-This site is built with TanStack Router!
+## Prerequisites
 
-- [TanStack Router Docs](https://tanstack.com/router)
+1. **Node.js** (v18+) and **pnpm** installed
+2. **GitHub account** for OAuth app setup
 
-It's deployed automagically with Netlify!
+## 1. GitHub OAuth App Setup
 
-- [Netlify](https://netlify.com/)
+1. Go to GitHub Settings: https://github.com/settings/developers
+2. Click "New OAuth App"
+3. Fill in the details:
+   - **Application name**: `Edwin - GitHub Stars Organizer`
+   - **Homepage URL**: `http://localhost:3001`
+   - **Application description**: `Self-hosted GitHub stars organizer`
+   - **Authorization callback URL**: `http://localhost:3001/api/auth/callback/github`
 
-## Development
+4. Click "Register application"
+5. Copy the **Client ID** and generate a **Client Secret**
 
-From your terminal:
+## 2. Environment Variables
 
-```sh
+1. Copy the environment template:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your GitHub OAuth credentials:
+   ```env
+   # GitHub OAuth
+   GITHUB_CLIENT_ID=your_github_client_id_here
+   GITHUB_CLIENT_SECRET=your_github_client_secret_here
+
+   # App settings
+   NODE_ENV=development
+   BETTER_AUTH_SECRET=your_random_secret_key_here
+   ```
+
+3. Generate a random secret key:
+   ```bash
+   # On macOS/Linux
+   openssl rand -base64 32
+
+   # Or use any random string generator
+   ```
+
+## 3. Database Setup
+
+The database is already set up and migrated. The SQLite file is located at `./edwin.db`.
+
+```bash
+pnpm dlx @better-auth/cli migrate
+```
+
+## 4. Start Development
+
+```bash
+# Install dependencies (if not already done)
 pnpm install
+
+# Start the development server
 pnpm dev
 ```
 
-This starts your app in development mode, rebuilding assets on file changes.
+## 5. Test the Setup
 
-## Editing and previewing the docs of TanStack projects locally
+1. Visit http://localhost:3001/
+2. Click "Get Started" to go to the login page
+3. Click "Sign in with GitHub" to test OAuth flow
+4. After successful auth, you'll be redirected back to the app
 
-The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
-In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
+## 6. API Endpoints
 
-Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
+- **Auth**: `/api/auth/*` (handled by better-auth)
+- **Streaming**: `/api/stars/stream` (placeholder for SSE)
 
-1. Create a new directory called `tanstack`.
+## Troubleshooting
 
-```sh
-mkdir tanstack
-```
+### OAuth Issues
+- Make sure the callback URL matches exactly: `http://localhost:3001/api/auth/callback/github`
+- Ensure GitHub Client ID and Secret are correct in `.env`
+- Check that the port (3001) matches in both GitHub app settings and your local server
 
-2. Enter the directory and clone this repo and the repo of the project there.
+### Database Issues
+- If database issues occur, delete `edwin.db` and restart the server
+- Migrations will run automatically
 
-```sh
-cd tanstack
-git clone git@github.com:TanStack/tanstack.com.git
-git clone git@github.com:TanStack/form.git
-```
+### Development Issues
+- Run `pnpm build` to check for TypeScript errors
+- Check browser console for runtime errors
+- Ensure all environment variables are set correctly
 
-> [!NOTE]
-> Your `tanstack` directory should look like this:
->
-> ```
-> tanstack/
->    |
->    +-- form/
->    |
->    +-- tanstack.com/
-> ```
+## Next Steps
 
-> [!WARNING]
-> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
+Once basic auth is working, the next features to implement are:
+1. Store GitHub access tokens from OAuth flow
+2. Implement real GitHub API integration
+3. Complete SSE streaming for repository data
+4. Add search and filtering capabilities
 
-3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
+---
 
-```sh
-cd tanstack.com
-pnpm i
-# The app will run on https://localhost:3000 by default
-pnpm dev
-```
-
-4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
-
-> [!NOTE]
-> The updated pages need to be manually reloaded in the browser.
-
-> [!WARNING]
-> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!
+For more detailed implementation status, see `IMPLEMENTATION_STATUS.md`
