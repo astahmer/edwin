@@ -6,13 +6,11 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
-    "start": "vite start",
+    "start": "node --env-file-if-exists=.env .output/server/index.mjs",
     "lint": "biome lint src/",
     "lint:fix": "biome lint --write src/",
-    "format": "biome format src/",
-    "format:fix": "biome format --write src/",
-    "check": "biome check src/",
-    "check:fix": "biome check --write src/",
+    "fmt": "biome format --write src/",
+    "check": "biome check --write src/",
     "db": "pnpm drizzle-kit",
     "ghgen": "pnpm typed-openapi https://raw.githubusercontent.com/github/rest-api-description/refs/heads/main/descriptions/api.github.com/api.github.com.json -o src/services/github/github.openapi.codegen.ts --default-fetcher"
   },
