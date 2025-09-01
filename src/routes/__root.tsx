@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       },
       ...seo({
         title: "Edwin Star",
-        description: `Your GitHub Stars Organizer`,
+        description: `GitHub Stars Organizer`,
       }),
     ],
     links: [
