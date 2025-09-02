@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       ...seo({
-        title: "Edwin Star",
+        title: "Edwin Stars",
         description: `GitHub Stars Organizer`,
       }),
     ],
@@ -37,16 +37,9 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
         rel: "icon",
         type: "image/png",
         sizes: "32x32",
-        href: "/favicon-32x32.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-        href: "/favicon-16x16.png",
+        href: "/favicon.png",
       },
       { rel: "manifest", href: "/site.webmanifest", color: "#fffff" },
-      { rel: "icon", href: "/favicon.ico" },
     ],
     // scripts: [
     //   {
