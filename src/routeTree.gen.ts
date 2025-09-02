@@ -15,7 +15,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStarsRouteImport } from './routes/_authenticated/stars'
-import { ServerRoute as CustomScriptDotjsServerRouteImport } from './routes/customScript[.]js'
 import { ServerRoute as ApiStarsStreamServerRouteImport } from './routes/api/stars.stream'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth.$'
 
@@ -39,11 +38,6 @@ const AuthenticatedStarsRoute = AuthenticatedStarsRouteImport.update({
   id: '/stars',
   path: '/stars',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const CustomScriptDotjsServerRoute = CustomScriptDotjsServerRouteImport.update({
-  id: '/customScript.js',
-  path: '/customScript.js',
-  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiStarsStreamServerRoute = ApiStarsStreamServerRouteImport.update({
   id: '/api/stars/stream',
@@ -87,31 +81,27 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
 }
 export interface FileServerRoutesByFullPath {
-  '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/stars/stream': typeof ApiStarsStreamServerRoute
 }
 export interface FileServerRoutesByTo {
-  '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/stars/stream': typeof ApiStarsStreamServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
-  '/customScript.js': typeof CustomScriptDotjsServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
   '/api/stars/stream': typeof ApiStarsStreamServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/customScript.js' | '/api/auth/$' | '/api/stars/stream'
+  fullPaths: '/api/auth/$' | '/api/stars/stream'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/customScript.js' | '/api/auth/$' | '/api/stars/stream'
-  id: '__root__' | '/customScript.js' | '/api/auth/$' | '/api/stars/stream'
+  to: '/api/auth/$' | '/api/stars/stream'
+  id: '__root__' | '/api/auth/$' | '/api/stars/stream'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-  CustomScriptDotjsServerRoute: typeof CustomScriptDotjsServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
   ApiStarsStreamServerRoute: typeof ApiStarsStreamServerRoute
 }
@@ -150,13 +140,6 @@ declare module '@tanstack/react-router' {
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
-    '/customScript.js': {
-      id: '/customScript.js'
-      path: '/customScript.js'
-      fullPath: '/customScript.js'
-      preLoaderRoute: typeof CustomScriptDotjsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/stars/stream': {
       id: '/api/stars/stream'
       path: '/api/stars/stream'
@@ -195,7 +178,6 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-  CustomScriptDotjsServerRoute: CustomScriptDotjsServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
   ApiStarsStreamServerRoute: ApiStarsStreamServerRoute,
 }

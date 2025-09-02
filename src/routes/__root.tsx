@@ -2,6 +2,7 @@
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type * as React from "react";
 import { DefaultCatchBoundary } from "~/components/default-catch-boundary";
@@ -81,8 +82,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <TanStackDevtools
+          plugins={[
+            {
+              name: "TanStack Query",
+              render: <ReactQueryDevtools initialIsOpen position="right" />,
+            },
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtools initialIsOpen position="bottom-right" />,
+            },
+          ]}
+        />
+
         <Scripts />
       </body>
     </html>
