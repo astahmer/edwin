@@ -1,6 +1,7 @@
-import BetterSqlite3 from "better-sqlite3";
+import { createClient } from "@libsql/client";
 import { Effect } from "effect";
-import { Kysely, SqliteDialect } from "kysely";
+import { Kysely } from "kysely";
+import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { EnvConfig } from "../env.config.ts";
 import {
   DatabaseGetUserError,
@@ -22,18 +23,30 @@ import type {
   SelectableUser,
 } from "./schema.ts";
 
-export interface Database {
+export interface KyselyDatabase {
   user: SelectableUser;
   github_user: SelectableGithubUser;
   github_repository: SelectableGithubRepository;
   github_user_star: SelectableGithubUserStar;
 }
 
-const dialect = new SqliteDialect({
-  database: new BetterSqlite3(EnvConfig.DATABASE_URL),
+// Create libsql client - supports both local SQLite files and remote Turso URLs
+const createLibsqlClient = () => {
+  const url = EnvConfig.DATABASE_URL;
+  console.log(
+    EnvConfig.TURSO_AUTH_TOKEN ? "Using remote Turso database" : "Using local SQLite database"
+  );
+  return createClient({
+    url,
+    authToken: EnvConfig.TURSO_AUTH_TOKEN,
+  });
+};
+
+const dialect = new LibsqlDialect({
+  client: createLibsqlClient() as never,
 });
 
-export const kysely = new Kysely<Database>({
+export const kysely = new Kysely<KyselyDatabase>({
   dialect,
   plugins: [new SqliteDataTypePlugin()],
 });

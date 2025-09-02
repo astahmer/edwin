@@ -1,11 +1,12 @@
 import { betterAuth } from "better-auth";
-import Database from "better-sqlite3";
 import { reactStartCookies } from "better-auth/react-start";
-
-import { EnvConfig } from "./env.config.js";
+import { kysely } from "~/db/kysely.js";
 
 export const auth = betterAuth({
-  database: new Database(EnvConfig.DATABASE_URL),
+  database: {
+    db: kysely,
+    type: "sqlite",
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || "",
