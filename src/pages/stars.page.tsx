@@ -37,10 +37,6 @@ export function StarsPage(props: {
     }
   }, [error]);
 
-  if (connectionStatus === "connecting") {
-    return <LoadingPage />;
-  }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -59,17 +55,6 @@ export function StarsPage(props: {
     />
   );
 }
-
-const LoadingPage = () => {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Connecting to stream...</p>
-      </div>
-    </div>
-  );
-};
 
 const YourStarredRepositories = (props: {
   repoList: StarredRepoMessage[];
@@ -209,7 +194,7 @@ const ResultList = (props: {
     <div className="text-center py-12">
       {repoList.length === 0 ? (
         // Check if we're still loading or truly have no repos
-        connectionStatus === "connected" ? (
+        connectionStatus === "connected" || connectionStatus === "connecting" ? (
           <LoadingRepositoriesState />
         ) : (
           <NoRepositoriesState />
