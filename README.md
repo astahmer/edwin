@@ -1,4 +1,9 @@
-# Edwin - Setup Guide
+# Edwin
+
+<img width="1306" height="949" alt="image" src="https://github.com/user-attachments/assets/2750f504-67a5-4f6c-9c9e-e956041ce2e1" />
+
+
+# Self-host setup guide
 
 ## Prerequisites
 
